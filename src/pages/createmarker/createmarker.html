@@ -1,0 +1,51 @@
+
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Nuevo marcador</ion-title>
+    
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+
+<ion-list>
+  <ion-item>
+    <ion-label stacked>Nombre</ion-label>
+    <ion-input type="text"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label stacked>Descripcion</ion-label>
+    <ion-input type="text"></ion-input>
+  </ion-item>
+
+   <ion-item>
+    <ion-label stacked>Lat</ion-label>
+    <ion-input type="text"></ion-input>
+  </ion-item>
+
+   <ion-item>
+    <ion-label stacked>Lng</ion-label>
+    <ion-input type="text"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label stacked>Propiedad 1</ion-label>
+    <ion-input type="text"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label stacked>Propiedad 2</ion-label>
+    <ion-input type="text"></ion-input>
+  </ion-item>
+
+</ion-list>
+
+<div padding>
+    <button ion-button color="primary" block (click)="createMarker()">Crear marcador</button>
+  </div>
+
+</ion-content>
