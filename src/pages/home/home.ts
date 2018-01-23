@@ -26,6 +26,8 @@ export class HomePage {
 		        icon: 'map'
 		      });
 		    }
+
+
 	  }
 
   	itemTapped(event, item) {
