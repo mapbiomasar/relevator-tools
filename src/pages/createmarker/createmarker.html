@@ -9,43 +9,134 @@
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
 
-<ion-list>
-  <ion-item>
-    <ion-label stacked>Nombre</ion-label>
-    <ion-input type="text"></ion-input>
-  </ion-item>
+<ion-content padding> 
+  <ion-grid>
+    <ion-row>
+      <ion-col width-100>
+        <ion-list>
+          <form (ngSubmit)="saveForm()">
+            <ion-card>
+            <ion-card-header>
+              Atributos
+            </ion-card-header>
+            <ion-card-content>
+              <ion-item>
+                <ion-label>Categoría</ion-label>
+                <ion-select [(ngModel)]="category" name="category" interface="popover">
+                  <ion-option value="category1">Categoría 1</ion-option>
+                  <ion-option value="category2">Categoría 2</ion-option>
+                  <ion-option value="category3">Categoría 3</ion-option>
+                  <ion-option value="category4">Categoría 4</ion-option>
+                  <ion-option value="category5">Categoría 5</ion-option>
+                </ion-select>
+                </ion-item>
+                <ion-item>
+                <ion-label>Ubicación</ion-label>
+                <ion-select [(ngModel)]="point_ubication" name="point_ubication" interface="popover">
+                  <ion-option value="left">Izquierda</ion-option>
+                  <ion-option value="right">Derecha</ion-option>
+                </ion-select>
+                </ion-item>
+                <ion-item>
+                <ion-label>¿Altura más de 3mts?</ion-label>
+                <ion-select [(ngModel)]="height_overpass" name="height_overpass" interface="popover">
+                  <ion-option value="1">Si</ion-option>
+                  <ion-option value="0">No</ion-option>
+                  <ion-option value="-1">S/D</ion-option>
+                </ion-select>
+                </ion-item>
+                <ion-item>
+                <ion-label>Cobertura</ion-label>
+                <ion-select [(ngModel)]="coverage_percentage" name="coverage_percentage" interface="popover">
+                  <ion-option value="0">Menos del 20%</ion-option>
+                  <ion-option value="1">Entre 20% y 65%</ion-option>
+                  <ion-option value="2">Mas del 65%</ion-option>
+                  <ion-option value="-1">S/D</ion-option>
+                </ion-select>
+                </ion-item>
+                 <ion-item>
+                <ion-label>Consenso</ion-label>
+                <ion-select [(ngModel)]="data_consensus" name="data_consensus" interface="popover">
+                  <ion-option value="1">Si</ion-option>
+                  <ion-option value="0">No</ion-option>
+                </ion-select>
+                </ion-item>
+              </ion-card-content>
+            </ion-card>
+          </form>
 
-  <ion-item>
-    <ion-label stacked>Descripcion</ion-label>
-    <ion-input type="text"></ion-input>
-  </ion-item>
+         <ion-card>
+            <ion-card-header>
+              Orientación
+            </ion-card-header>
+              <ion-card-content>
+                {{orientation}}
+              </ion-card-content>
+          </ion-card>
 
-   <ion-item>
-    <ion-label stacked>Lat</ion-label>
-    <ion-input type="text"></ion-input>
-  </ion-item>
+         <ion-card>
+            <ion-card-header>
+              Imágenes
+            </ion-card-header>
 
-   <ion-item>
-    <ion-label stacked>Lng</ion-label>
-    <ion-input type="text"></ion-input>
-  </ion-item>
+            <ion-card-content>
+              <button ion-button color="secondary" icon-right block (click)="takePicture();">
+                Tomar Foto
+                <ion-icon name="camera">
 
-  <ion-item>
-    <ion-label stacked>Propiedad 1</ion-label>
-    <ion-input type="text"></ion-input>
-  </ion-item>
+                </ion-icon>
+              </button>
 
-  <ion-item>
-    <ion-label stacked>Propiedad 2</ion-label>
-    <ion-input type="text"></ion-input>
-  </ion-item>
+              <img src="{{base64Image}}" alt="" class="image_container" />
+            </ion-card-content>
+          </ion-card>
+         
+          <ion-card>
+            <ion-card-header>
+              Audio
+            </ion-card-header>
 
-</ion-list>
+            <ion-card-content>
+              <button ion-button color="secondary" icon-right block (click)="captureAudio();">
+                Grabar audio
+                <ion-icon name="mic">
 
-<div padding>
-    <button ion-button color="primary" block (click)="createMarker()">Crear marcador</button>
-  </div>
+                </ion-icon>
+              </button>
 
+            <ion-list>
+              <ion-item *ngFor="let file of mediaFiles" tappable (click)="play(file)" text-wrap>
+                {{ file.name }}
+                <p>{{ file.size / 1000 / 1000 | number }} MB</p>
+              </ion-item>
+            </ion-list>
+
+            </ion-card-content>
+          </ion-card>
+
+          <ion-card>
+            <ion-card-header>
+              Metadatos
+            </ion-card-header>
+              <ion-card-content>
+              <ion-item>
+                <strong>Usuario</strong>   Agustin
+              </ion-item>
+               <ion-item>
+                <strong>Fecha</strong>   26/01/2018
+              </ion-item>
+              <ion-item>
+                <strong>Lat/Lng</strong>   {{markerLocation}}
+              </ion-item>
+              </ion-card-content>
+          </ion-card>
+    
+
+            <button ion-button type="submit" block>Guardar marcador</button>
+          
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

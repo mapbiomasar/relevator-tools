@@ -13,8 +13,19 @@
   </ion-navbar>
 </ion-header>
 
-<ion-content padding>
+
+
+<ion-content>
 
     <div #map id="map"></div>
 
+     <ion-fab right bottom>
+    <button ion-fab color="inta-primary"><ion-icon name="arrow-dropup"></ion-icon></button>
+    <ion-fab-list side="top">
+      <button ion-fab (click)="getCurrentPosition()" ng-class="active"><ion-icon name="locate"></ion-icon></button>
+      <button ion-fab (click)="addNewMarker()"><ion-icon name="flag"></ion-icon></button>
+    </ion-fab-list>
+  </ion-fab>
+
 </ion-content>
+

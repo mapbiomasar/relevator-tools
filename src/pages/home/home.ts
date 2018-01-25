@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, Platform, ActionSheetController} from 'ionic-angular';
 
-import {MapTabsPage} from '../maptabs/maptabs';
 import {CreateMapPage} from '../createmap/createmap';
+import {ViewMapPage} from '../viewmap/viewmap';
 
 @Component({
   selector: 'page-home',
@@ -39,7 +39,7 @@ export class HomePage {
 
 
     viewMap(){
-        this.navCtrl.push(MapTabsPage, {
+        this.navCtrl.push(ViewMapPage, {
           
         });
     }
