@@ -9,15 +9,15 @@ import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
 import XYZ from 'ol/source/xyz';
 import ScaleLine from 'ol/control/scaleline';
-import MousePosition from 'ol/control/mouseposition';
-import Coordinate from 'ol/coordinate';
 import Feature from 'ol/feature';
-import ol from 'ol';
-//import Style from 'ol/style';
-//import Circle from 'ol/style';
-//import Fill from 'ol/style';
-//import Stroke from 'ol/style';
-
+import Fill from 'ol/style/fill';
+import Circle from 'ol/style/circle';
+import Stroke from 'ol/style/stroke';
+import RegularShape from 'ol/style/regularshape';
+import Style from 'ol/style/style';
+import LayerVector from 'ol/layer/vector';
+import SourceVector  from 'ol/source/vector';
+import Point from 'ol/geom/point';
 
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
@@ -36,6 +36,7 @@ export class ViewMapPage {
   geolocLayer:any;
   defaultGeolocZoom:number;
   currentLocation:any;
+  mapCrosshair:any;
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, private geolocation: Geolocation) {
     this.defaultGeolocZoom = 10;
@@ -54,7 +55,7 @@ export class ViewMapPage {
               url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             })
           })
-        ],
+        ], 
         view: new View({
         projection: 'EPSG:4326',
           center: arg,
@@ -68,25 +69,50 @@ export class ViewMapPage {
 
 
       // Geolocation objects
-      /*this.positionFeature = new Feature({});
-      this.positionFeature.setStyle(new ol.style.Style({
-        image: new ol.style.Circle({
+      this.positionFeature = new Feature({});
+      this.positionFeature.setStyle(new Style({
+        image: new Circle({
           radius: 6,
-          fill: new ol.style.Fill({
+          fill: new Fill({
             color: '#3399CC'
           }),
-          stroke: new ol.style.Stroke({
+          stroke: new Stroke({
             color: '#fff',
-            width: 2
+            width: 4
           })
         })
       }));
-      this.geolocLayer = new ol.layer.Vector({
-          map: this.map,
-          source: new ol.source.Vector({
-            features: [this.positionFeature]
+
+      this.mapCrosshair = new Feature({});
+      this.mapCrosshair.setStyle(new Style({
+          image: new RegularShape({
+            fill: new Fill({
+                color: 'blue'
+            }),
+            //stroke: new Stroke({color: 'blue', width: 2}),
+            points: 4,
+            radius1: 15,
+            radius2: 1,
+            angle: 0
           })
-      })*/
+        }));
+
+
+      this.geolocLayer = new LayerVector({
+          map: this.map,
+          source: new SourceVector({
+            features: [this.positionFeature, this.mapCrosshair]   
+          })
+      });
+
+      this.mapCrosshair.setGeometry(new Point(this.map.getView().getCenter()));
+      let that = this; 
+      this.map.getView().on('change:center', function(){ 
+          that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
+      });
+      /*this.map.on('pointermove', function(){ 
+          that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
+      });*/
 
   	}
 
@@ -121,6 +147,7 @@ export class ViewMapPage {
   getCurrentPosition(){
     this.geolocation.getCurrentPosition().then((resp) => {
       this.currentLocation = [resp.coords.longitude, resp.coords.latitude];
+      this.positionFeature.setGeometry(new Point(this.currentLocation));
       this.map.getView().setCenter(this.currentLocation);
       if (this.map.getView().getZoom() < this.defaultGeolocZoom){
         this.map.getView().setZoom(this.defaultGeolocZoom);

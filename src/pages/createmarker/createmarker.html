@@ -71,7 +71,13 @@
               Orientación
             </ion-card-header>
               <ion-card-content>
-                {{orientation}}
+                        <ion-row> 
+                          <ion-col>
+                            <div><button ion-button block round [color]="savedOrientation ? 'secondary' : 'warning'" (click)="toogleOrientationSubsctription();" type="button">
+                {{orientation | number:0 }}º
+              </button></div>
+                          </ion-col>
+                        </ion-row>
               </ion-card-content>
           </ion-card>
 
@@ -81,7 +87,7 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button color="secondary" icon-right block (click)="takePicture();">
+              <button ion-button [color]="base64Image ? 'secondary' : 'warning'" icon-right round block (click)="takePicture();">
                 Tomar Foto
                 <ion-icon name="camera">
 
@@ -98,7 +104,7 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button color="secondary" icon-right block (click)="captureAudio();">
+              <button ion-button [color]="mediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();">
                 Grabar audio
                 <ion-icon name="mic">
 

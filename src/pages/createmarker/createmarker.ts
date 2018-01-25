@@ -27,20 +27,37 @@ export class CreateMarkerPage {
 	data_consensus:number;
 	base64Image : string;
 	orientation:number;
+	orientationSubscription:any;
+	savedOrientation:boolean;
 	mediaFiles = [];
 	markerLocation:any;
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media) {
 			this.markerLocation = navParams.get('location'); 
-			console.log(this.markerLocation);
-			this.deviceOrientation.watchHeading().subscribe(
+			this.startOrientationSubscription();
+	}
+
+	startOrientationSubscription(){
+		this.orientationSubscription = this.deviceOrientation.watchHeading().subscribe(
 			  (data: DeviceOrientationCompassHeading) => {
 			  		this.orientation = data.magneticHeading;
 		  		}
 			);
+		this.savedOrientation = false;
+	}
 
+	stopOrientationSubsctription(){
+		this.orientationSubscription.unsubscribe();
+		this.savedOrientation = true;
+	}
 
-	}	
+	toogleOrientationSubsctription(){
+		if (this.savedOrientation){
+			this.startOrientationSubscription();
+		} else {
+			this.stopOrientationSubsctription();
+		}
+	}
 
 
 	ionViewDidLoad() {
