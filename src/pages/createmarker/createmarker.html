@@ -32,6 +32,13 @@
                 </ion-select>
                 </ion-item>
                 <ion-item>
+                <ion-label>Consenso</ion-label>
+                <ion-select [(ngModel)]="data_consensus" name="data_consensus" interface="popover">
+                  <ion-option value="1">Si</ion-option>
+                  <ion-option value="0">No</ion-option>
+                </ion-select>
+                </ion-item>
+                <ion-item>
                 <ion-label>Ubicación</ion-label>
                 <ion-select [(ngModel)]="point_ubication" name="point_ubication" interface="popover">
                   <ion-option value="left">Izquierda</ion-option>
@@ -53,13 +60,6 @@
                   <ion-option value="1">Entre 20% y 65%</ion-option>
                   <ion-option value="2">Mas del 65%</ion-option>
                   <ion-option value="-1">S/D</ion-option>
-                </ion-select>
-                </ion-item>
-                 <ion-item>
-                <ion-label>Consenso</ion-label>
-                <ion-select [(ngModel)]="data_consensus" name="data_consensus" interface="popover">
-                  <ion-option value="1">Si</ion-option>
-                  <ion-option value="0">No</ion-option>
                 </ion-select>
                 </ion-item>
               </ion-card-content>
