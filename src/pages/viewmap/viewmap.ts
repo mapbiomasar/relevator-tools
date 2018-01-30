@@ -39,7 +39,7 @@ export class ViewMapPage {
   mapCrosshair:any;
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, private geolocation: Geolocation) {
-    this.defaultGeolocZoom = 10;
+    this.defaultGeolocZoom = 15;
 	}
 
 

@@ -21,8 +21,8 @@ export class HomePage {
 		    this.numitems = 3;
 		    for (let i = 1; i < this.numitems; i++) {
 		      this.items.push({
-		        title: 'Mapa ' + i,
-		        note: 'Este es el detalle breve del mapa #' + i,
+		        title: 'Salida a campo' + i,
+		        note: 'Test salida a campo #' + i,
 		        icon: 'map'
 		      });
 		    }

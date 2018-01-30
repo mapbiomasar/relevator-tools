@@ -25,14 +25,19 @@ export class CreateMarkerPage {
 	height_overpass:number;
 	coverage_percentage:number;
 	data_consensus:number;
-	base64Image : string;
 	orientation:number;
 	orientationSubscription:any;
 	savedOrientation:boolean;
-	mediaFiles = [];
 	markerLocation:any;
 
+	imageFiles = [];
+	mediaFiles = [];
+	maxImagesNumber:number;
+	maxAudiosNumber:number;
+
 	constructor(public navCtrl: NavController, public navParams: NavParams, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media) {
+			this.maxImagesNumber = 3; // In the future, load from config, global.
+			this.maxAudiosNumber = 1;
 			this.markerLocation = navParams.get('location'); 
 			this.startOrientationSubscription();
 	}
@@ -69,17 +74,28 @@ export class CreateMarkerPage {
 
 	takePicture(){
 		const options: CameraOptions = {
-		  quality: 100,
+		  quality: 70,
 		  destinationType: this.camera.DestinationType.FILE_URI,
 		  encodingType: this.camera.EncodingType.JPEG,
-		  mediaType: this.camera.MediaType.PICTURE
+		  mediaType: this.camera.MediaType.PICTURE,
+		  targetWidth: 300, 
+		  targetHeight: 300,
+		  saveToPhotoAlbum: false
 		}
 
 		this.camera.getPicture(options).then((imageData) => {
-			this.base64Image = imageData;
+			this.imageFiles.push(imageData);
 			}, (err) => {
 			console.log(err);
 		});
+	}
+
+	deletePicture(index){
+		this.imageFiles.splice(index, 1);
+	}
+
+	deleteAudio(index){
+		this.mediaFiles.splice(index, 1);
 	}
 
 	captureAudio() {

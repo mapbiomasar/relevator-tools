@@ -87,24 +87,34 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button [color]="base64Image ? 'secondary' : 'warning'" icon-right round block (click)="takePicture();">
+              <button ion-button [color]="imageFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="takePicture();" [disabled]="imageFiles.length >= maxImagesNumber">
                 Tomar Foto
                 <ion-icon name="camera">
 
                 </ion-icon>
               </button>
-
-              <img src="{{base64Image}}" alt="" class="image_container" />
+              <ion-list>
+                <ion-card  *ngFor="let imagepath of imageFiles; let i = index">
+                  <img src="{{imagepath}}" alt="" class="image_container" />
+                  <ion-row>
+                    <ion-col>
+                    <button ion-button color="danger" clear small icon-start (click)="deletePicture(i)"><ion-icon name='trash'></ion-icon>
+                      Eliminar
+                    </button>
+                  </ion-col>
+                  </ion-row>
+                </ion-card>
+              </ion-list>
             </ion-card-content>
           </ion-card>
          
           <ion-card>
             <ion-card-header>
-              Audio
+              Nota de voz
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button [color]="mediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();">
+              <button ion-button [color]="mediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();"  [disabled]="mediaFiles.length >= maxAudiosNumber">
                 Grabar audio
                 <ion-icon name="mic">
 
@@ -112,10 +122,21 @@
               </button>
 
             <ion-list>
-              <ion-item *ngFor="let file of mediaFiles" tappable (click)="play(file)" text-wrap>
-                {{ file.name }}
-                <p>{{ file.size / 1000 / 1000 | number }} MB</p>
-              </ion-item>
+              <ion-card  *ngFor="let file of mediaFiles; let j = index">
+                  <ion-item tappable text-wrap>
+                    <ion-card-content (click)="play(file)" >
+                      {{ file.name }}
+                      <p>{{ file.size / 1000 / 1000 | number }} MB</p>
+                    </ion-card-content>
+                      <ion-row>
+                        <ion-col>
+                          <button ion-button color="danger" clear small icon-start (click)="deleteAudio(j)"><ion-icon name='trash'></ion-icon>
+                              Eliminar
+                          </button>
+                        </ion-col>
+                      </ion-row>
+                  </ion-item>
+              </ion-card>
             </ion-list>
 
             </ion-card-content>
