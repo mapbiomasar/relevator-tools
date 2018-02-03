@@ -11,6 +11,7 @@ import { DeviceOrientation} from '@ionic-native/device-orientation';
 import { MediaCapture } from '@ionic-native/media-capture';
 import { Media } from '@ionic-native/media';
 import { File } from '@ionic-native/file';
+import { Toast } from '@ionic-native/toast';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -23,6 +24,8 @@ import { CreateMarkerPage } from '../pages/createmarker/createmarker';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { UtilsProvider } from '../providers/utils/utils';
+import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
 
 @NgModule({
   declarations: [
@@ -60,7 +63,11 @@ import { SplashScreen } from '@ionic-native/splash-screen';
     DeviceOrientation,
     MediaCapture,
     Media,
-    File
+    File,
+    Toast,
+    UtilsProvider,
+    MediafilesProvider,
+    MediafilesProvider,
   ]
 })
 export class AppModule {}

@@ -1,26 +1,28 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, Platform, ActionSheetController, AlertController} from 'ionic-angular';
+import { Toast } from '@ionic-native/toast';
+import { getRepository, Repository } from 'typeorm';
+import { UtilsProvider } from '../../providers/utils/utils';
 
+import {HomePage} from '../home/home';
+
+import {Map} from "../../entities/map";
 
 @Component({
   selector: 'page-detailmap',
   templateUrl: 'detailmap.html'
 })
 export class DetailMapPage {
-	items: Array<{title: string, note: string, icon: string}>;
-	numitems: number;
+	mapEntity: Map;
+  mapRepository: any;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController) {
-		  this.items = [];
-		    this.numitems = 3;
-		    for (let i = 1; i < this.numitems; i++) {
-		      this.items.push({
-		        title: 'Mapa ' + i,
-		        note: 'Este es el detalle breve del mapa #' + i,
-		        icon: 'map'
-		      });
-		    }
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider) {
+      this.mapEntity = navParams.get('map');
 	}
+
+  ionViewDidLoad() {
+      this.mapRepository = getRepository('map') as Repository<Map>;
+  }
 
 
 openMenu() {
@@ -33,7 +35,7 @@ openMenu() {
           role: 'destructive',
           icon: !this.platform.is('ios') ? 'trash' : null,
           handler: () => {
-            console.log("delete");
+              this.presentAlertDelete();
           }
         },
       ]
@@ -41,26 +43,41 @@ openMenu() {
     actionSheet.present();
   }
 
-showConfirm() {
-    let confirm = this.alertCtrl.create({
-      title: 'Use this lightsaber?',
-      message: 'Do you agree to use this lightsaber to do good across the intergalactic galaxy?',
-      buttons: [
-        {
-          text: 'Disagree',
-          handler: () => {
-            console.log('Disagree clicked');
-          }
-        },
-        {
-          text: 'Agree',
-          handler: () => {
-            console.log('Agree clicked');
-          }
+
+
+getMapDate(){
+  return this.utils.getDateFromUNIX(this.mapEntity.creation_date);
+}
+
+presentAlertDelete() {
+    var self = this;
+    let alert = this.alertCtrl.create({
+    title: 'Eliminar mapa',
+    message: '¿Está seguro de que desea eliminar el mapa?',
+    buttons: [
+      {
+        text: 'Cancelar',
+        role: 'cancel',
+        handler: () => {
+          
         }
-      ]
-    });
-    confirm.present();
-  }
+      },
+      {
+        text: 'Eliminar',
+        handler: () => {
+          this.mapRepository.remove(this.mapEntity).then(entity => {
+            self.toast.showShortTop("Mapa eliminado con éxito").subscribe(
+              entity => {
+                self.navCtrl.push(HomePage, {
+              });
+              }   
+            );
+          });
+        }
+      }
+    ]
+  });
+  alert.present();
+}
 
 }

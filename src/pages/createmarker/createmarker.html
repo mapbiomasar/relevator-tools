@@ -95,7 +95,8 @@
               </button>
               <ion-list>
                 <ion-card  *ngFor="let imagepath of imageFiles; let i = index">
-                  <img src="{{imagepath}}" alt="" class="image_container" />
+                  <img src="{{pathForMedia('image', imagepath)}}" alt="" class="image_container" />
+                  {{pathForMedia('image', imagepath)}}
                   <ion-row>
                     <ion-col>
                     <button ion-button color="danger" clear small icon-start (click)="deletePicture(i)"><ion-icon name='trash'></ion-icon>
@@ -114,7 +115,7 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button [color]="mediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();"  [disabled]="mediaFiles.length >= maxAudiosNumber">
+              <button ion-button [color]="audioFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();"  [disabled]="audioFiles.length >= maxAudiosNumber">
                 Grabar audio
                 <ion-icon name="mic">
 
@@ -122,7 +123,7 @@
               </button>
 
             <ion-list>
-              <ion-card  *ngFor="let file of mediaFiles; let j = index">
+              <ion-card  *ngFor="let file of audioFiles; let j = index">
                   <ion-item tappable text-wrap>
                     <ion-card-content (click)="play(file)" >
                       {{ file.name }}
@@ -154,13 +155,13 @@
                 <strong>Fecha</strong>   26/01/2018
               </ion-item>
               <ion-item>
-                <strong>Lat/Lng</strong>   {{markerLocation}}
+                <strong>Lat/Lng</strong>   {{marker.lat}},{{marker.lng}}
               </ion-item>
               </ion-card-content>
           </ion-card>
     
 
-            <button ion-button type="submit" block>Guardar marcador</button>
+            <button ion-button type="submit" (click)="saveForm()" block>Guardar marcador</button>
           
         </ion-list>
       </ion-col>

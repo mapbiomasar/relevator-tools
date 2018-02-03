@@ -17,32 +17,31 @@
  <ion-item >
         Nombre
         <ion-note item-end>
-          Mapa #1
+          {{mapEntity.name}}
         </ion-note>
 </ion-item>
  <ion-item >
         Detalle
         <ion-note item-end>
-          Detalle mapa #1
+          {{mapEntity.description}}
         </ion-note>
 </ion-item>
  <ion-item >
         Fecha creación
         <ion-note item-end>
-          01/01/2018
+          {{ getMapDate() }}
         </ion-note>
 </ion-item>
-
-
+<!--
 <ion-list>
   <ion-list-header>
     Lista de Marcadores
   </ion-list-header>
   <ion-item-sliding *ngFor="let item of items" >
     <ion-item>
-      <!--<ion-avatar item-start>
+      <ion-avatar item-start>
         <img src="assets/imgs/marker.png">
-      </ion-avatar>-->
+      </ion-avatar>
       <h2>Marcador </h2>
     </ion-item>
     <ion-item-options side="right">
@@ -63,7 +62,7 @@
     </ion-item-options>
   </ion-item-sliding>
 </ion-list>
-
+-->
 
 
 </ion-content>

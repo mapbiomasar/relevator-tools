@@ -10,22 +10,21 @@
 
 
 <ion-content padding>
+<form (ngSubmit)="saveMap()">
 <ion-list>
 
   <ion-item>
     <ion-label stacked>Nombre del mapa</ion-label>
-    <ion-input type="text"></ion-input>
+    <ion-input [(ngModel)]="map.name" name="name" type="text"></ion-input>
   </ion-item>
 
   <ion-item>
     <ion-label stacked>Descripción</ion-label>
-    <ion-input type="text"></ion-input>
+    <ion-input [(ngModel)]="map.description" name="description" type="text"></ion-input>
   </ion-item>
 
 </ion-list>
-
-<div padding>
-    <button ion-button color="primary" block (click)="createMap()">Crear mapa</button>
-  </div>
+<button ion-button color="primary" type="submit" block>Crear mapa</button>
+</form>
 
 </ion-content>

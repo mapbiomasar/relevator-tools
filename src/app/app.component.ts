@@ -2,6 +2,13 @@ import { Component, ViewChild } from '@angular/core';
 import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
+
+import { createConnection } from 'typeorm'
+import {Map} from "../entities/map";
+import {Survey} from "../entities/survey";
+import {Marker} from "../entities/marker";
+import {MediaFileEntity} from "../entities/mediafileentity";
 
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
@@ -15,11 +22,11 @@ const MEDIA_FILES_KEY = 'mediaFiles';
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
 
-  rootPage: any = HomePage;
+  rootPage: any;
 
   pages: Array<{title: string, component: any}>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private storage: Storage) {
+  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private storage: Storage, private mediafilesProvider: MediafilesProvider) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -31,12 +38,28 @@ export class MyApp {
   }
 
   initializeApp() {
-    this.platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
+
+    this.platform.ready().then(async () => {
+
       this.statusBar.styleDefault();
       //this.splashScreen.hide();
-      this.storage.set(MEDIA_FILES_KEY, JSON.stringify([]))
+
+      await createConnection({
+        type: 'cordova',
+        database: 'mapbiomas_db',
+        location: 'default',
+        logging: ['error', 'query', 'schema'],
+        //synchronize: true,
+        entities: [
+          Map,
+          Survey,
+          Marker,
+          MediaFileEntity
+        ]
+      });
+      
+      this.mediafilesProvider.checkMediaDirs();
+      this.rootPage = HomePage;
 
     });
   }

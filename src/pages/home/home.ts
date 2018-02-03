@@ -1,46 +1,52 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, Platform, ActionSheetController} from 'ionic-angular';
+import { getRepository, Repository } from 'typeorm';
 
 import {CreateMapPage} from '../createmap/createmap';
 import {ViewMapPage} from '../viewmap/viewmap';
+
+import {Map} from "../../entities/map";
+import {Marker} from "../../entities/marker";
+import {MediaFileEntity} from "../../entities/mediafileentity";
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
-	  selectedItem: any;
-	  icons: string[];
-	  items: Array<{title: string, note: string, icon: string}>;
-	  numitems: number;
+    maps:any;
+    mapRepository: any;
+
 
 	  constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController) {
-	  		this.selectedItem = navParams.get('item');
-
-	  	    this.items = [];
-		    this.numitems = 3;
-		    for (let i = 1; i < this.numitems; i++) {
-		      this.items.push({
-		        title: 'Salida a campo' + i,
-		        note: 'Test salida a campo #' + i,
-		        icon: 'map'
-		      });
-		    }
 
 
 	  }
 
-  	itemTapped(event, item) {
-  	    // That's right, we're pushing to ourselves!
-  	    this.navCtrl.push(HomePage, {
-  	      item: item
-        });
+    ionViewDidLoad() {
+      this.loadHome();
     }
 
 
-    viewMap(){
+    async loadHome(){
+      this.mapRepository = getRepository('map') as Repository<Map>;
+      this.maps = await this.mapRepository.find();
+
+
+      let markersRep = getRepository('marker') as Repository<Marker>;
+      let markers = await markersRep.find();
+      console.log(markers);
+
+      let mRep = getRepository('mediafile') as Repository<MediaFileEntity>;
+      mRep.clear();
+      let mfile = await mRep.find();
+      console.log(mfile);
+    }
+
+
+    viewMap(event, item){
         this.navCtrl.push(ViewMapPage, {
-          
+            map: item
         });
     }
 

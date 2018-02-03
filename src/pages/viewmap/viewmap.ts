@@ -4,7 +4,7 @@ import { NavController, NavParams, Platform, ActionSheetController} from 'ionic-
 import { Geolocation } from '@ionic-native/geolocation';
 
 //import 'ol/ol.css';
-import Map from 'ol/map';
+import OLMap from 'ol/map';
 import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
 import XYZ from 'ol/source/xyz';
@@ -22,6 +22,8 @@ import Point from 'ol/geom/point';
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
 
+import {Map} from "../../entities/map";
+
 @Component({
   selector: 'page-viewmap',
   templateUrl: 'viewmap.html'
@@ -30,6 +32,7 @@ export class ViewMapPage {
 
 	@ViewChild('map') mapElement: ElementRef;
   map: any;
+  mapEntity:Map;
   scaleLineControl:any;
   mousePosition:any;
   positionFeature:any;
@@ -39,6 +42,7 @@ export class ViewMapPage {
   mapCrosshair:any;
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, private geolocation: Geolocation) {
+    this.mapEntity = navParams.get('map');
     this.defaultGeolocZoom = 15;
 	}
 
@@ -46,8 +50,7 @@ export class ViewMapPage {
 	ionViewDidLoad() {
 	    // start map,
 	    let arg = [-60.0953938, -34.8902802]
-
-      this.map = new Map({
+      this.map = new OLMap({
         target: 'map',
         layers: [
           new TileLayer({
@@ -116,17 +119,23 @@ export class ViewMapPage {
 
   	}
 
+
+  ionViewDidEnter(){
+    this.map.updateSize();
+    this.map.render();
+  }
+
   openMenu() {
       let actionSheet = this.actionsheetCtrl.create({
       title: 'Mapa',
       cssClass: 'action-sheets-basic-page',
       buttons: [
         {
-          text: 'Información del mapa',
+          text: 'Ver detalles del mapa',
           icon: !this.platform.is('ios') ? 'information-circle' : null,
           handler: () => {
               this.navCtrl.push(DetailMapPage, {
-                  
+                    map: this.mapEntity
                 });
           }
         }
@@ -139,6 +148,7 @@ export class ViewMapPage {
   addNewMarker(){
     console.log(this.map.getView().getCenter());
     this.navCtrl.push(CreateMarkerPage,  {
+        map: this.mapEntity,
         location: this.map.getView().getCenter()
     });
   }
