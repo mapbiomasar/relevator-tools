@@ -5,8 +5,10 @@ import { getRepository, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
 
 import {HomePage} from '../home/home';
+import {CreateMarkerPage} from '../createmarker/createmarker';
 
 import {Map} from "../../entities/map";
+import {Marker} from "../../entities/marker";
 
 @Component({
   selector: 'page-detailmap',
@@ -16,14 +18,33 @@ export class DetailMapPage {
 	mapEntity: Map;
   mapRepository: any;
 
+  markers:any;
+
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider) {
       this.mapEntity = navParams.get('map');
 	}
 
   ionViewDidLoad() {
       this.mapRepository = getRepository('map') as Repository<Map>;
+      this.loadMarkers();
+      
   }
 
+
+async loadMarkers(){
+  let markerRep = getRepository('marker') as Repository<Marker>;
+  this.markers = await markerRep.find({ relations: ["mediaFiles"] });
+}
+
+viewMarker(event, marker){
+  console.log(marker);
+  var self = this;
+  this.navCtrl.push(CreateMarkerPage, {
+      map: self.mapEntity,
+      location: [marker.lat, marker.lng],
+      marker: marker
+  });
+}
 
 openMenu() {
       let actionSheet = this.actionsheetCtrl.create({

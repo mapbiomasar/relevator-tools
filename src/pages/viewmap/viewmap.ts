@@ -113,9 +113,6 @@ export class ViewMapPage {
       this.map.getView().on('change:center', function(){ 
           that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
       });
-      /*this.map.on('pointermove', function(){ 
-          that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
-      });*/
 
   	}
 
@@ -146,10 +143,10 @@ export class ViewMapPage {
 
 
   addNewMarker(){
-    console.log(this.map.getView().getCenter());
     this.navCtrl.push(CreateMarkerPage,  {
         map: this.mapEntity,
-        location: this.map.getView().getCenter()
+        location: this.map.getView().getCenter(),
+        marker: null
     });
   }
 

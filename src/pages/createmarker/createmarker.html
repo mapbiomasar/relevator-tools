@@ -5,7 +5,11 @@
       <ion-icon name="menu"></ion-icon>
     </button>
     <ion-title>Nuevo marcador</ion-title>
-    
+    <ion-buttons *ngIf="isEditingContext()" end>
+      <button ion-button icon-only color="royal" (click)="openMenu()">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
@@ -23,7 +27,7 @@
             <ion-card-content>
               <ion-item>
                 <ion-label>Categoría</ion-label>
-                <ion-select [(ngModel)]="category" name="category" interface="popover">
+                <ion-select [(ngModel)]="markerLocalAttributes.category" name="category" interface="popover">
                   <ion-option value="category1">Categoría 1</ion-option>
                   <ion-option value="category2">Categoría 2</ion-option>
                   <ion-option value="category3">Categoría 3</ion-option>
@@ -33,21 +37,21 @@
                 </ion-item>
                 <ion-item>
                 <ion-label>Consenso</ion-label>
-                <ion-select [(ngModel)]="data_consensus" name="data_consensus" interface="popover">
+                <ion-select [(ngModel)]="markerLocalAttributes.data_consensus" name="data_consensus" interface="popover">
                   <ion-option value="1">Si</ion-option>
                   <ion-option value="0">No</ion-option>
                 </ion-select>
                 </ion-item>
                 <ion-item>
                 <ion-label>Ubicación</ion-label>
-                <ion-select [(ngModel)]="point_ubication" name="point_ubication" interface="popover">
+                <ion-select [(ngModel)]="markerLocalAttributes.point_ubication" name="point_ubication" interface="popover">
                   <ion-option value="left">Izquierda</ion-option>
                   <ion-option value="right">Derecha</ion-option>
                 </ion-select>
                 </ion-item>
                 <ion-item>
                 <ion-label>¿Altura más de 3mts?</ion-label>
-                <ion-select [(ngModel)]="height_overpass" name="height_overpass" interface="popover">
+                <ion-select [(ngModel)]="markerLocalAttributes.height_overpass" name="height_overpass" interface="popover">
                   <ion-option value="1">Si</ion-option>
                   <ion-option value="0">No</ion-option>
                   <ion-option value="-1">S/D</ion-option>
@@ -55,7 +59,7 @@
                 </ion-item>
                 <ion-item>
                 <ion-label>Cobertura</ion-label>
-                <ion-select [(ngModel)]="coverage_percentage" name="coverage_percentage" interface="popover">
+                <ion-select [(ngModel)]="markerLocalAttributes.coverage_percentage" name="coverage_percentage" interface="popover">
                   <ion-option value="0">Menos del 20%</ion-option>
                   <ion-option value="1">Entre 20% y 65%</ion-option>
                   <ion-option value="2">Mas del 65%</ion-option>
@@ -74,7 +78,7 @@
                         <ion-row> 
                           <ion-col>
                             <div><button ion-button block round [color]="savedOrientation ? 'secondary' : 'warning'" (click)="toogleOrientationSubsctription();" type="button">
-                {{orientation | number:0 }}º
+                {{markerLocalAttributes.orientation | number:0 }}º
               </button></div>
                           </ion-col>
                         </ion-row>
@@ -87,19 +91,18 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button [color]="imageFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="takePicture();" [disabled]="imageFiles.length >= maxImagesNumber">
+              <button ion-button [color]="imageMediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="takePicture();" [disabled]="imageMediaFiles.length >= maxImagesNumber">
                 Tomar Foto
                 <ion-icon name="camera">
 
                 </ion-icon>
               </button>
               <ion-list>
-                <ion-card  *ngFor="let imagepath of imageFiles; let i = index">
-                  <img src="{{pathForMedia('image', imagepath)}}" alt="" class="image_container" />
-                  {{pathForMedia('image', imagepath)}}
+                <ion-card  *ngFor="let imgMediaFile of imageMediaFiles; let i = index">
+                  <img src="{{getPathForMedia('image', imgMediaFile.path)}}" alt="" class="image_container" />
                   <ion-row>
                     <ion-col>
-                    <button ion-button color="danger" clear small icon-start (click)="deletePicture(i)"><ion-icon name='trash'></ion-icon>
+                    <button ion-button color="danger" clear small icon-start (click)="deleteMediaEntity(imgMediaFile, i)"><ion-icon name='trash'></ion-icon>
                       Eliminar
                     </button>
                   </ion-col>
@@ -115,7 +118,7 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button [color]="audioFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();"  [disabled]="audioFiles.length >= maxAudiosNumber">
+              <button ion-button [color]="audioMediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();"  [disabled]="audioMediaFiles.length >= maxAudiosNumber">
                 Grabar audio
                 <ion-icon name="mic">
 
@@ -123,15 +126,15 @@
               </button>
 
             <ion-list>
-              <ion-card  *ngFor="let file of audioFiles; let j = index">
+              <ion-card  *ngFor="let audioMediaFile of audioMediaFiles; let j = index">
                   <ion-item tappable text-wrap>
-                    <ion-card-content (click)="play(file)" >
-                      {{ file.name }}
+                    <ion-card-content (click)="play(audioMediaFile)" >
+                      {{ audioMediaFile.path }}
                       <p>{{ file.size / 1000 / 1000 | number }} MB</p>
                     </ion-card-content>
                       <ion-row>
                         <ion-col>
-                          <button ion-button color="danger" clear small icon-start (click)="deleteAudio(j)"><ion-icon name='trash'></ion-icon>
+                          <button ion-button color="danger" clear small icon-start (click)="deleteMediaEntity(audioMediaFile, j)"><ion-icon name='trash'></ion-icon>
                               Eliminar
                           </button>
                         </ion-col>

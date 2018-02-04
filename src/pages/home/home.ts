@@ -32,15 +32,21 @@ export class HomePage {
       this.mapRepository = getRepository('map') as Repository<Map>;
       this.maps = await this.mapRepository.find();
 
-
+      
       let markersRep = getRepository('marker') as Repository<Marker>;
+      let ma = await markersRep.find();
+      console.log(ma);
+      markersRep.clear();
       let markers = await markersRep.find();
       console.log(markers);
 
-      let mRep = getRepository('mediafile') as Repository<MediaFileEntity>;
-      mRep.clear();
-      let mfile = await mRep.find();
-      console.log(mfile);
+      let mediaRep = getRepository('mediafile') as Repository<MediaFileEntity>;
+      let m = await mediaRep.find();
+      console.log(m);
+      mediaRep.clear();
+      let media = await mediaRep.find();
+      console.log(media);
+      
     }
 
 

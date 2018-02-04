@@ -11,16 +11,16 @@ import { File } from '@ionic-native/file';
 @Injectable()
 export class MediafilesProvider {
 
-  imageDir:string = "image";
-  audioDir:string = "audio";
+  imageMediaType:string = "image";
+  audioMediaType:string = "audio";
 
   constructor(private file: File) {
   }
 
 
 	public checkMediaDirs(){
-		this.checkMediaDirectory(this.imageDir);
-		this.checkMediaDirectory(this.audioDir);
+		this.checkMediaDirectory(this.imageMediaType);
+		this.checkMediaDirectory(this.audioMediaType);
 	}
 
 
@@ -43,13 +43,19 @@ export class MediafilesProvider {
 		})
 	}
 
+	// Remove media files
+	removeMediaFiles(mediaEntity){
+		console.log("removing file" + this.getMediaDir(mediaEntity.tipo) + ", " + mediaEntity.path);
+		this.file.removeFile(this.getMediaDir(mediaEntity.tipo), mediaEntity.path);
+	}
+
 
 	public getImageDir(){
-		return this.getMediaDir(this.imageDir);
+		return this.getMediaDir(this.imageMediaType);
 	}
 
 	public getAudioDir(){
-		return this.getMediaDir(this.audioDir);
+		return this.getMediaDir(this.audioMediaType);
 	}
 
 
@@ -72,5 +78,14 @@ export class MediafilesProvider {
 	  newFileName =  n + ".jpg";
 	  return newFileName;
 	}
+
+	public getImageMediaType(){
+		return this.imageMediaType;
+	}
+
+	public getAudioMediaType(){
+		return this.audioMediaType;
+	}
+
 
 }

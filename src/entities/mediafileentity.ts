@@ -10,7 +10,8 @@ export class MediaFileEntity {
     @ManyToOne(type => Marker, marker => marker.mediaFiles, {
         cascadeInsert: true,
         cascadeUpdate: true,
-        cascadeRemove: true
+        cascadeRemove: true,
+        onDelete: "CASCADE"
     })
     marker: Marker;
 

@@ -1,5 +1,5 @@
 import { Component} from '@angular/core';
-import { NavController, NavParams} from 'ionic-angular';
+import { NavController, NavParams,  Platform, ActionSheetController, AlertController} from 'ionic-angular';
 import { getRepository, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
 import { MediafilesProvider } from '../../providers/mediafiles/mediafiles';
@@ -29,68 +29,88 @@ const MEDIA_FILES_KEY = 'mediaFiles';
 })
 export class CreateMarkerPage {
 
-	category:string;
-	point_ubication:string;
-	height_overpass:number;
-	coverage_percentage:number;
-	data_consensus:number;
-	orientation:number;
-	orientationSubscription:any;
-	savedOrientation:boolean;
-	markerLocation:any;
+	markerRepository:any;
+	mediafilesRepository:any;
 
 	mapViewEntity:Map;
 	marker:Marker;
 
-	imageFiles = [];
-	audioFiles = [];
+	markerLocalAttributes:{};
 
-	imageDir = "image";
-	audioDir = "audio";
+	orientationSubscription:any;
+	savedOrientation:boolean;
 
-	maxImagesNumber:number;
-	maxAudiosNumber:number;
+	imageMediaFiles = [];
+	audioMediaFiles = [];
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider) {
+	maxImagesNumber:number = 3;
+	maxAudiosNumber:number = 1;
 
-			this.maxImagesNumber = 3; // In the future, load from config, global.
-			this.maxAudiosNumber = 1;
-
-			this.markerLocation = navParams.get('location'); 
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider) {
+			this.markerRepository = getRepository('marker') as Repository<Marker>;
+			this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
 			this.mapViewEntity = navParams.get('map');
-
-			this.marker = new Marker();
-			this.marker.lat = this.markerLocation[0];
-			this.marker.lng = this.markerLocation[1];
-			this.marker.mediaFiles = [];
-			this.populateMediaLists();
-			this.startOrientationSubscription();
+			this.marker = navParams.get('marker');
+			console.log(this.marker);
+			if (this.marker){
+				//this.populateMediaLists();
+				this.savedOrientation = true;
+				this.markerLocalAttributes = JSON.parse(this.marker.attributes);
+			} else {
+				this.marker = new Marker();
+				this.marker.lat = navParams.get('location')[0];
+				this.marker.lng = navParams.get('location')[1];
+				this.marker.mediaFiles = [];
+				this.savedOrientation = false;
+				this.markerLocalAttributes = {};
+			}
+			this.populateMediaLists(this.marker);
+			this.toogleOrientationSubsctription();
+			console.log(this.marker);
+			console.log(this.markerLocalAttributes);
 	}
 
 
+	// Estamos creando un marcador o editando uno existente?
+	private isEditingContext(){
+		if (this.markerRepository.hasId(this.marker)){
+			return true;
+		}
+		return false;
+	}
 
 
-	// Obtiene los mediaFiles del marker, 
-	//y segun sean audios o imagenes los agrega a su lista correspondiente
-	populateMediaLists(){
-
+	// Chequea los mediafiles del marker
+	// Si no tiene, inicializa el array
+	// Si tiene, los divide en dos listas de imagenes y audio
+	populateMediaLists(marker){
+		if (marker.mediaFiles){
+			var i;
+			for (i = 0; i < marker.mediaFiles.length; ++i) {
+    			console.log(marker.mediaFiles[i]);
+    			this.addMediaEntityToLocalList(marker.mediaFiles[i]);
+			}
+		} else {
+			marker.mediaFiles = [];
+		}
 	}
 
 	startOrientationSubscription(){
-		this.orientationSubscription = this.deviceOrientation.watchHeading().subscribe(
+		this.orientationSubscription = this.deviceOrientation.watchHeading({frequency: 300}).subscribe(
 			  (data: DeviceOrientationCompassHeading) => {
-			  		this.orientation = data.magneticHeading;
+			  		this.markerLocalAttributes["orientation"] = data.trueHeading; // trueHeading o magneticHeading (Canadá)? 
 		  		}
 			);
-		this.savedOrientation = false;
 	}
 
 	stopOrientationSubsctription(){
-		this.orientationSubscription.unsubscribe();
-		this.savedOrientation = true;
+		if (this.orientationSubscription){
+			this.orientationSubscription.unsubscribe();
+		}
 	}
 
 	toogleOrientationSubsctription(){
+		this.savedOrientation = !this.savedOrientation;
 		if (this.savedOrientation){
 			this.startOrientationSubscription();
 		} else {
@@ -100,9 +120,6 @@ export class CreateMarkerPage {
 
 
 	ionViewDidLoad() {
-	    this.storage.get(MEDIA_FILES_KEY).then(res => {
-	      this.audioFiles = JSON.parse(res) || [];
-    	})
     }
 
 
@@ -120,99 +137,154 @@ export class CreateMarkerPage {
 		this.camera.getPicture(options).then((imageData) => {
 			var currentName = imageData.substr(imageData.lastIndexOf('/') + 1);
       		var correctPath = imageData.substr(0, imageData.lastIndexOf('/') + 1);
-      		console.log(currentName);
-      		console.log(correctPath);
-			this.copyFileToLocalDir(correctPath, currentName, this.mediafilesProvider.createImageFileName(), this.imageDir);
+			this.copyFileToLocalDir(correctPath, currentName, this.mediafilesProvider.createImageFileName(), this.mediafilesProvider.getImageMediaType());
 			}, (err) => {
 			console.log(err);
 		});
 	}
 
+	captureAudio() {
+		this.mediaCapture.captureAudio().then(
+ 			(mediaFileArray: MediaFile[]) => {
+ 				console.log(mediaFileArray);
+ 				var mediaFile = mediaFileArray[0];
+ 				console.log(mediaFile);
+				var currentName = mediaFile.name;
+				var correctPath = mediaFile.fullPath.substr(0, mediaFile.fullPath.lastIndexOf('/') + 1);
+				this.copyFileToLocalDir(correctPath, currentName, currentName, this.mediafilesProvider.getAudioMediaType())
+ 			},
+ 			(err: CaptureError) => console.error(err)
+ 		);
+  	}
+
 	public getPathForMedia(mediaType, filePath){
 		return this.mediafilesProvider.getPathForMedia(mediaType, filePath);
 	}
 
-	public pathForImage(img) {
-	  if (img === null) {
-	    return '';
-	  } else {
-	    return this.file.externalDataDirectory + img;
-	  }
+	private addMediaEntityToLocalList(mediaEntity){
+		if (mediaEntity.tipo == this.mediafilesProvider.getImageMediaType()){
+	    	this.imageMediaFiles.push(mediaEntity);
+	    } else if (mediaEntity.tipo == this.mediafilesProvider.getAudioMediaType()){
+	    	this.audioMediaFiles.push(mediaEntity);
+	    }
 	}
 
 	// Copy the image to a local folder
 	private copyFileToLocalDir(namePath, currentName, newFileName, mediaType) {
 	  this.file.copyFile(namePath, currentName, this.mediafilesProvider.getMediaDir(mediaType), newFileName).then(success => {
-	    this.imageFiles.push(newFileName);
 	    let newMediaFile = new MediaFileEntity();
 	    newMediaFile.tipo = mediaType;
 	    newMediaFile.path = newFileName;
 	    newMediaFile.marker = this.marker;
 	    this.marker.mediaFiles.push(newMediaFile);
-	    console.log(this.marker);
-	    console.log(this.file.externalDataDirectory);
+	    this.addMediaEntityToLocalList(newMediaFile);
 	  }, error => {
 	    console.log(error);
 	  });
 	}
 
-	deletePicture(index){
-		this.imageFiles.splice(index, 1);
-	}
 
-	deleteAudio(index){
-		this.audioFiles.splice(index, 1);
-	}
-
-	captureAudio() {
-	    this.mediaCapture.captureAudio().then(audioPath => {
-	      console.log(audioPath);
-
-	      this.storeMediaFiles(audioPath);
-	    }, (err: CaptureError) => console.error(err));
-  	}
-
-  	storeMediaFiles(files) {
-	    /*this.storage.get(MEDIA_FILES_KEY).then(res => {
-	      if (res) {
-	        let arr = JSON.parse(res);
-	        arr = arr.concat(files);
-	        this.storage.set(MEDIA_FILES_KEY, JSON.stringify(arr));
-	      } else {
-	        this.storage.set(MEDIA_FILES_KEY, JSON.stringify(files))
-	      }
-	      this.mediaFiles = this.mediaFiles.concat(files);
-	    })*/
-  	}
-
-  	play(myFile) {
-	    if (myFile.name.indexOf('.wav') > -1 || myFile.name.indexOf('.amr') > -1) {
-	      const audioFile: MediaObject = this.media.create(myFile.localURL);
+  	play(audioMediaFile) {
+	    if (audioMediaFile.path.indexOf('.wav') > -1 || audioMediaFile.path.indexOf('.amr') > -1) {
+	      console.log("playing");
+	      console.log(this.getPathForMedia(this.mediafilesProvider.getAudioMediaType(), audioMediaFile.path));
+	      const audioFile: MediaObject = this.media.create(this.getPathForMedia(this.mediafilesProvider.getAudioMediaType(), audioMediaFile.path));
 	      audioFile.play();
 	    }
   	}
 
-  	constructMarkerAttributes(){
-  		var attributes = {};
-  		attributes['category'] = this.category;
-  		attributes['data_consensus'] = this.data_consensus;
-  		attributes['point_ubication'] = this.point_ubication;
-  		attributes['height_overpass'] = this.height_overpass;
-  		attributes['coverage_percentage'] = this.coverage_percentage;
-  		attributes['orientation'] = this.orientation;
-  		return attributes;
+
+  	private deleteAllMarkerMediaEntities(){
+  		var i;
+		for (i = 0; i < this.imageMediaFiles.length; ++i) {
+			this.deleteMediaEntity(this.imageMediaFiles[i], i);
+		}
+		for (i = 0; i < this.audioMediaFiles.length; ++i) {
+			this.deleteMediaEntity(this.audioMediaFiles[i], i);
+		}
   	}
 
 
+	deleteMediaEntity(mediaEntity, index){
+		if (mediaEntity.tipo == this.mediafilesProvider.getImageMediaType()){
+			this.imageMediaFiles.splice(index, 1);
+		} else if (mediaEntity.tipo == this.mediafilesProvider.getAudioMediaType()){
+			this.audioMediaFiles.splice(index, 1);
+		}
+		this.mediafilesProvider.removeMediaFiles(mediaEntity); // elimina archivos físicos
+		this.mediafilesRepository.remove(mediaEntity);
+		console.log(this.marker);
+		this.removeMarkerMediaEntity(mediaEntity);
+		console.log(this.marker);
+	}
+
+	removeMarkerMediaEntity(mediaEntity){
+		var removeIndex = this.marker.mediaFiles.map(function(item) { return item.id; }).indexOf(mediaEntity.id);
+		console.log(removeIndex);
+		this.marker.mediaFiles.splice(removeIndex, 1);
+	}
+
+
+  	openMenu() {
+		let actionSheet = this.actionsheetCtrl.create({
+		title: 'Marcador',
+		cssClass: 'action-sheets-basic-page',
+		buttons: [
+		{
+		  text: 'Eliminar marcador',
+		  role: 'destructive',
+		  icon: !this.platform.is('ios') ? 'trash' : null,
+		  handler: () => {
+		      this.presentAlertDelete();
+		  }
+		},
+		]
+		});
+		actionSheet.present();
+  	}
+
+  	presentAlertDelete() {
+  		if (this.isEditingContext()){ // Solo permitir eliminar si se está editando
+			var self = this;
+			let alert = this.alertCtrl.create({
+			title: 'Eliminar marcador',
+			message: '¿Está seguro de que desea eliminar el marcador?. Esta acción eliminará tanto al marcador como a lor archivos de imagen y sonido asociados',
+			buttons: [
+			  {
+			    text: 'Cancelar',
+			    role: 'cancel',
+			    handler: () => {
+			      
+			    }
+			  },
+			  {
+			    text: 'Eliminar',
+			    handler: () => {
+			      this.deleteAllMarkerMediaEntities();
+			      this.markerRepository.remove(this.marker).then(entity => {
+			        self.toast.showShortTop("Marcador eliminado con éxito").subscribe(
+			          entity => {
+			             self.navCtrl.popToRoot();
+			          }   
+			        );
+			      });
+			    }
+			  }
+			]
+			});
+			alert.present();
+		}
+	}
+
+
+
   	saveMarker(){
-	    const markerRepository = getRepository('marker') as Repository<Marker>;
 	    var self  = this;
-	    markerRepository.save(this.marker)
+	    this.markerRepository.save(this.marker)
 	    .then(function(savedMarker) {
 	    	console.log(savedMarker);
 	    	self.toast.showShortTop("Marcador creado con éxito").subscribe(
 	    		toast => {
-	    			console.log(self.navCtrl.getViews());
 				    self.navCtrl.popToRoot();
 				  }
 	    	);
@@ -222,11 +294,13 @@ export class CreateMarkerPage {
 
 
 	saveForm(){
-	 	this.marker.attributes = JSON.stringify(this.constructMarkerAttributes());
+		console.log(this.markerLocalAttributes);
+	 	this.marker.attributes = JSON.stringify(this.markerLocalAttributes);
 	 	this.marker.id_survey = 1;
 	 	this.marker.creation_date = this.utils.getNowUnixTimestamp();
 	 	console.log(this.marker);
 	 	this.saveMarker();
 	}
+
 
 }
