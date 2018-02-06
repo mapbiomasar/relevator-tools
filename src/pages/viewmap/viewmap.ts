@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { NavController, NavParams, Platform, ActionSheetController} from 'ionic-angular';
-
+import { NavController, NavParams, Platform, ActionSheetController, AlertController} from 'ionic-angular';
+import { getRepository, getManager, Repository } from 'typeorm';
 import { Geolocation } from '@ionic-native/geolocation';
 
 //import 'ol/ol.css';
@@ -13,16 +13,21 @@ import Feature from 'ol/feature';
 import Fill from 'ol/style/fill';
 import Circle from 'ol/style/circle';
 import Stroke from 'ol/style/stroke';
+import Text from 'ol/style/text';
 import RegularShape from 'ol/style/regularshape';
 import Style from 'ol/style/style';
 import LayerVector from 'ol/layer/vector';
 import SourceVector  from 'ol/source/vector';
+import Cluster  from 'ol/source/cluster';
 import Point from 'ol/geom/point';
 
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
 
 import {Map} from "../../entities/map";
+import {Survey} from "../../entities/survey";
+import {Marker} from "../../entities/marker";
+import {MediaFileEntity} from "../../entities/mediafileentity";
 
 @Component({
   selector: 'page-viewmap',
@@ -33,6 +38,8 @@ export class ViewMapPage {
 	@ViewChild('map') mapElement: ElementRef;
   map: any;
   mapEntity:Map;
+  surveySelected:Survey;
+
   scaleLineControl:any;
   mousePosition:any;
   positionFeature:any;
@@ -41,13 +48,25 @@ export class ViewMapPage {
   currentLocation:any;
   mapCrosshair:any;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, private geolocation: Geolocation) {
+  markersRepository:any;
+  mediaRepository:any;
+  mapMarkers:Marker[];
+
+  clusterDistance:number = 30;
+
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation) {
+    this.markersRepository = getRepository('marker') as Repository<Marker>;
+    this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
     this.mapEntity = navParams.get('map');
+    this.surveySelected = this.mapEntity.surveys[0] || null;
+    console.log("constructor");
+    console.log(this.mapEntity);
     this.defaultGeolocZoom = 15;
 	}
 
-
-	ionViewDidLoad() {
+	ionViewWillEnter() {
+    console.log("load");
+    console.log(this.mapEntity);
 	    // start map,
 	    let arg = [-60.0953938, -34.8902802]
       this.map = new OLMap({
@@ -77,11 +96,11 @@ export class ViewMapPage {
         image: new Circle({
           radius: 6,
           fill: new Fill({
-            color: '#3399CC'
+            color: '#00FF00'
           }),
           stroke: new Stroke({
-            color: '#fff',
-            width: 4
+            color: '#000',
+            width: 3
           })
         })
       }));
@@ -113,8 +132,115 @@ export class ViewMapPage {
       this.map.getView().on('change:center', function(){ 
           that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
       });
+      this.loadMarkersFeatures();
 
   	}
+
+  async loadRawSurveyMarkersAndPopulate(){
+    var markers = [];
+    const manager = getManager();
+    let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID = ` + this.surveySelected.id);
+    for (let i = 0; i < surveyMarkers.length; ++i){
+      var tmpMarker = this.markersRepository.create(surveyMarkers[i]);
+      markers.push(tmpMarker);
+    }
+    console.log(markers);
+    return markers;
+  }
+
+  async loadMarkersFeatures(){
+      this.mapMarkers = await this.loadRawSurveyMarkersAndPopulate();
+      console.log(this.mapMarkers);
+      if (this.mapMarkers){
+          var features = Array();
+          for (var i = 0; i < this.mapMarkers.length; ++i) {
+            var markerEntity = this.mapMarkers[i];
+            var coordinates = [markerEntity.lat, markerEntity.lng];
+            var newFeature = new Feature({
+                geometry: new Point(coordinates),
+                marker_id: markerEntity.id,
+            });
+            features[i] = newFeature;
+
+          }
+          var source = new SourceVector({
+            features: features
+          });
+          var clusterSource = new Cluster({
+            distance: this.clusterDistance,
+            source: source
+          });
+          var styleCache = {};
+          var clusters = new LayerVector({
+            source: clusterSource,
+            style: function(feature) {
+              var size = feature.get('features').length;
+              var style = styleCache[size];
+              if (!style) {
+                var circleColor = (size > 1) ? '#FFC100' : '#3399CC';
+                style = new Style({
+                  image: new Circle({
+                    radius: 10,
+                    stroke: new Stroke({
+                      color: '#fff'
+                    }),
+                    fill: new Fill({
+                      color: circleColor
+                    })
+                  }),
+                  text: new Text({
+                    text: (size > 1) ? size.toString() : "+",
+                    fill: new Fill({
+                      color: '#fff'
+                    })
+                  })
+                });
+                styleCache[size] = style;
+              }
+              return style;
+            }
+          });
+          this.map.addLayer(clusters);
+          var self = this;
+          this.map.on('click', function(evt) {
+            console.log(evt);
+            var feature = self.map.forEachFeatureAtPixel(evt.pixel,
+                function(feature) {
+                  return feature;
+                });
+            if (feature && feature.values_.features.length == 1) {
+                var clickedMarkerID = feature.values_.features[0].get("marker_id");
+                self.showAlertViewMarker(clickedMarkerID);
+            }
+            });
+      }
+
+  }
+
+  async showAlertViewMarker(markerID){
+    var marker = await this.markersRepository.findOneById(markerID, );
+    console.log(marker);
+    if (marker){
+      var self = this;
+      let actionSheet = this.actionsheetCtrl.create({
+      title: 'Marcador',
+      cssClass: 'action-sheets-basic-page',
+      buttons: [
+        {
+          text: 'Ver/Editar datos',
+          icon: !this.platform.is('ios') ? 'information-circle' : null,
+          handler: () => {
+              this.navCtrl.push(CreateMarkerPage, {
+                    map: self.mapEntity,
+                    marker: marker
+                });
+          }
+        }
+      ]
+      });
+      actionSheet.present();
+    }
+  }
 
 
   ionViewDidEnter(){

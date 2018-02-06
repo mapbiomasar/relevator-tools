@@ -38,8 +38,12 @@
 
 
 <ion-list>
+<ion-list-header>
+  Lista de marcadores
+</ion-list-header>
     <ion-item *ngFor="let marker of markers; let i = index" (click)="viewMarker($event, marker)">
-      <h2>Marcador {{i}}</h2>
+     <ion-icon name='pin' primary item-start></ion-icon>
+      Marcador {{i+1}}
 
     </ion-item>
   </ion-list>

@@ -1,6 +1,6 @@
 import { Component} from '@angular/core';
 import { NavController, NavParams,  Platform, ActionSheetController, AlertController} from 'ionic-angular';
-import { getRepository, Repository } from 'typeorm';
+import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
 import { MediafilesProvider } from '../../providers/mediafiles/mediafiles';
 
@@ -19,6 +19,7 @@ import {ViewMapPage} from '../viewmap/viewmap';
 
 import {Marker} from "../../entities/marker";
 import {Map} from "../../entities/map";
+import {Survey} from "../../entities/survey";
 import {MediaFileEntity} from "../../entities/mediafileentity";
 
 const MEDIA_FILES_KEY = 'mediaFiles';
@@ -35,6 +36,8 @@ export class CreateMarkerPage {
 	mapViewEntity:Map;
 	marker:Marker;
 
+	currentSurvey:Survey;
+
 	markerLocalAttributes:{};
 
 	orientationSubscription:any;
@@ -46,12 +49,15 @@ export class CreateMarkerPage {
 	maxImagesNumber:number = 3;
 	maxAudiosNumber:number = 1;
 
+
+  	contextData = {};
+
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider) {
 			this.markerRepository = getRepository('marker') as Repository<Marker>;
 			this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
 			this.mapViewEntity = navParams.get('map');
+			this.currentSurvey = this.mapViewEntity.surveys[0];
 			this.marker = navParams.get('marker');
-			console.log(this.marker);
 			if (this.marker){
 				//this.populateMediaLists();
 				this.savedOrientation = true;
@@ -61,13 +67,25 @@ export class CreateMarkerPage {
 				this.marker.lat = navParams.get('location')[0];
 				this.marker.lng = navParams.get('location')[1];
 				this.marker.mediaFiles = [];
+				this.marker.creation_date = this.utils.getNowUnixTimestamp();
 				this.savedOrientation = false;
 				this.markerLocalAttributes = {};
 			}
-			this.populateMediaLists(this.marker);
+			this.marker.survey = this.currentSurvey;
+			this.setContextData();
+			this.populateMediaLists();
 			this.toogleOrientationSubsctription();
-			console.log(this.marker);
-			console.log(this.markerLocalAttributes);
+	}
+
+	async loadMediaFilesRelations(){
+		this.marker.mediaFiles = [];
+		const manager = getManager();
+    	let mediaFiles = await  manager.query(`SELECT * FROM mediafile WHERE markerID = ` + this.marker.id);
+    	for (let i = 0; i < mediaFiles.length; ++i){
+	      	var tmpMediafile = this.mediafilesRepository.create(mediaFiles[i]);
+      		this.marker.mediaFiles.push(tmpMediafile);
+	    }
+	    console.log(this.marker);
 	}
 
 
@@ -79,19 +97,32 @@ export class CreateMarkerPage {
 		return false;
 	}
 
+	private setContextData(){
+		if (this.isEditingContext()){
+			this.contextData["title"] = "Editar";
+			this.contextData["button_save_text"] = "Actualizar";
+		} else {
+			this.contextData["title"] = "Nuevo";
+			this.contextData["button_save_text"] = "Guardar";
+		}
+	}
+
 
 	// Chequea los mediafiles del marker
 	// Si no tiene, inicializa el array
 	// Si tiene, los divide en dos listas de imagenes y audio
-	populateMediaLists(marker){
-		if (marker.mediaFiles){
+	async populateMediaLists(){
+		if (this.isEditingContext() && !this.marker.mediaFiles){ // no se cargaron las relaciones mediafiles del marker
+			await this.loadMediaFilesRelations();
+		}
+		if (this.marker.mediaFiles){
 			var i;
-			for (i = 0; i < marker.mediaFiles.length; ++i) {
-    			console.log(marker.mediaFiles[i]);
-    			this.addMediaEntityToLocalList(marker.mediaFiles[i]);
+			for (i = 0; i < this.marker.mediaFiles.length; ++i) {
+    			console.log(this.marker.mediaFiles[i]);
+    			this.addMediaEntityToLocalList(this.marker.mediaFiles[i]);
 			}
 		} else {
-			marker.mediaFiles = [];
+			this.marker.mediaFiles = [];
 		}
 	}
 
@@ -213,14 +244,11 @@ export class CreateMarkerPage {
 		}
 		this.mediafilesProvider.removeMediaFiles(mediaEntity); // elimina archivos físicos
 		this.mediafilesRepository.remove(mediaEntity);
-		console.log(this.marker);
 		this.removeMarkerMediaEntity(mediaEntity);
-		console.log(this.marker);
 	}
 
 	removeMarkerMediaEntity(mediaEntity){
 		var removeIndex = this.marker.mediaFiles.map(function(item) { return item.id; }).indexOf(mediaEntity.id);
-		console.log(removeIndex);
 		this.marker.mediaFiles.splice(removeIndex, 1);
 	}
 
@@ -277,6 +305,11 @@ export class CreateMarkerPage {
 	}
 
 
+	getMarkerDate(){
+		return this.utils.getFormattedDate(this.utils.getDateFromUNIX(this.marker.creation_date));
+	}
+
+
 
   	saveMarker(){
 	    var self  = this;
@@ -294,9 +327,7 @@ export class CreateMarkerPage {
 
 
 	saveForm(){
-		console.log(this.markerLocalAttributes);
 	 	this.marker.attributes = JSON.stringify(this.markerLocalAttributes);
-	 	this.marker.id_survey = 1;
 	 	this.marker.creation_date = this.utils.getNowUnixTimestamp();
 	 	console.log(this.marker);
 	 	this.saveMarker();

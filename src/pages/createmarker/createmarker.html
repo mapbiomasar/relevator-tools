@@ -4,7 +4,7 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Nuevo marcador</ion-title>
+    <ion-title>{{contextData.title}} Marcador</ion-title>
     <ion-buttons *ngIf="isEditingContext()" end>
       <button ion-button icon-only color="royal" (click)="openMenu()">
         <ion-icon name="add"></ion-icon>
@@ -155,7 +155,7 @@
                 <strong>Usuario</strong>   Agustin
               </ion-item>
                <ion-item>
-                <strong>Fecha</strong>   26/01/2018
+                <strong>Fecha</strong>    {{ getMarkerDate() }}
               </ion-item>
               <ion-item>
                 <strong>Lat/Lng</strong>   {{marker.lat}},{{marker.lng}}
@@ -164,7 +164,7 @@
           </ion-card>
     
 
-            <button ion-button type="submit" (click)="saveForm()" block>Guardar marcador</button>
+            <button ion-button type="submit" (click)="saveForm()" block>{{contextData.button_save_text}} datos</button>
           
         </ion-list>
       </ion-col>

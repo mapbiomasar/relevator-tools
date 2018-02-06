@@ -1,5 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne} from "typeorm";
 import {Map} from "./map";
+import {Marker} from "./marker";
 
 @Entity('survey')
 export class Survey {
@@ -8,7 +9,8 @@ export class Survey {
     id: number;
 
     @ManyToOne(type => Map, map => map.surveys, {
-      cascadeInsert: true
+        cascadeInsert: true,
+        cascadeUpdate: true
     })
     map: Map;
 
@@ -20,4 +22,11 @@ export class Survey {
 
     @Column("int")
     creation_date: number;
+
+    @OneToMany(type => Marker, marker => marker.survey, {
+        cascadeInsert: true,
+        cascadeUpdate: true
+    })
+    markers: Marker[];
+
 }

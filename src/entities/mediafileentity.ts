@@ -11,7 +11,7 @@ export class MediaFileEntity {
         cascadeInsert: true,
         cascadeUpdate: true,
         cascadeRemove: true,
-        onDelete: "CASCADE"
+        eager: true
     })
     marker: Marker;
 

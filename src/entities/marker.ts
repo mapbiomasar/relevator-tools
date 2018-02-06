@@ -1,5 +1,6 @@
-import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from "typeorm";
+import {Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne} from "typeorm";
 import {MediaFileEntity} from "./mediafileentity";
+import {Survey} from "./survey";
 
 @Entity('marker')
 export class Marker {
@@ -7,8 +8,11 @@ export class Marker {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column("int")
-    id_survey: number;
+   @ManyToOne(type => Survey, survey => survey.markers, {
+        cascadeInsert: true,
+        cascadeUpdate: true
+    })
+    survey: Survey;
 
     @Column("int")
     creation_date: number;

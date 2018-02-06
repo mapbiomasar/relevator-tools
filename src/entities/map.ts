@@ -22,6 +22,9 @@ export class Map {
     @Column("text")
     config:string;
 
-    @OneToMany(type => Survey, survey => survey.map)
+    @OneToMany(type => Survey, survey => survey.map, {
+        cascadeInsert: true,
+        cascadeUpdate: true
+    })
     surveys: Survey[];
 }
