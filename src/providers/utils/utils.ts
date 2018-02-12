@@ -14,8 +14,8 @@ export class UtilsProvider {
 
   getFormattedDate(date){
     var year = date.getFullYear();
-    var month = date.getMonth()+1;
-    var day = date.getDate();
+    var month =('0' + (date.getMonth() + 1)).slice(-2);
+    var day = ('0' + date.getDate()).slice(-2);
     var hh = date.getHours();
     var mm = date.getMinutes();
     var ss = date.getSeconds();
