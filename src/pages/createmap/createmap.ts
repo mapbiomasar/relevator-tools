@@ -3,6 +3,7 @@ import { NavController, NavParams} from 'ionic-angular';
 import { Toast } from '@ionic-native/toast';
 import {HomePage} from '../home/home';
 import { UtilsProvider } from '../../providers/utils/utils';
+import { ToastProvider } from '../../providers/toast/toast';
 
 import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
@@ -20,7 +21,7 @@ export class CreateMapPage {
   contextData = {};
 
 
-  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private utils: UtilsProvider) {
+  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private toastProvider: ToastProvider, private utils: UtilsProvider) {
       this.mapRepository = getRepository('map') as Repository<Map>;
   		this.map = this.navParams.get("map");
       if (!this.isEditingContext()){
@@ -73,12 +74,16 @@ export class CreateMapPage {
 	    const postRepository = getRepository('map') as Repository<Map>;
 	    var self  = this;
       var message = "Mapa " + ((self.isEditingContext()) ? "editado" : "creado") + " con éxito";
+      var toastFiredOnce = false;
 	    postRepository.save(this.map)
 	    .then(function(savedMap) {
 	    	// Creo un survey por defecto para el mapa
 	    	self.toast.showShortTop(message).subscribe(
 	    		toast => {
-				     self.navCtrl.popToRoot();
+            if (!toastFiredOnce){
+				      self.navCtrl.pop();
+              toastFiredOnce = true;
+            }
 				  }
 	    	);
 	    });
