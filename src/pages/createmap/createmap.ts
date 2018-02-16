@@ -14,41 +14,71 @@ import { getRepository, Repository } from 'typeorm';
 })
 export class CreateMapPage {
 
-	private map: Map = null;
+  private mapRepository:any;
+	private map: Map;
+
+  contextData = {};
+
 
   	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private utils: UtilsProvider) {
-  		this.map = new Map();
-  		this.map.name = "";
-  		this.map.description = "";
+      this.mapRepository = getRepository('map') as Repository<Map>;
+  		this.map = this.navParams.get("map");
+      if (!this.isEditingContext()){
+        this.map = new Map();
+        this.map.name = "";
+        this.map.description = "";
+      }
+      this.setContextData();
     }
 
+
+    private isEditingContext(){
+      if (this.mapRepository.hasId(this.map)){
+        return true;
+      }
+      return false;
+    }
+
+
+    private setContextData(){
+      if (this.isEditingContext()){
+        this.contextData["title"] = "Editar";
+        this.contextData["button_save_text"] = "Actualizar";
+      } else {
+        this.contextData["title"] = "Nuevo";
+        this.contextData["button_save_text"] = "Guardar";
+      }
+    }
 
 
     getDefaultSurvey(){
     	var survey = new Survey();
     	survey.map = this.map;
     	survey.name = "Relevamiento 1";
-    	survey.description = "Relevamiento por defecto";
+    	survey.description = "Relevamiento creado por defecto";
     	survey.creation_date = this.map.creation_date;
+      survey.author_name = "Usuario";
     	return survey;
     }
     
 
   	saveMap(){
-  		this.map.user = 1;
-  		this.map.creation_date = this.utils.getNowUnixTimestamp(); // UNIX timestamp, in seconds
-  		this.map.config = "";
-  		var defSurvey = this.getDefaultSurvey();
-  		this.map.surveys = [this.getDefaultSurvey()];
+      if (!this.isEditingContext()){
+    		this.map.user = 1;
+    		this.map.creation_date = this.utils.getNowUnixTimestamp(); // UNIX timestamp, in seconds
+    		this.map.config = "";
+    		var defSurvey = this.getDefaultSurvey();
+    		this.map.surveys = [this.getDefaultSurvey()];
+      }
 	    const postRepository = getRepository('map') as Repository<Map>;
 	    var self  = this;
+      var message = "Mapa " + ((self.isEditingContext()) ? "editado" : "creado") + " con éxito";
 	    postRepository.save(this.map)
 	    .then(function(savedMap) {
-	    	console.log(savedMap);
 	    	// Creo un survey por defecto para el mapa
-	    	self.toast.showShortTop("Mapa creado con éxito").subscribe(
+	    	self.toast.showShortTop(message).subscribe(
 	    		toast => {
-				    self.navCtrl.pop();
+				     self.navCtrl.popToRoot();
 				  }
 	    	);
 	    });

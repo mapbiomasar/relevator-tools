@@ -21,6 +21,9 @@ import { ViewMapPage } from '../pages/viewmap/viewmap';
 import { DetailMapPage } from '../pages/detailmap/detailmap';
 import { MapTabsPage } from '../pages/maptabs/maptabs';
 import { CreateMarkerPage } from '../pages/createmarker/createmarker';
+import { CreatesurveyPage } from '../pages/createsurvey/createsurvey';
+import { DetailsurveyPage } from '../pages/detailsurvey/detailsurvey';
+import { ModalselectsurveyPage } from '../pages/modalselectsurvey/modalselectsurvey';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -36,7 +39,10 @@ import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
     ViewMapPage,
     DetailMapPage,
     MapTabsPage,
-    CreateMarkerPage
+    CreateMarkerPage,
+    DetailsurveyPage,
+    CreatesurveyPage,
+    ModalselectsurveyPage
   ],
   imports: [
     BrowserModule,
@@ -52,7 +58,10 @@ import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
     ViewMapPage,
     DetailMapPage,
     MapTabsPage,
-    CreateMarkerPage
+    CreateMarkerPage,
+    DetailsurveyPage,
+    CreatesurveyPage,
+    ModalselectsurveyPage
   ],
   providers: [
     StatusBar,

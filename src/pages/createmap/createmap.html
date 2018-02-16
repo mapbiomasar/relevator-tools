@@ -4,7 +4,7 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Nuevo mapa</ion-title>
+    <ion-title>{{contextData.title}} Mapa</ion-title>
   </ion-navbar>
 </ion-header>
 
@@ -24,7 +24,7 @@
   </ion-item>
 
 </ion-list>
-<button ion-button color="primary" type="submit" block>Crear mapa</button>
+<button ion-button color="primary" type="submit" block>{{contextData.button_save_text}} datos</button>
 </form>
 
 </ion-content>

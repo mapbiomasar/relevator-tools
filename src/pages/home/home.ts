@@ -33,33 +33,8 @@ export class HomePage {
 
 
     async loadHome(){
+
       this.maps = await this.mapRepository.find({relations:["surveys"]});
-      console.log(this.maps);
-      /*this.mapRepository.clear();
-      
-      let markersRep = getRepository('marker') as Repository<Marker>;
-      let ma = await markersRep.find();
-      console.log(ma);
-      markersRep.clear();
-      let markers = await markersRep.find();
-      console.log(markers);
-
-      let mediaRep = getRepository('mediafile') as Repository<MediaFileEntity>;
-      let m = await mediaRep.find();
-      console.log(m);
-      mediaRep.clear();
-      let media = await mediaRep.find();
-      console.log(media);
-
-      let surveyRep = getRepository('survey') as Repository<Survey>;
-      let surveys = await surveyRep.find();
-      console.log(surveys);
-      surveyRep.clear();
-      let lsurveys = await surveyRep.find();
-      console.log(lsurveys);*/
-
-      // FOREIGN KEY FAIL - ELIMINAR SURVEYS - ELIMINAR Survey al eliminar mapaf
-      
     }
 
 

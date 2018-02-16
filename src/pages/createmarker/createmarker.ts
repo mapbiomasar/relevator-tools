@@ -1,5 +1,5 @@
 import { Component} from '@angular/core';
-import { NavController, NavParams,  Platform, ActionSheetController, AlertController} from 'ionic-angular';
+import { NavController, NavParams,  Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
 import { MediafilesProvider } from '../../providers/mediafiles/mediafiles';
@@ -16,6 +16,7 @@ import { File } from '@ionic-native/file';
 import { MediaCapture, MediaFile, CaptureError} from '@ionic-native/media-capture';
 
 import {ViewMapPage} from '../viewmap/viewmap';
+import {ModalselectsurveyPage} from '../modalselectsurvey/modalselectsurvey';
 
 import {Marker} from "../../entities/marker";
 import {Map} from "../../entities/map";
@@ -52,11 +53,11 @@ export class CreateMarkerPage {
 
   	contextData = {};
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider, private modalController: ModalController) {
 			this.markerRepository = getRepository('marker') as Repository<Marker>;
 			this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
 			this.mapViewEntity = navParams.get('map');
-			this.currentSurvey = this.mapViewEntity.surveys[0];
+			// el survey activo es el ultimo creado
 			this.marker = navParams.get('marker');
 			if (this.marker){
 				//this.populateMediaLists();
@@ -71,6 +72,7 @@ export class CreateMarkerPage {
 				this.savedOrientation = false;
 				this.markerLocalAttributes = {};
 			}
+			this.setCurrentSurvey(this.mapViewEntity.surveys[this.mapViewEntity.surveys.length-1]);
 			this.marker.survey = this.currentSurvey;
 			this.setContextData();
 			this.populateMediaLists();
@@ -305,8 +307,26 @@ export class CreateMarkerPage {
 	}
 
 
-	getMarkerDate(){
-		return this.utils.getFormattedDate(this.utils.getDateFromUNIX(this.marker.creation_date));
+	setCurrentSurvey(survey){
+		this.currentSurvey = survey;
+		this.marker.survey = survey;
+	}
+
+	openModalSelectSurvey(){
+		var self = this;
+		const modalSurveys = this.modalController.create(ModalselectsurveyPage, {surveys: this.mapViewEntity.surveys, survey_selected: this.currentSurvey});
+		modalSurveys.present();
+
+		 modalSurveys.onDidDismiss((data) => {
+	      console.log(data);
+	      self.setCurrentSurvey(data.survey_selected);
+	    });
+
+	}
+
+
+	getFormattedDate(date){
+		return this.utils.getFormattedDate(this.utils.getDateFromUNIX(date));
 	}
 
 
@@ -329,7 +349,6 @@ export class CreateMarkerPage {
 	saveForm(){
 	 	this.marker.attributes = JSON.stringify(this.markerLocalAttributes);
 	 	this.marker.creation_date = this.utils.getNowUnixTimestamp();
-	 	console.log(this.marker);
 	 	this.saveMarker();
 	}
 

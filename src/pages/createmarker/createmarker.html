@@ -19,8 +19,46 @@
     <ion-row>
       <ion-col width-100>
         <ion-list>
+          <ion-card>
+            <ion-grid>
+              <ion-row>
+                <ion-col>
+                <ion-card-header>
+                  Relevamiento asociado
+                </ion-card-header>
+                </ion-col>
+                <ion-col>
+                  <button ion-button icon-only (click)="openModalSelectSurvey()" small outline>
+                  <ion-icon name="md-refresh" ></ion-icon>
+                </button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+              <ion-card-content>
+                  <ion-list>
+                    <ion-item >
+                        Nombre
+                        <ion-note item-end>
+                          {{currentSurvey.name}}
+                        </ion-note>
+                    </ion-item>
+                    <ion-item >
+                        Autor
+                        <ion-note item-end>
+                          {{currentSurvey.author_name}}
+                        </ion-note>
+                    </ion-item>
+                    <ion-item >
+                        Fecha creación
+                        <ion-note item-end>
+                         {{ getFormattedDate(currentSurvey.creation_date) }}
+                        </ion-note>
+                    </ion-item>
+                  </ion-list>
+              </ion-card-content>
+          </ion-card>
+          <ion-card>
           <form (ngSubmit)="saveForm()">
-            <ion-card>
             <ion-card-header>
               Atributos
             </ion-card-header>
@@ -67,8 +105,8 @@
                 </ion-select>
                 </ion-item>
               </ion-card-content>
-            </ion-card>
           </form>
+          </ion-card>
 
          <ion-card>
             <ion-card-header>
@@ -151,17 +189,14 @@
               Metadatos
             </ion-card-header>
               <ion-card-content>
-              <ion-item>
-                <strong>Usuario</strong>   Agustin
-              </ion-item>
                <ion-item>
-                <strong>Fecha</strong>    {{ getMarkerDate() }}
+                <strong>Fecha</strong>    {{ getFormattedDate(marker.creation_date) }}
               </ion-item>
               <ion-item>
-                <strong>Lat</strong>   {{marker.lat}}
+                <strong>Lat</strong>   {{marker.lat | number }}
               </ion-item>
               <ion-item>
-                <strong>Lng</strong>   {{marker.lng}}
+                <strong>Lng</strong>   {{marker.lng | number }}
               </ion-item>
               </ion-card-content>
           </ion-card>

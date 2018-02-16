@@ -5,9 +5,11 @@ import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
 import { MediafilesProvider } from '../../providers/mediafiles/mediafiles';
 
-
 import {HomePage} from '../home/home';
+import {CreateMapPage} from '../createmap/createmap';
 import {CreateMarkerPage} from '../createmarker/createmarker';
+import {DetailsurveyPage} from '../detailsurvey/detailsurvey';
+import {CreatesurveyPage} from '../createsurvey/createsurvey';
 
 import {Map} from "../../entities/map";
 import {Marker} from "../../entities/marker";
@@ -21,13 +23,11 @@ import {MediaFileEntity} from "../../entities/mediafileentity";
 export class DetailMapPage {
 	mapEntity: Map;
   mapRepository: any;
-  surveySelected:Survey;
 
   markers:any;
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider) {
       this.mapEntity = navParams.get('map');
-      this.surveySelected = this.mapEntity.surveys[0];
 	}
 
   ionViewDidLoad() {
@@ -37,19 +37,16 @@ export class DetailMapPage {
   }
 
 
-/*async loadMarkers(){
-  let markerRep = getRepository('marker') as Repository<Marker>;
-  this.markers = await markerRep.find({ relations: ["mediaFiles"] });
 
-  const manager = getManager();
-  let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID = ` + this.surveySelected.id);
-}*/
 
 async loadRawSurveyMarkersAndPopulate(){
     let markersRepository = getRepository('marker') as Repository<Marker>;
     var markers = [];
     const manager = getManager();
-    let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID = ` + this.surveySelected.id);
+    var surveysIds = this.getSurveysIds();
+    var idList = '('+surveysIds.join(',')+')';
+    console.log(idList);
+    let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID IN ` + idList);
     for (let i = 0; i < surveyMarkers.length; ++i){
       var tmpMarker = markersRepository.create(surveyMarkers[i]);
       markers.push(tmpMarker);
@@ -58,20 +55,29 @@ async loadRawSurveyMarkersAndPopulate(){
     this.markers = markers;
   }
 
-viewMarker(event, marker){
-  console.log(marker);
+viewSurvey(event, survey){
   var self = this;
-  this.navCtrl.push(CreateMarkerPage, {
+  this.navCtrl.push(DetailsurveyPage, {
       map: self.mapEntity,
-      marker: marker
+      survey: survey
   });
 }
 
 openMenu() {
+      var self = this;
       let actionSheet = this.actionsheetCtrl.create({
-      title: 'Mis mapas',
+      title: 'Mapa',
       cssClass: 'action-sheets-basic-page',
       buttons: [
+        {
+          text: 'Editar datos',
+          icon: !this.platform.is('ios') ? 'information-circle' : null,
+          handler: () => {
+              this.navCtrl.push(CreateMapPage, {
+                    map: self.mapEntity
+                });
+          }
+        },
         {
           text: 'Eliminar mapa',
           role: 'destructive',
@@ -87,8 +93,8 @@ openMenu() {
 
 
 
-getMapDate(){
-  return this.utils.getFormattedDate(this.utils.getDateFromUNIX(this.mapEntity.creation_date));
+getFormattedDate(date){
+  return this.utils.getFormattedDate(this.utils.getDateFromUNIX(date));
 }
 
 // Borra tanto el mapa como el survey y los marcadores asociados
@@ -104,7 +110,7 @@ async deleteMapEntity(){
         });
         await manager.remove(mediaFiles);
         await manager.remove(this.markers);
-        await manager.remove(self.surveySelected);
+        await manager.remove(self.mapEntity.surveys);
         await manager.remove(self.mapEntity);
         this.toast.showShortTop("Mapa eliminado con éxito").subscribe(
           entity => {
@@ -112,6 +118,21 @@ async deleteMapEntity(){
           }  
         )}
     );
+}
+
+createNewSurvey(){
+  var self = this;
+  this.navCtrl.push(CreatesurveyPage, {
+      map: self.mapEntity,
+  });
+}
+
+getSurveysIds(){
+  if (this.mapEntity.surveys){
+    return this.mapEntity.surveys.map(function(item) { return item.id; })
+  }
+  return [];
+
 }
 
 

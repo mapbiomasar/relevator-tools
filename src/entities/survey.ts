@@ -20,6 +20,9 @@ export class Survey {
     @Column("text")
     description: string;
 
+    @Column("text")
+    author_name: string;
+
     @Column("int")
     creation_date: number;
 

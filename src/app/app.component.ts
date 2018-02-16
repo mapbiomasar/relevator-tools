@@ -3,6 +3,7 @@ import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
+import { getRepository, Repository } from 'typeorm';
 
 import { createConnection } from 'typeorm'
 import {Map} from "../entities/map";
@@ -60,8 +61,37 @@ export class MyApp {
       this.mediafilesProvider.checkMediaDirs();
       this.rootPage = HomePage;
 
+      //this.clearDatabase();
+
     });
   }
+
+
+  async clearDatabase(){
+      let mediaRep = getRepository('mediafile') as Repository<MediaFileEntity>;
+      let m = await mediaRep.find();
+      console.log(m);
+      mediaRep.clear();
+      let media = await mediaRep.find();
+      console.log(media);
+
+      let markersRep = getRepository('marker') as Repository<Marker>;
+      let ma = await markersRep.find();
+      console.log(ma);
+      markersRep.clear();
+      let markers = await markersRep.find();
+      console.log(markers);
+
+      let surveyRep = getRepository('survey') as Repository<Survey>;
+      let surveys = await surveyRep.find();
+      console.log(surveys);
+      surveyRep.clear();
+      let lsurveys = await surveyRep.find();
+      console.log(lsurveys);
+
+      let mapRep = getRepository('map') as Repository<Map>;
+      mapRep.clear();
+    }
 
   openPage(page) {
     // Reset the content nav to have just this page

@@ -1,0 +1,34 @@
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>{{contextData.title}} Relevamiento</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+<form (ngSubmit)="saveSurvey()">
+<ion-list>
+
+  <ion-item>
+    <ion-label stacked>Nombre del relevamiento</ion-label>
+    <ion-input [(ngModel)]="survey.name" name="name" type="text"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label stacked>Descripción</ion-label>
+    <ion-input [(ngModel)]="survey.description" name="description" type="text"></ion-input>
+  </ion-item>
+
+
+  <ion-item>
+    <ion-label stacked>Autor</ion-label>
+    <ion-input [(ngModel)]="survey.author_name" name="author_name" type="text"></ion-input>
+  </ion-item>
+
+</ion-list>
+<button ion-button color="primary" type="submit" block>{{contextData.button_save_text}} datos</button>
+</form>
+
+</ion-content>
