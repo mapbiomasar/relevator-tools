@@ -12,6 +12,7 @@ import { MediaCapture } from '@ionic-native/media-capture';
 import { Media } from '@ionic-native/media';
 import { File } from '@ionic-native/file';
 import { Toast } from '@ionic-native/toast';
+import { FileChooser } from '@ionic-native/file-chooser';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
@@ -24,11 +25,13 @@ import { CreateMarkerPage } from '../pages/createmarker/createmarker';
 import { CreatesurveyPage } from '../pages/createsurvey/createsurvey';
 import { DetailsurveyPage } from '../pages/detailsurvey/detailsurvey';
 import { ModalselectsurveyPage } from '../pages/modalselectsurvey/modalselectsurvey';
+import { ModalSelectLayersPage } from '../pages/modal-select-layers/modal-select-layers';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { UtilsProvider } from '../providers/utils/utils';
-import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
+import { AppFilesProvider } from '../providers/appfiles/appfiles';
+import { ToastProvider } from '../providers/toast/toast';
 
 @NgModule({
   declarations: [
@@ -42,7 +45,8 @@ import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
     CreateMarkerPage,
     DetailsurveyPage,
     CreatesurveyPage,
-    ModalselectsurveyPage
+    ModalselectsurveyPage,
+    ModalSelectLayersPage
   ],
   imports: [
     BrowserModule,
@@ -61,7 +65,8 @@ import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
     CreateMarkerPage,
     DetailsurveyPage,
     CreatesurveyPage,
-    ModalselectsurveyPage
+    ModalselectsurveyPage,
+    ModalSelectLayersPage
   ],
   providers: [
     StatusBar,
@@ -75,8 +80,9 @@ import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
     File,
     Toast,
     UtilsProvider,
-    MediafilesProvider,
-    MediafilesProvider,
+    AppFilesProvider,
+    ToastProvider,
+    FileChooser
   ]
 })
 export class AppModule {}

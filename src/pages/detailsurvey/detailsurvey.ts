@@ -3,7 +3,7 @@ import { IonicPage, NavController, NavParams, Platform, ActionSheetController, A
 import { Toast } from '@ionic-native/toast';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
-import { MediafilesProvider } from '../../providers/mediafiles/mediafiles';
+import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 
 
 import {Survey} from "../../entities/survey";
@@ -25,7 +25,7 @@ export class DetailsurveyPage {
 	  survey:Survey;
 	  markers:Marker[];
 
-	  constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider) {
+	  constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider) {
 	  	this.map = navParams.get("map");
 	  	this.survey = navParams.get("survey");
 	  }
@@ -97,7 +97,7 @@ async deleteSurveyEntity(){
     await manager.transaction(async manager => {
         let mediaFiles = await self.loadMediaFilesRelations();
         mediaFiles.map(function(item){ // elimina archivos fisicos
-          self.mediafilesProvider.removeMediaFiles(item);
+          self.appFilesProvider.removeMediaFiles(item);
         });
         await manager.remove(mediaFiles);
         await manager.remove(this.markers);

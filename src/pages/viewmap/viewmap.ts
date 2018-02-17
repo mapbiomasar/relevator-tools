@@ -1,7 +1,9 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { NavController, NavParams, Platform, ActionSheetController, AlertController} from 'ionic-angular';
+import { NavController, NavParams, Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { Geolocation } from '@ionic-native/geolocation';
+
+import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 
 //import 'ol/ol.css';
 import OLMap from 'ol/map';
@@ -20,6 +22,7 @@ import LayerVector from 'ol/layer/vector';
 import SourceVector  from 'ol/source/vector';
 import Cluster  from 'ol/source/cluster';
 import Point from 'ol/geom/point';
+import KML from 'ol/format/kml';
 
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
@@ -28,6 +31,8 @@ import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
 import {Marker} from "../../entities/marker";
 import {MediaFileEntity} from "../../entities/mediafileentity";
+
+import {ModalSelectLayersPage} from '../modal-select-layers/modal-select-layers';
 
 @Component({
   selector: 'page-viewmap',
@@ -54,18 +59,15 @@ export class ViewMapPage {
 
   clusterDistance:number = 30;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider) {
     this.markersRepository = getRepository('marker') as Repository<Marker>;
     this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
     this.mapEntity = navParams.get('map');
     this.surveySelected = this.mapEntity.surveys[0] || null;
-    console.log("constructor");
-    console.log(this.mapEntity);
     this.defaultGeolocZoom = 15;
 	}
 
 	ionViewWillEnter() {
-    console.log("load");
     console.log(this.mapEntity);
 	    // start map,
 	    let arg = [-60.0953938, -34.8902802]
@@ -130,9 +132,10 @@ export class ViewMapPage {
       this.mapCrosshair.setGeometry(new Point(this.map.getView().getCenter()));
       let that = this; 
       this.map.getView().on('change:center', function(){ 
-          that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
+          that.mapCrosshair.setGeometry(new Point(this.getCenter()));
       });
       this.loadMarkersFeatures();
+      this.loadImportedLayers();
 
   	}
 
@@ -217,6 +220,35 @@ export class ViewMapPage {
 
   }
 
+ 
+
+  loadImportedLayers(){
+    var self = this;
+    console.log("load kml");
+    for (var k in this.mapEntity.layers){
+    var layer = this.mapEntity.layers[k];
+    this.appFilesProvider.getFileContent(layer.path, this.appFilesProvider.getFileType()).then( result => {
+        var vectorSource = new SourceVector({
+              format: new KML(),
+              loader: function(extent, resolution, projection) {
+                  vectorSource.addFeatures(
+                    vectorSource.getFormat().readFeatures(result));
+              }
+        });
+        var vectorKML = new LayerVector({
+          source: vectorSource,
+          name: layer.path,
+          visible: layer.visible,
+        });
+
+        self.map.addLayer(vectorKML);
+    });
+    }
+   
+  }
+
+
+
   async showAlertViewMarker(markerID){
     var marker = await this.markersRepository.findOneById(markerID, );
     console.log(marker);
@@ -289,6 +321,21 @@ export class ViewMapPage {
     }).catch((error) => {
       console.log('Error getting location', error);
     });
+  }
+
+
+  showMapLayersManager(){
+    var self = this;
+    const modalLayers = this.modalController.create(ModalSelectLayersPage, {
+        mapEntity: this.mapEntity,
+        mapUI: this.map
+    });
+    modalLayers.present();
+
+     modalLayers.onDidDismiss((data) => { // data recibe mapa
+        //self.loadImportedLayers();
+      });
+
   }
 
 }

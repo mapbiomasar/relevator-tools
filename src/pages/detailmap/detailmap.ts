@@ -3,7 +3,7 @@ import { NavController, NavParams, Platform, ActionSheetController, AlertControl
 import { Toast } from '@ionic-native/toast';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
-import { MediafilesProvider } from '../../providers/mediafiles/mediafiles';
+import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 
 import {HomePage} from '../home/home';
 import {CreateMapPage} from '../createmap/createmap';
@@ -26,7 +26,7 @@ export class DetailMapPage {
 
   markers:any;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider) {
       this.mapEntity = navParams.get('map');
 	}
 
@@ -106,11 +106,12 @@ async deleteMapEntity(){
     await manager.transaction(async manager => {
         let mediaFiles = await self.loadMediaFilesRelations();
         mediaFiles.map(function(item){ // elimina archivos fisicos
-          self.mediafilesProvider.removeMediaFiles(item);
+          self.appFilesProvider.removeMediaFiles(item);
         });
         await manager.remove(mediaFiles);
         await manager.remove(this.markers);
         await manager.remove(self.mapEntity.surveys);
+        await manager.remove(self.mapEntity.layers);
         await manager.remove(self.mapEntity);
         this.toast.showShortTop("Mapa eliminado con éxito").subscribe(
           entity => {

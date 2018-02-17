@@ -9,6 +9,7 @@ import {Map} from "../../entities/map";
 import {Marker} from "../../entities/marker";
 import {Survey} from "../../entities/survey";
 import {MediaFileEntity} from "../../entities/mediafileentity";
+import {MapLayer} from "../../entities/maplayer";
 
 @Component({
   selector: 'page-home',
@@ -34,7 +35,41 @@ export class HomePage {
 
     async loadHome(){
 
-      this.maps = await this.mapRepository.find({relations:["surveys"]});
+      this.maps = await this.mapRepository.find({relations:["surveys", "layers"]});
+      this.clearDatabase();
+    }
+
+    async clearDatabase(){
+      let mediaRep = getRepository('mediafile') as Repository<MediaFileEntity>;
+      let m = await mediaRep.find();
+      console.log(m);
+      //mediaRep.clear();
+      let media = await mediaRep.find();
+      console.log(media);
+
+      let markersRep = getRepository('marker') as Repository<Marker>;
+      let ma = await markersRep.find();
+      console.log(ma);
+      //markersRep.clear();
+      let markers = await markersRep.find();
+      console.log(markers);
+
+      let surveyRep = getRepository('survey') as Repository<Survey>;
+      let surveys = await surveyRep.find();
+      console.log(surveys);
+      //surveyRep.clear();
+      let lsurveys = await surveyRep.find();
+      console.log(lsurveys);
+
+      let layRep = getRepository('maplayer') as Repository<MapLayer>;
+      let layers = await layRep.find();
+      console.log(layers);
+      //layRep.clear();
+
+      let mapRep = getRepository('map') as Repository<Map>;
+      let map = await mapRep.find();
+      console.log(map);
+      //mapRep.clear();
     }
 
 

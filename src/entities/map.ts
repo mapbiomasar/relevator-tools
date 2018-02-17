@@ -1,5 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, OneToMany} from "typeorm";
 import {Survey} from "./survey";
+import {MapLayer} from "./maplayer";
 
 @Entity('map')
 export class Map {
@@ -27,4 +28,10 @@ export class Map {
         cascadeUpdate: true
     })
     surveys: Survey[];
+
+    @OneToMany(type => MapLayer, mapLayer => mapLayer.map, {
+        cascadeInsert: true,
+        cascadeUpdate: true
+    })
+    layers: MapLayer[];
 }

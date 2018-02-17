@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Gestionar capas
+    </ion-title>
+    <ion-buttons start>
+      <button ion-button (click)="dismiss()">
+        <span ion-text color="primary" showWhen="ios">Salir</span>
+        <ion-icon name="md-close" showWhen="android, windows"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content padding>
+
+<ion-card>
+    <ion-card-header>
+        Capas importadas
+    </ion-card-header>
+     <ion-card-content>
+  <ion-item *ngFor="let layer of mapEntity.layers; let i = index">
+    <ion-label>{{ layer.name }}</ion-label>
+    <ion-toggle color="secondary" [(ngModel)]="layer.visible" (ionChange)="layerChangeVisibility(layer)"></ion-toggle>
+  </ion-item>
+   </ion-card-content>
+ </ion-card>
+
+
+<button ion-button type="submit" (click)="importLayer()" block>Importar nueva capa (.kml)</button>
+
+</ion-content>

@@ -2,7 +2,7 @@ import { Component} from '@angular/core';
 import { NavController, NavParams,  Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
-import { MediafilesProvider } from '../../providers/mediafiles/mediafiles';
+import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 
 // PLUGINS
 import { Camera, CameraOptions } from '@ionic-native/camera';
@@ -22,8 +22,6 @@ import {Marker} from "../../entities/marker";
 import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
 import {MediaFileEntity} from "../../entities/mediafileentity";
-
-const MEDIA_FILES_KEY = 'mediaFiles';
 
 @Component({
   selector: 'page-createmarker',
@@ -53,7 +51,7 @@ export class CreateMarkerPage {
 
   	contextData = {};
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private mediafilesProvider: MediafilesProvider, private modalController: ModalController) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider, private modalController: ModalController) {
 			this.markerRepository = getRepository('marker') as Repository<Marker>;
 			this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
 			this.mapViewEntity = navParams.get('map');
@@ -170,7 +168,7 @@ export class CreateMarkerPage {
 		this.camera.getPicture(options).then((imageData) => {
 			var currentName = imageData.substr(imageData.lastIndexOf('/') + 1);
       		var correctPath = imageData.substr(0, imageData.lastIndexOf('/') + 1);
-			this.copyFileToLocalDir(correctPath, currentName, this.mediafilesProvider.createImageFileName(), this.mediafilesProvider.getImageMediaType());
+			this.copyFileToLocalDir(correctPath, currentName, this.appFilesProvider.createImageFileName(), this.appFilesProvider.getImageMediaType());
 			}, (err) => {
 			console.log(err);
 		});
@@ -184,27 +182,27 @@ export class CreateMarkerPage {
  				console.log(mediaFile);
 				var currentName = mediaFile.name;
 				var correctPath = mediaFile.fullPath.substr(0, mediaFile.fullPath.lastIndexOf('/') + 1);
-				this.copyFileToLocalDir(correctPath, currentName, currentName, this.mediafilesProvider.getAudioMediaType())
+				this.copyFileToLocalDir(correctPath, currentName, currentName, this.appFilesProvider.getAudioMediaType())
  			},
  			(err: CaptureError) => console.error(err)
  		);
   	}
 
 	public getPathForMedia(mediaType, filePath){
-		return this.mediafilesProvider.getPathForMedia(mediaType, filePath);
+		return this.appFilesProvider.getPathForMedia(mediaType, filePath);
 	}
 
 	private addMediaEntityToLocalList(mediaEntity){
-		if (mediaEntity.tipo == this.mediafilesProvider.getImageMediaType()){
+		if (mediaEntity.tipo == this.appFilesProvider.getImageMediaType()){
 	    	this.imageMediaFiles.push(mediaEntity);
-	    } else if (mediaEntity.tipo == this.mediafilesProvider.getAudioMediaType()){
+	    } else if (mediaEntity.tipo == this.appFilesProvider.getAudioMediaType()){
 	    	this.audioMediaFiles.push(mediaEntity);
 	    }
 	}
 
 	// Copy the image to a local folder
 	private copyFileToLocalDir(namePath, currentName, newFileName, mediaType) {
-	  this.file.copyFile(namePath, currentName, this.mediafilesProvider.getMediaDir(mediaType), newFileName).then(success => {
+	  this.file.copyFile(namePath, currentName, this.appFilesProvider.getAppDir(mediaType), newFileName).then(success => {
 	    let newMediaFile = new MediaFileEntity();
 	    newMediaFile.tipo = mediaType;
 	    newMediaFile.path = newFileName;
@@ -220,8 +218,8 @@ export class CreateMarkerPage {
   	play(audioMediaFile) {
 	    if (audioMediaFile.path.indexOf('.wav') > -1 || audioMediaFile.path.indexOf('.amr') > -1) {
 	      console.log("playing");
-	      console.log(this.getPathForMedia(this.mediafilesProvider.getAudioMediaType(), audioMediaFile.path));
-	      const audioFile: MediaObject = this.media.create(this.getPathForMedia(this.mediafilesProvider.getAudioMediaType(), audioMediaFile.path));
+	      console.log(this.getPathForMedia(this.appFilesProvider.getAudioMediaType(), audioMediaFile.path));
+	      const audioFile: MediaObject = this.media.create(this.getPathForMedia(this.appFilesProvider.getAudioMediaType(), audioMediaFile.path));
 	      audioFile.play();
 	    }
   	}
@@ -239,12 +237,12 @@ export class CreateMarkerPage {
 
 
 	deleteMediaEntity(mediaEntity, index){
-		if (mediaEntity.tipo == this.mediafilesProvider.getImageMediaType()){
+		if (mediaEntity.tipo == this.appFilesProvider.getImageMediaType()){
 			this.imageMediaFiles.splice(index, 1);
-		} else if (mediaEntity.tipo == this.mediafilesProvider.getAudioMediaType()){
+		} else if (mediaEntity.tipo == this.appFilesProvider.getAudioMediaType()){
 			this.audioMediaFiles.splice(index, 1);
 		}
-		this.mediafilesProvider.removeMediaFiles(mediaEntity); // elimina archivos físicos
+		this.appFilesProvider.removeMediaFiles(mediaEntity); // elimina archivos físicos
 		this.mediafilesRepository.remove(mediaEntity);
 		this.removeMarkerMediaEntity(mediaEntity);
 	}

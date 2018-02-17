@@ -2,11 +2,12 @@ import { Component, ViewChild } from '@angular/core';
 import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { MediafilesProvider } from '../providers/mediafiles/mediafiles';
+import { AppFilesProvider } from '../providers/appfiles/appfiles';
 import { getRepository, Repository } from 'typeorm';
 
 import { createConnection } from 'typeorm'
 import {Map} from "../entities/map";
+import {MapLayer} from "../entities/maplayer";
 import {Survey} from "../entities/survey";
 import {Marker} from "../entities/marker";
 import {MediaFileEntity} from "../entities/mediafileentity";
@@ -26,7 +27,7 @@ export class MyApp {
 
   pages: Array<{title: string, component: any}>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private mediafilesProvider: MediafilesProvider) {
+  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private appFilesProvider: AppFilesProvider) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -46,19 +47,20 @@ export class MyApp {
 
       await createConnection({
         type: 'cordova',
-        database: 'mapbiomas_db',
+        database: 'mapbiomas_db_6',
         location: 'default',
         logging: ['error', 'query', 'schema'],
         //synchronize: true,
         entities: [
           Map,
+          MapLayer,
           Survey,
           Marker,
           MediaFileEntity
         ]
       });
       
-      this.mediafilesProvider.checkMediaDirs();
+      this.appFilesProvider.checkMediaDirs();
       this.rootPage = HomePage;
 
       //this.clearDatabase();
@@ -71,26 +73,33 @@ export class MyApp {
       let mediaRep = getRepository('mediafile') as Repository<MediaFileEntity>;
       let m = await mediaRep.find();
       console.log(m);
-      mediaRep.clear();
+      //mediaRep.clear();
       let media = await mediaRep.find();
       console.log(media);
 
       let markersRep = getRepository('marker') as Repository<Marker>;
       let ma = await markersRep.find();
       console.log(ma);
-      markersRep.clear();
+      //markersRep.clear();
       let markers = await markersRep.find();
       console.log(markers);
 
       let surveyRep = getRepository('survey') as Repository<Survey>;
       let surveys = await surveyRep.find();
       console.log(surveys);
-      surveyRep.clear();
+      //surveyRep.clear();
       let lsurveys = await surveyRep.find();
       console.log(lsurveys);
 
+      let layRep = getRepository('maplayer') as Repository<MapLayer>;
+      let layers = await layRep.find();
+      console.log(layers);
+      //layRep.clear();
+
       let mapRep = getRepository('map') as Repository<Map>;
-      mapRep.clear();
+      let map = await mapRep.find();
+      console.log(map);
+      //mapRep.clear();
     }
 
   openPage(page) {
