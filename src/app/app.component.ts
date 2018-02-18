@@ -21,7 +21,11 @@ import { Storage } from '@ionic/storage';
   templateUrl: 'app.html'
 })
 export class MyApp {
+
+  connection:any;
+
   @ViewChild(Nav) nav: Nav;
+
 
   rootPage: any;
 
@@ -45,20 +49,22 @@ export class MyApp {
       this.statusBar.styleDefault();
       //this.splashScreen.hide();
 
-      await createConnection({
+      let connOptions = {
         type: 'cordova',
-        database: 'mapbiomas_db_6',
+        database: 'mapbiomas_db_9',
         location: 'default',
         logging: ['error', 'query', 'schema'],
-        //synchronize: true,
+        synchronize: true,
         entities: [
           Map,
           MapLayer,
           Survey,
           Marker,
-          MediaFileEntity
+          MediaFileEntity,
         ]
-      });
+      }
+
+      await this.createSchemeDatabase(connOptions);
       
       this.appFilesProvider.checkMediaDirs();
       this.rootPage = HomePage;
@@ -66,6 +72,16 @@ export class MyApp {
       //this.clearDatabase();
 
     });
+  }
+
+
+  async createSchemeDatabase(connectionOptions){
+      await createConnection(connectionOptions).then(connection => {
+        this.connection = connection;
+    }).catch(async error => {
+        connectionOptions.synchronize = false;
+        this.connection = await createConnection(connectionOptions);
+    })
   }
 
 

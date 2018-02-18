@@ -84,10 +84,13 @@ export class ModalSelectLayersPage {
   }
 
   layerChangeVisibility(mapLayerEntity){
-      console.log(mapLayerEntity);
       var layerUI = this.getMapLayerUIByName(mapLayerEntity.path);
       if (layerUI){
+        console.log(mapLayerEntity.visible);
         layerUI.setVisible(mapLayerEntity.visible);
+        // guardo estado en la bd
+        mapLayerEntity.visible = (mapLayerEntity.visible) ? 1 : 0;
+        this.layerRep.save(mapLayerEntity);
       }
   }
 
