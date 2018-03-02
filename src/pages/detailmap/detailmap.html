@@ -46,8 +46,8 @@
   <ion-card-header>
       Relevamientos
   </ion-card-header>
-   <ion-card-content>
-    <ion-list *ngIf="mapEntity.surveys.length; else mapEmptySurveys">
+   <ion-card-content *ngIf="mapEntity.surveys.length; else mapEmptySurveys">
+    <ion-list>
         <ion-item *ngFor="let survey of mapEntity.surveys; let i = index" (click)="viewSurvey($event, survey)">
           <ion-avatar item-start>
              <img src="assets/icon/survey-icon.png">
@@ -57,8 +57,7 @@
           <p>{{ getFormattedDate(survey.creation_date) }}</p>
         </ion-item>
     </ion-list>
-
-<button ion-button (click)="createNewSurvey()" block>Nuevo relevamiento</button>
+    <button ion-button (click)="createNewSurvey()" block>Nuevo relevamiento</button>
  </ion-card-content>
 </ion-card>
 

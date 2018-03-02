@@ -94,6 +94,7 @@ export class DetailsurveyPage {
 async deleteSurveyEntity(){
     let manager = getManager();
     var self = this;
+    var toastFiredOnce = false;
     await manager.transaction(async manager => {
         let mediaFiles = await self.loadMediaFilesRelations();
         mediaFiles.map(function(item){ // elimina archivos fisicos
@@ -104,7 +105,10 @@ async deleteSurveyEntity(){
         await manager.remove(self.survey);
         this.toast.showShortTop("Relevamiento eliminado con éxito").subscribe(
           entity => {
-            this.navCtrl.popToRoot();
+            if (!toastFiredOnce){
+                self.navCtrl.pop();
+                toastFiredOnce = true;
+            }
           }  
         )}
     );

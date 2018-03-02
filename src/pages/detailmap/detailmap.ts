@@ -103,6 +103,7 @@ async deleteMapEntity(){
     let surveyRep = getRepository('survey') as Repository<Survey>;
     let mapSurveys = await surveyRep.find();
     var self = this;
+    var toastFiredOnce = false;
     await manager.transaction(async manager => {
         let mediaFiles = await self.loadMediaFilesRelations();
         mediaFiles.map(function(item){ // elimina archivos fisicos
@@ -115,7 +116,10 @@ async deleteMapEntity(){
         await manager.remove(self.mapEntity);
         this.toast.showShortTop("Mapa eliminado con éxito").subscribe(
           entity => {
-            this.navCtrl.popToRoot();
+            if (!toastFiredOnce){
+                self.navCtrl.popToRoot();
+                toastFiredOnce = true;
+            }
           }  
         )}
     );

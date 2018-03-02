@@ -331,13 +331,17 @@ export class CreateMarkerPage {
 
   	saveMarker(){
 	    var self  = this;
+	    var toastFiredOnce = false;
 	    this.markerRepository.save(this.marker)
 	    .then(function(savedMarker) {
 	    	console.log(savedMarker);
 	    	self.toast.showShortTop("Marcador creado con éxito").subscribe(
-	    		toast => {
-				    self.navCtrl.popToRoot();
-				  }
+	    		toast =>  {
+			            if (!toastFiredOnce){
+							      self.navCtrl.popToRoot();
+			              toastFiredOnce = true;
+			            }
+			  }
 	    	);
 	    	
 	    });

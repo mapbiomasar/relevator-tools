@@ -48,7 +48,7 @@ export class ModalSelectLayersPage {
   importLayer(){
   	this.fileChooser.open()
   .then(uri => this.importLayerFile(uri))
-  .catch(e => alert("No se pudo importar el archivo"));
+  .catch(e => alert(e));
   }
 
 

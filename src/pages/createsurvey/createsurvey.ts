@@ -60,6 +60,7 @@ export class CreatesurveyPage {
 
 	saveSurvey(){
 		var self = this;
+		var toastFiredOnce = false;
 		var message = "Relevamiento " + ((self.isEditingContext()) ? "editado" : "creado") + " con éxito";
 		this.survey.creation_date = this.utils.getNowUnixTimestamp();
 		this.surveyRepository.save(this.survey)
@@ -67,7 +68,10 @@ export class CreatesurveyPage {
 	    	// Creo un survey por defecto para el mapa
 	    	self.toast.showShortTop(message).subscribe(
 	    		toast => {
-				     self.navCtrl.popToRoot();
+				     if (!toastFiredOnce){
+				      	self.navCtrl.pop();
+		              	toastFiredOnce = true;
+		            }
 				  }
 	    	);
 	    });

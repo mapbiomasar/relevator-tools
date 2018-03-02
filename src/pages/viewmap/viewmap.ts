@@ -40,7 +40,7 @@ import {ModalSelectLayersPage} from '../modal-select-layers/modal-select-layers'
 })
 export class ViewMapPage {
 
-	@ViewChild('map') mapElement: ElementRef;
+	//@ViewChild('map') mapElement: ElementRef;
   map: any;
   mapEntity:Map;
   surveySelected:Survey;
@@ -128,11 +128,13 @@ export class ViewMapPage {
             features: [this.positionFeature, this.mapCrosshair]   
           })
       });
-
       this.mapCrosshair.setGeometry(new Point(this.map.getView().getCenter()));
       let that = this; 
       this.map.getView().on('change:center', function(){ 
-          that.mapCrosshair.setGeometry(new Point(this.getCenter()));
+          //console.log(this.getCenter());
+          that.mapCrosshair.getGeometry().setCoordinates(this.getCenter());
+          //console.log(that.mapCrosshair.getGeometry().getCoordinates());
+          //that.mapCrosshair.changed();
       });
       this.loadMarkersFeatures();
       this.loadImportedLayers();
