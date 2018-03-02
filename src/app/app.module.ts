@@ -17,6 +17,7 @@ import { FileChooser } from '@ionic-native/file-chooser';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
+import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
 import { CreateMapPage } from '../pages/createmap/createmap';
 import { ViewMapPage } from '../pages/viewmap/viewmap';
 import { DetailMapPage } from '../pages/detailmap/detailmap';
@@ -38,6 +39,7 @@ import { ToastProvider } from '../providers/toast/toast';
     MyApp,
     HomePage,
     ListPage,
+    CustomFormsPage,
     CreateMapPage,
     ViewMapPage,
     DetailMapPage,
@@ -58,6 +60,7 @@ import { ToastProvider } from '../providers/toast/toast';
     MyApp,
     HomePage,
     ListPage,
+    CustomFormsPage,
     CreateMapPage,
     ViewMapPage,
     DetailMapPage,

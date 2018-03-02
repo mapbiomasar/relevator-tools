@@ -11,9 +11,12 @@ import {MapLayer} from "../entities/maplayer";
 import {Survey} from "../entities/survey";
 import {Marker} from "../entities/marker";
 import {MediaFileEntity} from "../entities/mediafileentity";
+import {CustomForm} from "../entities/customForm";
+import {CustomFormElement} from "../entities/customFormElement";
 
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
+import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
 
 import { Storage } from '@ionic/storage';
 
@@ -37,6 +40,7 @@ export class MyApp {
     // used for an example of ngFor and navigation
     this.pages = [
       { title: 'Mis mapas', component: HomePage },
+      { title: 'Formularios', component: CustomFormsPage },
       { title: 'Configuracion', component: ListPage },
     ];
 
@@ -51,7 +55,7 @@ export class MyApp {
 
       let connOptions = {
         type: 'cordova',
-        database: 'mapbiomas_db_9',
+        database: 'mapbiomas_db_10',
         location: 'default',
         logging: ['error', 'query', 'schema'],
         synchronize: true,
@@ -61,6 +65,8 @@ export class MyApp {
           Survey,
           Marker,
           MediaFileEntity,
+          CustomForm,
+          CustomFormElement
         ]
       }
 
@@ -69,7 +75,7 @@ export class MyApp {
       this.appFilesProvider.checkMediaDirs();
       this.rootPage = HomePage;
 
-      //this.clearDatabase();
+      this.showDatabase(false);
 
     });
   }
@@ -85,37 +91,40 @@ export class MyApp {
   }
 
 
-  async clearDatabase(){
+  async showDatabase(clear){
       let mediaRep = getRepository('mediafile') as Repository<MediaFileEntity>;
       let m = await mediaRep.find();
       console.log(m);
-      //mediaRep.clear();
       let media = await mediaRep.find();
       console.log(media);
 
       let markersRep = getRepository('marker') as Repository<Marker>;
       let ma = await markersRep.find();
       console.log(ma);
-      //markersRep.clear();
       let markers = await markersRep.find();
       console.log(markers);
 
       let surveyRep = getRepository('survey') as Repository<Survey>;
       let surveys = await surveyRep.find();
       console.log(surveys);
-      //surveyRep.clear();
       let lsurveys = await surveyRep.find();
       console.log(lsurveys);
 
       let layRep = getRepository('maplayer') as Repository<MapLayer>;
       let layers = await layRep.find();
       console.log(layers);
-      //layRep.clear();
 
       let mapRep = getRepository('map') as Repository<Map>;
       let map = await mapRep.find();
       console.log(map);
-      //mapRep.clear();
+
+      if (clear){
+          mediaRep.clear();
+          markersRep.clear();
+          surveyRep.clear();
+          layRep.clear();
+          mapRep.clear();
+      }
     }
 
   openPage(page) {
