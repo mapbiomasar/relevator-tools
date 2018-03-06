@@ -18,6 +18,7 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
 import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
+import { CreateCustomFormPage } from '../pages/create-custom-form/create-custom-form';
 import { CreateMapPage } from '../pages/createmap/createmap';
 import { ViewMapPage } from '../pages/viewmap/viewmap';
 import { DetailMapPage } from '../pages/detailmap/detailmap';
@@ -27,6 +28,7 @@ import { CreatesurveyPage } from '../pages/createsurvey/createsurvey';
 import { DetailsurveyPage } from '../pages/detailsurvey/detailsurvey';
 import { ModalselectsurveyPage } from '../pages/modalselectsurvey/modalselectsurvey';
 import { ModalSelectLayersPage } from '../pages/modal-select-layers/modal-select-layers';
+import { ModalCreateFormFieldPage } from '../pages/modal-create-form-field/modal-create-form-field';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -34,12 +36,18 @@ import { UtilsProvider } from '../providers/utils/utils';
 import { AppFilesProvider } from '../providers/appfiles/appfiles';
 import { ToastProvider } from '../providers/toast/toast';
 
+
+import { ReactiveFormsModule } from '@angular/forms';
+import { DynamicFormComponent }         from '../components/dynamic-form.component';
+import { DynamicFormQuestionComponent } from '../components/dynamic-form-question.component';
+
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
     ListPage,
     CustomFormsPage,
+    CreateCustomFormPage,
     CreateMapPage,
     ViewMapPage,
     DetailMapPage,
@@ -48,12 +56,16 @@ import { ToastProvider } from '../providers/toast/toast';
     DetailsurveyPage,
     CreatesurveyPage,
     ModalselectsurveyPage,
-    ModalSelectLayersPage
+    ModalSelectLayersPage,
+    ModalCreateFormFieldPage,
+    DynamicFormComponent,
+    DynamicFormQuestionComponent
   ],
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
-    IonicStorageModule.forRoot()
+    IonicStorageModule.forRoot(),
+    ReactiveFormsModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [
@@ -61,6 +73,7 @@ import { ToastProvider } from '../providers/toast/toast';
     HomePage,
     ListPage,
     CustomFormsPage,
+    CreateCustomFormPage,
     CreateMapPage,
     ViewMapPage,
     DetailMapPage,
@@ -69,7 +82,10 @@ import { ToastProvider } from '../providers/toast/toast';
     DetailsurveyPage,
     CreatesurveyPage,
     ModalselectsurveyPage,
-    ModalSelectLayersPage
+    ModalSelectLayersPage,
+    ModalCreateFormFieldPage,
+    DynamicFormComponent,
+    DynamicFormQuestionComponent
   ],
   providers: [
     StatusBar,

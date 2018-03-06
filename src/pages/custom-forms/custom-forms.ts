@@ -3,6 +3,8 @@ import { IonicPage, NavController, NavParams, Platform, ActionSheetController } 
 import { getRepository, Repository } from 'typeorm';
 
 
+import {CreateCustomFormPage} from '../create-custom-form/create-custom-form';
+
 import {CustomForm} from "../../entities/customForm";
 
 @IonicPage()
@@ -37,6 +39,8 @@ export class CustomFormsPage {
 
 
   	createNewForm(){
+      this.navCtrl.push(CreateCustomFormPage, {
+        });
     } 
 
 	openMenu() {
