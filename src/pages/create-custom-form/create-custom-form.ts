@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, ModalController, ViewController } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, Platform, ModalController, ViewController, ActionSheetController} from 'ionic-angular';
 import { getRepository, Repository } from 'typeorm';
 import { Toast } from '@ionic-native/toast';
 
@@ -14,9 +14,6 @@ import {CustomFormElement} from "../../entities/customFormElement";
 import { FormControl } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
 
-import { DropdownQuestion } from '../../components/question-dropdown';
-import { TextboxQuestion }  from '../../components/question-textbox';
-
 import {ModalCreateFormFieldPage} from '../modal-create-form-field/modal-create-form-field';
 
 @IonicPage()
@@ -28,17 +25,16 @@ import {ModalCreateFormFieldPage} from '../modal-create-form-field/modal-create-
 export class CreateCustomFormPage {
 
   formRepository:any;
+  formElementsRepository:any;
   formEntity:CustomForm;
 
   form:FormGroup;
-  questions: any[];
 
   contextData = {};
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, private qcs: QuestionControlService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, private qcs: QuestionControlService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController) {
     this.formRepository = getRepository('customForm') as Repository<CustomForm>;
-  	this.questions = []; //service.getQuestions();
-    this.form = this.qcs.toFormGroup(this.questions);
+    this.formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     this.formEntity = this.navParams.get("form");
     if (!this.isEditingContext()){
         this.formEntity = new CustomForm();
@@ -46,6 +42,7 @@ export class CreateCustomFormPage {
         this.formEntity.form_elements = [];
     }
     this.setContextData();
+    this.updateForm();
   }
 
   isEditingContext(){
@@ -67,13 +64,12 @@ export class CreateCustomFormPage {
   }
 
   ionViewDidLoad() {
-    console.log('ionViewDidLoad CreateCustomFormPage');
     this.updateForm();
   }
 
 
   updateForm(){
-      this.form = this.qcs.toFormGroup(this.questions);
+      this.form = this.qcs.toFormGroup(this.formEntity.form_elements);
   }
 
 
@@ -85,28 +81,13 @@ export class CreateCustomFormPage {
       modalNewFormField.present();
 
       modalNewFormField.onDidDismiss((data) => {
-          if (data.question){
-            let newQuestion = data.question;
-            self.questions.push(newQuestion);
-            self.createCustomFormElement(newQuestion, fieldType);
+          if (data.formElement){
+            let newFormElement = data.formElement;
+            newFormElement.form = this.formEntity;
+            this.formEntity.form_elements.push(newFormElement);
             self.updateForm();
           }
       });
-  }
-
-
-  // receives QuestionBase and construct a CustomFormElement object
-  createCustomFormElement(questionBase, fieldType){
-      let newCustomFormElement = new CustomFormElement();
-      newCustomFormElement.form = this.formEntity;
-      newCustomFormElement.name = questionBase.key;
-      newCustomFormElement.label = questionBase.label;
-      newCustomFormElement.tipo = fieldType;
-      newCustomFormElement.options = (questionBase.options) ? JSON.stringify(questionBase.options) : "[]";
-      // asocio elemento al form
-      this.formEntity.form_elements.push(newCustomFormElement);
-      console.log(newCustomFormElement);
-
   }
 
   saveForm(){
@@ -125,6 +106,59 @@ export class CreateCustomFormPage {
         );
       });
   }
+
+  openMenu() {
+    let actionSheet = this.actionsheetCtrl.create({
+    title: 'Formulario',
+    cssClass: 'action-sheets-basic-page',
+    buttons: [
+    {
+      text: 'Eliminar formulario',
+      role: 'destructive',
+      icon: !this.platform.is('ios') ? 'trash' : null,
+      handler: () => {
+          this.presentAlertDelete();
+      }
+    },
+    ]
+    });
+    actionSheet.present();
+    }
+
+
+    presentAlertDelete() {
+      if (this.isEditingContext()){ // Solo permitir eliminar si se está editando
+      var self = this;
+      let alert = this.alertCtrl.create({
+      title: 'Eliminar formulario',
+      message: '¿Está seguro de que desea eliminar el formulario?. Esta acción borrara a este formulario y a todos sus formularios hijos',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            
+          }
+        },
+        {
+          text: 'Eliminar',
+          handler: () => {
+              this.formElementsRepository.remove(this.formEntity.form_elements);
+              this.formRepository.remove(this.formEntity).then(entity => {
+              self.toast.showShortTop("Formulario eliminado con éxito").subscribe(
+                entity => {
+                   self.navCtrl.popToRoot();
+                }   
+              );
+            });
+          }
+        }
+      ]
+      });
+      alert.present();
+    }
+  }
+
 
 
 }

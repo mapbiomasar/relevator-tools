@@ -40,6 +40,7 @@ import { ToastProvider } from '../providers/toast/toast';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormComponent }         from '../components/dynamic-form.component';
 import { DynamicFormQuestionComponent } from '../components/dynamic-form-question.component';
+import { FormsProvider } from '../providers/forms/forms';
 
 @NgModule({
   declarations: [
@@ -101,7 +102,9 @@ import { DynamicFormQuestionComponent } from '../components/dynamic-form-questio
     UtilsProvider,
     AppFilesProvider,
     ToastProvider,
-    FileChooser
+    FileChooser,
+    FormsProvider,
+    FormsProvider
   ]
 })
 export class AppModule {}

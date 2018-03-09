@@ -3,6 +3,11 @@
 
   <ion-navbar>
     <ion-title>{{contextData.title}}  Formulario</ion-title>
+    <ion-buttons *ngIf="isEditingContext()" end>
+      <button ion-button icon-only color="royal" (click)="openMenu()">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-navbar>
 
 </ion-header>
@@ -10,7 +15,7 @@
 
 <ion-content padding>
   <ion-item>
-    <ion-label stacked>Nombre del mapa</ion-label>
+    <ion-label stacked>Nombre del  formulario</ion-label>
     <ion-input [(ngModel)]="formEntity.name" name="formName" type="text"></ion-input>
   </ion-item>
 	<ion-card>
@@ -18,7 +23,7 @@
         Campos del formulario
     </ion-card-header>
 		<ion-card-content>
-			<app-dynamic-form [questions]="questions" [form]="form"></app-dynamic-form>
+			<app-dynamic-form [formElements]="formEntity.form_elements" [form]="form"></app-dynamic-form>
 		</ion-card-content>
 		<ion-item>
       <button ion-button clear item-start (click)="presentModalFieldCreator('textbox')">Añadir Input</button>

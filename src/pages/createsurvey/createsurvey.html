@@ -27,6 +27,11 @@
     <ion-input [(ngModel)]="survey.author_name" name="author_name" type="text"></ion-input>
   </ion-item>
 
+  <ion-item>
+    <ion-label stacked>Formulario</ion-label>
+    <ion-input [(ngModel)]="survey.form" name="form" type="text"></ion-input>
+  </ion-item>
+
 </ion-list>
 <button ion-button color="primary" type="submit" block>{{contextData.button_save_text}} datos</button>
 </form>

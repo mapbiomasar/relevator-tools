@@ -2,17 +2,18 @@ import { Injectable }   from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { QuestionBase } from '../../components/question-base';
+import {CustomFormElement} from "../../entities/customFormElement";
 
 @Injectable()
 export class QuestionControlService {
   constructor() { }
 
-  toFormGroup(questions: QuestionBase<any>[] ) {
+  toFormGroup(questions: CustomFormElement[] ) {
+  	console.log(questions);
     let group: any = {};
 
     questions.forEach(question => {
-      group[question.key] = question.required ? new FormControl(question.value || '', Validators.required)
-                                              : new FormControl(question.value || '');
+      group[question.key] = new FormControl('' || '');
     });
     return new FormGroup(group);
   }

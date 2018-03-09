@@ -2,9 +2,11 @@ import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { Toast } from '@ionic-native/toast';
 import { UtilsProvider } from '../../providers/utils/utils';
+import { FormsProvider } from '../../providers/forms/forms';
 
 import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
+import {CustomForm} from "../../entities/customForm";
 import { getRepository, Repository } from 'typeorm';
 
 @IonicPage()
@@ -21,7 +23,7 @@ export class CreatesurveyPage {
 
 	contextData = {};
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private utils: UtilsProvider) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private utils: UtilsProvider, private formsProvider: FormsProvider) {
 	 	this.surveyRepository = getRepository('survey') as Repository<Survey>;
 		this.map = navParams.get("map");
 		this.survey = navParams.get("survey");
@@ -31,8 +33,17 @@ export class CreatesurveyPage {
 	        this.survey.description = "Descripción";
 	        this.survey.author_name = "Usuario";
 	        this.survey.map = this.map;
+	        this.bindDefaultForm(this.survey);
 	      }
       this.setContextData();
+	}
+
+
+	async bindDefaultForm(survey){
+		let form = await this.formsProvider.getDefaultForm();
+		if (form){
+			survey.form = form;
+		}
 	}
 
 	ionViewDidLoad() {

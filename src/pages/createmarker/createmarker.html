@@ -63,47 +63,7 @@
               Atributos
             </ion-card-header>
             <ion-card-content>
-              <ion-item>
-                <ion-label>Categoría</ion-label>
-                <ion-select [(ngModel)]="markerLocalAttributes.category" name="category" interface="popover">
-                  <ion-option value="category1">Categoría 1</ion-option>
-                  <ion-option value="category2">Categoría 2</ion-option>
-                  <ion-option value="category3">Categoría 3</ion-option>
-                  <ion-option value="category4">Categoría 4</ion-option>
-                  <ion-option value="category5">Categoría 5</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>Consenso</ion-label>
-                <ion-select [(ngModel)]="markerLocalAttributes.data_consensus" name="data_consensus" interface="popover">
-                  <ion-option value="1">Si</ion-option>
-                  <ion-option value="0">No</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>Ubicación</ion-label>
-                <ion-select [(ngModel)]="markerLocalAttributes.point_ubication" name="point_ubication" interface="popover">
-                  <ion-option value="left">Izquierda</ion-option>
-                  <ion-option value="right">Derecha</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>¿Altura más de 3mts?</ion-label>
-                <ion-select [(ngModel)]="markerLocalAttributes.height_overpass" name="height_overpass" interface="popover">
-                  <ion-option value="1">Si</ion-option>
-                  <ion-option value="0">No</ion-option>
-                  <ion-option value="-1">S/D</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>Cobertura</ion-label>
-                <ion-select [(ngModel)]="markerLocalAttributes.coverage_percentage" name="coverage_percentage" interface="popover">
-                  <ion-option value="0">Menos del 20%</ion-option>
-                  <ion-option value="1">Entre 20% y 65%</ion-option>
-                  <ion-option value="2">Mas del 65%</ion-option>
-                  <ion-option value="-1">S/D</ion-option>
-                </ion-select>
-                </ion-item>
+                <app-dynamic-form [formElements]="formElements" [form]="formComponent"></app-dynamic-form>
               </ion-card-content>
           </form>
           </ion-card>

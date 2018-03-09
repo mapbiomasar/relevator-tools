@@ -27,10 +27,12 @@ import KML from 'ol/format/kml';
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
 
+
 import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
 import {Marker} from "../../entities/marker";
 import {MediaFileEntity} from "../../entities/mediafileentity";
+import {CustomFormElement} from "../../entities/customFormElement";
 
 import {ModalSelectLayersPage} from '../modal-select-layers/modal-select-layers';
 
@@ -65,7 +67,14 @@ export class ViewMapPage {
     this.mapEntity = navParams.get('map');
     this.surveySelected = this.mapEntity.surveys[0] || null;
     this.defaultGeolocZoom = 15;
+    this.loadFormElements()
 	}
+
+  async loadFormElements(){
+    let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
+    let elements = await formElementsRepository.find({where:{'formId':this.surveySelected.form.id}});
+    this.surveySelected.form.form_elements = elements;
+  }
 
 	ionViewWillEnter() {
     console.log(this.mapEntity);

@@ -29,4 +29,10 @@ export class CustomForm {
         cascadeUpdate: true
     })
     form_elements: CustomFormElement[];
+
+    @OneToMany(type => Survey, survey => survey.form, {
+        cascadeInsert: true,
+        cascadeUpdate: true
+    })
+    surveys: Survey[];
 }

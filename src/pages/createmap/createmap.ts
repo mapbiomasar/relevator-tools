@@ -3,6 +3,7 @@ import { NavController, NavParams} from 'ionic-angular';
 import { Toast } from '@ionic-native/toast';
 import {HomePage} from '../home/home';
 import { UtilsProvider } from '../../providers/utils/utils';
+import { FormsProvider } from '../../providers/forms/forms';
 import { ToastProvider } from '../../providers/toast/toast';
 
 import {Map} from "../../entities/map";
@@ -21,7 +22,7 @@ export class CreateMapPage {
   contextData = {};
 
 
-  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private toastProvider: ToastProvider, private utils: UtilsProvider) {
+  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private toastProvider: ToastProvider, private utils: UtilsProvider, private formsProvider: FormsProvider) {
       this.mapRepository = getRepository('map') as Repository<Map>;
   		this.map = this.navParams.get("map");
       if (!this.isEditingContext()){
@@ -59,7 +60,19 @@ export class CreateMapPage {
     	survey.description = "Relevamiento creado por defecto";
     	survey.creation_date = this.map.creation_date;
       survey.author_name = "Usuario";
+      this.bindDefaultForm(survey);
+      console.log(survey);
     	return survey;
+    }
+
+
+    async bindDefaultForm(survey){
+      let form = await this.formsProvider.getDefaultForm();
+      console.log("FORM!");
+      console.log(form);
+      if (form){
+        survey.form = form;
+      }
     }
     
 

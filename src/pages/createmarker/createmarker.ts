@@ -18,14 +18,20 @@ import { MediaCapture, MediaFile, CaptureError} from '@ionic-native/media-captur
 import {ViewMapPage} from '../viewmap/viewmap';
 import {ModalselectsurveyPage} from '../modalselectsurvey/modalselectsurvey';
 
+import { QuestionControlService }  from '../../providers/questions/question-control.service';
+
 import {Marker} from "../../entities/marker";
 import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
 import {MediaFileEntity} from "../../entities/mediafileentity";
+import {CustomFormElement} from "../../entities/customFormElement";
+
+import { FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'page-createmarker',
-  templateUrl: 'createmarker.html'
+  templateUrl: 'createmarker.html',
+  providers:  [QuestionControlService]
 })
 export class CreateMarkerPage {
 
@@ -48,10 +54,13 @@ export class CreateMarkerPage {
 	maxImagesNumber:number = 3;
 	maxAudiosNumber:number = 1;
 
+	formComponent:FormGroup;
+	formElements:CustomFormElement[] = [];
+
 
   	contextData = {};
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider, private modalController: ModalController) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider, private modalController: ModalController,  private qcs: QuestionControlService) {
 			this.markerRepository = getRepository('marker') as Repository<Marker>;
 			this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
 			this.mapViewEntity = navParams.get('map');
@@ -74,7 +83,17 @@ export class CreateMarkerPage {
 			this.marker.survey = this.currentSurvey;
 			this.setContextData();
 			this.populateMediaLists();
+			this.updateForm();
 			this.toogleOrientationSubsctription();
+	}
+
+ 	ionViewWillEnter() {
+    	this.updateForm();
+  	}
+
+	async updateForm(){
+		this.formElements = this.marker.survey.form.form_elements;
+		this.formComponent = this.qcs.toFormGroup(this.formElements);
 	}
 
 	async loadMediaFilesRelations(){
@@ -85,7 +104,6 @@ export class CreateMarkerPage {
 	      	var tmpMediafile = this.mediafilesRepository.create(mediaFiles[i]);
       		this.marker.mediaFiles.push(tmpMediafile);
 	    }
-	    console.log(this.marker);
 	}
 
 

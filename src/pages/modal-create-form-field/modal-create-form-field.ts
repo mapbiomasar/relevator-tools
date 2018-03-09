@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
 
+import {CustomFormElement} from "../../entities/customFormElement";
+
 import { QuestionBase }     from '../../components/question-base';
 import { TextboxQuestion }  from '../../components/question-textbox';
 import { DropdownQuestion }  from '../../components/question-dropdown';
@@ -13,39 +15,46 @@ import { DropdownQuestion }  from '../../components/question-dropdown';
 export class ModalCreateFormFieldPage {
 
   fieldType:string;
-  questionObject:QuestionBase<any>;
+  formElementObject:CustomFormElement;
   newFieldParams:any = {};
+
+  elementOptions = [];
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController) {
   	this.fieldType = navParams.get("fieldType");
-  	this.initQuestionObject();
+  	this.initFormElement();
   }
 
 
-  initQuestionObject(){
+  initFormElement(){
       let self = this;
-  		if (this.fieldType == "textbox"){
-  			this.questionObject = new TextboxQuestion();
-  		} else if (this.fieldType == "dropdown"){
-  			this.questionObject = new DropdownQuestion();
-  		}
+      this.formElementObject = new CustomFormElement();
+      this.formElementObject.tipo = this.fieldType;
   }
+
+  
 
 
   addField(){
-    this.dismiss(this.questionObject);
+    this.dismiss(this.formElementObject);
   }
 
 
 
   addOption(){
-    this.questionObject["options"].push({key: 'newoption', value:'Opcion'});
+    console.log("add");
+    this.elementOptions.push({key: 'newoption', value:'Opcion'});
+    console.log(this.elementOptions);
   }
 
   dismiss(newQuestion) {
     let self = this;
+    if (newQuestion){
+      newQuestion.options = JSON.stringify(this.elementOptions);
+    }
+    console.log(newQuestion);
     this.viewCtrl.dismiss({
-        question: newQuestion
+        formElement: newQuestion
     });
   }
 
