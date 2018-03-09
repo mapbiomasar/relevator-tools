@@ -14,12 +14,11 @@ import {CustomForm} from "../../entities/customForm";
 })
 export class CustomFormsPage {
 
-	forms:any;
+	forms:any = [];
 	formRepository:any;
 
   	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController) {
   		this.formRepository = getRepository('customForm') as Repository<CustomForm>;
-  		this.forms = [];
   	}
 
     ionViewWillEnter(){
@@ -28,13 +27,14 @@ export class CustomFormsPage {
 
     async loadForms(){
     	this.forms = await this.formRepository.find({relations:["child_forms", "form_elements"]});
+      console.log(this.forms);
     }
 
 
     viewForm(event, form){
-        /*this.navCtrl.push(ViewMapPage, {
+        this.navCtrl.push(CreateCustomFormPage, {
             form: form
-        });*/
+        });
     }
 
 

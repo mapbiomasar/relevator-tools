@@ -2,13 +2,17 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Nuevo Formulario</ion-title>
+    <ion-title>{{contextData.title}}  Formulario</ion-title>
   </ion-navbar>
 
 </ion-header>
 
 
 <ion-content padding>
+  <ion-item>
+    <ion-label stacked>Nombre del mapa</ion-label>
+    <ion-input [(ngModel)]="formEntity.name" name="formName" type="text"></ion-input>
+  </ion-item>
 	<ion-card>
 	 <ion-card-header>
         Campos del formulario
@@ -17,10 +21,10 @@
 			<app-dynamic-form [questions]="questions" [form]="form"></app-dynamic-form>
 		</ion-card-content>
 		<ion-item>
-      <button ion-button clear item-start (click)="appendInput()">Añadir Input</button>
-      <button ion-button clear item-end (click)="appendDropdown()">Añadir Select</button>
+      <button ion-button clear item-start (click)="presentModalFieldCreator('textbox')">Añadir Input</button>
+      <button ion-button clear item-end (click)="presentModalFieldCreator('dropdown')">Añadir Select</button>
     </ion-item>
 	</ion-card>
-	<button ion-button color="primary" block (click)="saveForm()">Guardar formulario</button>
+	<button ion-button color="primary" block (click)="saveForm()">{{contextData.button_save_text}} formulario</button>
 
 </ion-content>

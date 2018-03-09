@@ -24,6 +24,6 @@ export class CustomFormElement {
 
 
     @Column("text")
-    fields: string;
+    options: string;
 
 }
