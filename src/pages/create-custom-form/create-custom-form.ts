@@ -29,6 +29,7 @@ export class CreateCustomFormPage {
   formEntity:CustomForm;
 
   form:FormGroup;
+  formsList:CustomForm[] = [];
 
   contextData = {};
 
@@ -40,8 +41,10 @@ export class CreateCustomFormPage {
         this.formEntity = new CustomForm();
         this.formEntity.name = "Nuevo formulario";
         this.formEntity.form_elements = [];
+        this.formEntity.parent_form = new CustomForm();
     }
     this.setContextData();
+    this.getFormsList();
     this.updateForm();
   }
 
@@ -70,6 +73,35 @@ export class CreateCustomFormPage {
 
   updateForm(){
       this.form = this.qcs.toFormGroup(this.formEntity.form_elements);
+  }
+
+  async getFormsList(){
+    let forms = await this.formRepository.find();
+    if (forms){
+        this.formsList = forms;
+    }
+  }
+
+  parentFormCanBeChanged(){
+    return true;
+  }
+
+
+  parentFormInitChange(selectedFormID: any) {
+    alert(selectedFormID);
+    if (this.parentFormCanBeChanged()){
+        console.log(selectedFormID);
+        this.formEntity.parent_form = this.getFormObject(selectedFormID);
+    }
+  }
+
+  getFormObject(formID){
+      for (let i in this.formsList){
+        if (this.formsList[i].id == formID){
+          return this.formsList[i];
+        }
+      }
+      return null;
   }
 
 
