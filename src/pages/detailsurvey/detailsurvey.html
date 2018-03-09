@@ -1,0 +1,77 @@
+
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Detalle de Relevamiento</ion-title>
+    <ion-buttons end>
+      <button ion-button icon-only color="royal" (click)="openMenu()">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content padding>
+
+<ion-card>
+  <ion-card-header>
+      Detalles
+  </ion-card-header>
+  <ion-card-content>
+      <ion-list>
+       <ion-item >
+              Nombre
+              <ion-note item-end>
+                {{survey.name}}
+              </ion-note>
+      </ion-item>
+       <ion-item >
+              Detalle
+              <ion-note item-end>
+                {{survey.description}}
+              </ion-note>
+      </ion-item>
+       <ion-item >
+              Fecha creación
+              <ion-note item-end>
+                {{ getSurveyDate() }}
+              </ion-note>
+      </ion-item>
+      </ion-list>
+    </ion-card-content>
+</ion-card>
+
+<ion-card>
+  <ion-card-header>
+      Marcadores
+  </ion-card-header>
+  <ion-card-content>
+      <ion-list *ngIf="markers && markers.length; else emptyMarkers">
+      	<ion-item *ngFor="let marker of markers; let i = index" (click)="viewMarker($event, marker)">
+      	     <ion-icon name='pin' primary item-start></ion-icon>
+      	      Marcador {{i+1}}
+
+      	</ion-item>
+
+      </ion-list>
+  </ion-card-content>
+</ion-card>
+
+</ion-content>
+
+
+<ng-template #mapEmptySurveys>
+<ion-grid>
+  <ion-row>
+    <ion-col>
+    <p>Ningún marcador creado por el momento</p>
+    </ion-col>
+    <ion-col>
+  </ion-col>
+  </ion-row>
+</ion-grid>
+   
+</ng-template>

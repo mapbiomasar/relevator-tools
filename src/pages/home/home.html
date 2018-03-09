@@ -12,20 +12,35 @@
   </ion-navbar>
 </ion-header>
 
-<ion-content class="card-background-page">
+<ion-content class="card-background-page" padding>
 
-  <ion-list>
-    <ion-item *ngFor="let item of items" (click)="viewMap($event, item)">
+  
+  <ion-list *ngIf="maps.length; else mapsEmptyContent">
+    <ion-item  *ngFor="let map of maps" (click)="viewMap($event, map)">
 
       <ion-thumbnail item-start>
         <img src="assets/imgs/logo.png">
       </ion-thumbnail>
-      <h2>{{item.title}}</h2>
-      <p>{{item.note}}</p>
+      <h2>{{map.name}}</h2>
+      <p>{{map.description}}</p>
 
     </ion-item>
   </ion-list>
 
 </ion-content>
+
+<ng-template #mapsEmptyContent>
+<ion-grid>
+  <ion-row>
+    <ion-col>
+    <p>¡Todavía no has creado ningún mapa!</p>
+    </ion-col>
+    <ion-col>
+    <button ion-button (click)="createNewMap()" block> Nuevo mapa</button>
+  </ion-col>
+  </ion-row>
+</ion-grid>
+   
+</ng-template>
 
 

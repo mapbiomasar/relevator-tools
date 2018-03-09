@@ -4,28 +4,27 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Nuevo mapa</ion-title>
+    <ion-title>{{contextData.title}} Mapa</ion-title>
   </ion-navbar>
 </ion-header>
 
 
 <ion-content padding>
+<form (ngSubmit)="saveMap()">
 <ion-list>
 
   <ion-item>
     <ion-label stacked>Nombre del mapa</ion-label>
-    <ion-input type="text"></ion-input>
+    <ion-input [(ngModel)]="map.name" name="name" type="text"></ion-input>
   </ion-item>
 
   <ion-item>
     <ion-label stacked>Descripción</ion-label>
-    <ion-input type="text"></ion-input>
+    <ion-input [(ngModel)]="map.description" name="description" type="text"></ion-input>
   </ion-item>
 
 </ion-list>
-
-<div padding>
-    <button ion-button color="primary" block (click)="createMap()">Crear mapa</button>
-  </div>
+<button ion-button color="primary" type="submit" block>{{contextData.button_save_text}} datos</button>
+</form>
 
 </ion-content>

@@ -4,8 +4,12 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Nuevo marcador</ion-title>
-    
+    <ion-title>{{contextData.title}} Marcador</ion-title>
+    <ion-buttons *ngIf="isEditingContext()" end>
+      <button ion-button icon-only color="royal" (click)="openMenu()">
+        <ion-icon name="add"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
@@ -15,56 +19,54 @@
     <ion-row>
       <ion-col width-100>
         <ion-list>
+          <ion-card>
+            <ion-grid>
+              <ion-row>
+                <ion-col>
+                <ion-card-header>
+                  Relevamiento asociado
+                </ion-card-header>
+                </ion-col>
+                <ion-col>
+                  <button ion-button icon-only (click)="openModalSelectSurvey()" small outline>
+                  <ion-icon name="md-refresh" ></ion-icon>
+                </button>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+              <ion-card-content>
+                  <ion-list>
+                    <ion-item >
+                        Nombre
+                        <ion-note item-end>
+                          {{currentSurvey.name}}
+                        </ion-note>
+                    </ion-item>
+                    <ion-item >
+                        Autor
+                        <ion-note item-end>
+                          {{currentSurvey.author_name}}
+                        </ion-note>
+                    </ion-item>
+                    <ion-item >
+                        Fecha creación
+                        <ion-note item-end>
+                         {{ getFormattedDate(currentSurvey.creation_date) }}
+                        </ion-note>
+                    </ion-item>
+                  </ion-list>
+              </ion-card-content>
+          </ion-card>
+          <ion-card>
           <form (ngSubmit)="saveForm()">
-            <ion-card>
             <ion-card-header>
               Atributos
             </ion-card-header>
             <ion-card-content>
-              <ion-item>
-                <ion-label>Categoría</ion-label>
-                <ion-select [(ngModel)]="category" name="category" interface="popover">
-                  <ion-option value="category1">Categoría 1</ion-option>
-                  <ion-option value="category2">Categoría 2</ion-option>
-                  <ion-option value="category3">Categoría 3</ion-option>
-                  <ion-option value="category4">Categoría 4</ion-option>
-                  <ion-option value="category5">Categoría 5</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>Consenso</ion-label>
-                <ion-select [(ngModel)]="data_consensus" name="data_consensus" interface="popover">
-                  <ion-option value="1">Si</ion-option>
-                  <ion-option value="0">No</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>Ubicación</ion-label>
-                <ion-select [(ngModel)]="point_ubication" name="point_ubication" interface="popover">
-                  <ion-option value="left">Izquierda</ion-option>
-                  <ion-option value="right">Derecha</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>¿Altura más de 3mts?</ion-label>
-                <ion-select [(ngModel)]="height_overpass" name="height_overpass" interface="popover">
-                  <ion-option value="1">Si</ion-option>
-                  <ion-option value="0">No</ion-option>
-                  <ion-option value="-1">S/D</ion-option>
-                </ion-select>
-                </ion-item>
-                <ion-item>
-                <ion-label>Cobertura</ion-label>
-                <ion-select [(ngModel)]="coverage_percentage" name="coverage_percentage" interface="popover">
-                  <ion-option value="0">Menos del 20%</ion-option>
-                  <ion-option value="1">Entre 20% y 65%</ion-option>
-                  <ion-option value="2">Mas del 65%</ion-option>
-                  <ion-option value="-1">S/D</ion-option>
-                </ion-select>
-                </ion-item>
+                <app-dynamic-form [formElements]="formElements" [form]="formComponent"></app-dynamic-form>
               </ion-card-content>
-            </ion-card>
           </form>
+          </ion-card>
 
          <ion-card>
             <ion-card-header>
@@ -74,7 +76,7 @@
                         <ion-row> 
                           <ion-col>
                             <div><button ion-button block round [color]="savedOrientation ? 'secondary' : 'warning'" (click)="toogleOrientationSubsctription();" type="button">
-                {{orientation | number:0 }}º
+                {{markerLocalAttributes.orientation | number:0 }}º
               </button></div>
                           </ion-col>
                         </ion-row>
@@ -87,18 +89,18 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button [color]="imageFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="takePicture();" [disabled]="imageFiles.length >= maxImagesNumber">
+              <button ion-button [color]="imageMediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="takePicture();" [disabled]="imageMediaFiles.length >= maxImagesNumber">
                 Tomar Foto
                 <ion-icon name="camera">
 
                 </ion-icon>
               </button>
               <ion-list>
-                <ion-card  *ngFor="let imagepath of imageFiles; let i = index">
-                  <img src="{{imagepath}}" alt="" class="image_container" />
+                <ion-card  *ngFor="let imgMediaFile of imageMediaFiles; let i = index">
+                  <img src="{{getPathForMedia('image', imgMediaFile.path)}}" alt="" class="image_container" />
                   <ion-row>
                     <ion-col>
-                    <button ion-button color="danger" clear small icon-start (click)="deletePicture(i)"><ion-icon name='trash'></ion-icon>
+                    <button ion-button color="danger" clear small icon-start (click)="deleteMediaEntity(imgMediaFile, i)"><ion-icon name='trash'></ion-icon>
                       Eliminar
                     </button>
                   </ion-col>
@@ -114,7 +116,7 @@
             </ion-card-header>
 
             <ion-card-content>
-              <button ion-button [color]="mediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();"  [disabled]="mediaFiles.length >= maxAudiosNumber">
+              <button ion-button [color]="audioMediaFiles.length ? 'secondary' : 'warning'" icon-right round block (click)="captureAudio();"  [disabled]="audioMediaFiles.length >= maxAudiosNumber">
                 Grabar audio
                 <ion-icon name="mic">
 
@@ -122,15 +124,15 @@
               </button>
 
             <ion-list>
-              <ion-card  *ngFor="let file of mediaFiles; let j = index">
+              <ion-card  *ngFor="let audioMediaFile of audioMediaFiles; let j = index">
                   <ion-item tappable text-wrap>
-                    <ion-card-content (click)="play(file)" >
-                      {{ file.name }}
+                    <ion-card-content (click)="play(audioMediaFile)" >
+                      {{ audioMediaFile.path }}
                       <p>{{ file.size / 1000 / 1000 | number }} MB</p>
                     </ion-card-content>
                       <ion-row>
                         <ion-col>
-                          <button ion-button color="danger" clear small icon-start (click)="deleteAudio(j)"><ion-icon name='trash'></ion-icon>
+                          <button ion-button color="danger" clear small icon-start (click)="deleteMediaEntity(audioMediaFile, j)"><ion-icon name='trash'></ion-icon>
                               Eliminar
                           </button>
                         </ion-col>
@@ -147,20 +149,20 @@
               Metadatos
             </ion-card-header>
               <ion-card-content>
-              <ion-item>
-                <strong>Usuario</strong>   Agustin
-              </ion-item>
                <ion-item>
-                <strong>Fecha</strong>   26/01/2018
+                <strong>Fecha</strong>    {{ getFormattedDate(marker.creation_date) }}
               </ion-item>
               <ion-item>
-                <strong>Lat/Lng</strong>   {{markerLocation}}
+                <strong>Lat</strong>   {{marker.lat | number }}
+              </ion-item>
+              <ion-item>
+                <strong>Lng</strong>   {{marker.lng | number }}
               </ion-item>
               </ion-card-content>
           </ion-card>
     
 
-            <button ion-button type="submit" block>Guardar marcador</button>
+            <button ion-button type="submit" (click)="saveForm()" block>{{contextData.button_save_text}} datos</button>
           
         </ion-list>
       </ion-col>

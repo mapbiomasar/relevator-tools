@@ -14,56 +14,66 @@
 </ion-header>
 
 <ion-content padding>
- <ion-item >
-        Nombre
-        <ion-note item-end>
-          Mapa #1
-        </ion-note>
-</ion-item>
- <ion-item >
-        Detalle
-        <ion-note item-end>
-          Detalle mapa #1
-        </ion-note>
-</ion-item>
- <ion-item >
-        Fecha creación
-        <ion-note item-end>
-          01/01/2018
-        </ion-note>
-</ion-item>
-
-
-<ion-list>
-  <ion-list-header>
-    Lista de Marcadores
-  </ion-list-header>
-  <ion-item-sliding *ngFor="let item of items" >
-    <ion-item>
-      <!--<ion-avatar item-start>
-        <img src="assets/imgs/marker.png">
-      </ion-avatar>-->
-      <h2>Marcador </h2>
+<ion-card>
+    <ion-card-header>
+              Detalles
+    </ion-card-header>
+    <ion-card-content>
+    <ion-list>
+     <ion-item >
+            Nombre
+            <ion-note item-end>
+              {{mapEntity.name}}
+            </ion-note>
     </ion-item>
-    <ion-item-options side="right">
-      <button ion-button color="primary">
-        <ion-icon name="menu"></ion-icon>
-        
-      </button>
-    </ion-item-options>
-    <ion-item-options side="right">
-      <button ion-button color="primary">
-        <ion-icon name="eye"></ion-icon>
-          Ver
-      </button>
-      <button ion-button color="danger" (click)="showConfirm()">
-        <ion-icon name="trash"></ion-icon>
-          Borrar
-      </button>
-    </ion-item-options>
-  </ion-item-sliding>
-</ion-list>
+     <ion-item >
+            Detalle
+            <ion-note item-end>
+              {{mapEntity.description}}
+            </ion-note>
+    </ion-item>
+     <ion-item >
+            Fecha creación
+            <ion-note item-end>
+              {{ getFormattedDate(mapEntity.creation_date) }}
+            </ion-note>
+    </ion-item>
+    </ion-list>
+  </ion-card-content>
+</ion-card>
 
+<ion-card>
+  <ion-card-header>
+      Relevamientos
+  </ion-card-header>
+   <ion-card-content *ngIf="mapEntity.surveys.length; else mapEmptySurveys">
+    <ion-list>
+        <ion-item *ngFor="let survey of mapEntity.surveys; let i = index" (click)="viewSurvey($event, survey)">
+          <ion-avatar item-start>
+             <img src="assets/icon/survey-icon.png">
+          </ion-avatar>
+          <h2>{{survey.name}}</h2>
+          <h3> {{ survey.author_name }} </h3>
+          <p>{{ getFormattedDate(survey.creation_date) }}</p>
+        </ion-item>
+    </ion-list>
+    <button ion-button (click)="createNewSurvey()" block>Nuevo relevamiento</button>
+ </ion-card-content>
+</ion-card>
 
 
 </ion-content>
+
+<ng-template #mapEmptySurveys>
+<ion-grid>
+  <ion-row>
+    <ion-col>
+    <p>¡Todavía no has creado ningún relevamiento para este mapa!</p>
+    </ion-col>
+    <ion-col>
+    <button ion-button (click)="createNewSurvey()" block> Nuevo relevamiento</button>
+  </ion-col>
+  </ion-row>
+</ion-grid>
+   
+</ng-template>

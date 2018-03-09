@@ -1,10 +1,12 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { NavController, NavParams, Platform, ActionSheetController} from 'ionic-angular';
-
+import { NavController, NavParams, Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
+import { getRepository, getManager, Repository } from 'typeorm';
 import { Geolocation } from '@ionic-native/geolocation';
 
+import { AppFilesProvider } from '../../providers/appfiles/appfiles';
+
 //import 'ol/ol.css';
-import Map from 'ol/map';
+import OLMap from 'ol/map';
 import View from 'ol/view';
 import TileLayer from 'ol/layer/tile';
 import XYZ from 'ol/source/xyz';
@@ -13,14 +15,26 @@ import Feature from 'ol/feature';
 import Fill from 'ol/style/fill';
 import Circle from 'ol/style/circle';
 import Stroke from 'ol/style/stroke';
+import Text from 'ol/style/text';
 import RegularShape from 'ol/style/regularshape';
 import Style from 'ol/style/style';
 import LayerVector from 'ol/layer/vector';
 import SourceVector  from 'ol/source/vector';
+import Cluster  from 'ol/source/cluster';
 import Point from 'ol/geom/point';
+import KML from 'ol/format/kml';
 
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
+
+
+import {Map} from "../../entities/map";
+import {Survey} from "../../entities/survey";
+import {Marker} from "../../entities/marker";
+import {MediaFileEntity} from "../../entities/mediafileentity";
+import {CustomFormElement} from "../../entities/customFormElement";
+
+import {ModalSelectLayersPage} from '../modal-select-layers/modal-select-layers';
 
 @Component({
   selector: 'page-viewmap',
@@ -28,8 +42,11 @@ import {DetailMapPage} from '../detailmap/detailmap';
 })
 export class ViewMapPage {
 
-	@ViewChild('map') mapElement: ElementRef;
+	//@ViewChild('map') mapElement: ElementRef;
   map: any;
+  mapEntity:Map;
+  surveySelected:Survey;
+
   scaleLineControl:any;
   mousePosition:any;
   positionFeature:any;
@@ -38,16 +55,32 @@ export class ViewMapPage {
   currentLocation:any;
   mapCrosshair:any;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, private geolocation: Geolocation) {
+  markersRepository:any;
+  mediaRepository:any;
+  mapMarkers:Marker[];
+
+  clusterDistance:number = 30;
+
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider) {
+    this.markersRepository = getRepository('marker') as Repository<Marker>;
+    this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
+    this.mapEntity = navParams.get('map');
+    this.surveySelected = this.mapEntity.surveys[0] || null;
     this.defaultGeolocZoom = 15;
+    this.loadFormElements()
 	}
 
+  async loadFormElements(){
+    let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
+    let elements = await formElementsRepository.find({where:{'formId':this.surveySelected.form.id}});
+    this.surveySelected.form.form_elements = elements;
+  }
 
-	ionViewDidLoad() {
+	ionViewWillEnter() {
+    console.log(this.mapEntity);
 	    // start map,
 	    let arg = [-60.0953938, -34.8902802]
-
-      this.map = new Map({
+      this.map = new OLMap({
         target: 'map',
         layers: [
           new TileLayer({
@@ -74,11 +107,11 @@ export class ViewMapPage {
         image: new Circle({
           radius: 6,
           fill: new Fill({
-            color: '#3399CC'
+            color: '#00FF00'
           }),
           stroke: new Stroke({
-            color: '#fff',
-            width: 4
+            color: '#000',
+            width: 3
           })
         })
       }));
@@ -104,17 +137,159 @@ export class ViewMapPage {
             features: [this.positionFeature, this.mapCrosshair]   
           })
       });
-
       this.mapCrosshair.setGeometry(new Point(this.map.getView().getCenter()));
       let that = this; 
       this.map.getView().on('change:center', function(){ 
-          that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
+          //console.log(this.getCenter());
+          that.mapCrosshair.getGeometry().setCoordinates(this.getCenter());
+          //console.log(that.mapCrosshair.getGeometry().getCoordinates());
+          //that.mapCrosshair.changed();
       });
-      /*this.map.on('pointermove', function(){ 
-          that.mapCrosshair.setGeometry(new Point(that.map.getView().getCenter()));
-      });*/
+      this.loadMarkersFeatures();
+      this.loadImportedLayers();
 
   	}
+
+  async loadRawSurveyMarkersAndPopulate(){
+    var markers = [];
+    const manager = getManager();
+    let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID = ` + this.surveySelected.id);
+    for (let i = 0; i < surveyMarkers.length; ++i){
+      var tmpMarker = this.markersRepository.create(surveyMarkers[i]);
+      markers.push(tmpMarker);
+    }
+    console.log(markers);
+    return markers;
+  }
+
+  async loadMarkersFeatures(){
+      this.mapMarkers = await this.loadRawSurveyMarkersAndPopulate();
+      console.log(this.mapMarkers);
+      if (this.mapMarkers){
+          var features = Array();
+          for (var i = 0; i < this.mapMarkers.length; ++i) {
+            var markerEntity = this.mapMarkers[i];
+            var coordinates = [markerEntity.lat, markerEntity.lng];
+            var newFeature = new Feature({
+                geometry: new Point(coordinates),
+                marker_id: markerEntity.id,
+            });
+            features[i] = newFeature;
+
+          }
+          var source = new SourceVector({
+            features: features
+          });
+          var clusterSource = new Cluster({
+            distance: this.clusterDistance,
+            source: source
+          });
+          var styleCache = {};
+          var clusters = new LayerVector({
+            source: clusterSource,
+            style: function(feature) {
+              var size = feature.get('features').length;
+              var style = styleCache[size];
+              if (!style) {
+                var circleColor = (size > 1) ? '#FFC100' : '#3399CC';
+                style = new Style({
+                  image: new Circle({
+                    radius: 10,
+                    stroke: new Stroke({
+                      color: '#fff'
+                    }),
+                    fill: new Fill({
+                      color: circleColor
+                    })
+                  }),
+                  text: new Text({
+                    text: (size > 1) ? size.toString() : "+",
+                    fill: new Fill({
+                      color: '#fff'
+                    })
+                  })
+                });
+                styleCache[size] = style;
+              }
+              return style;
+            }
+          });
+          this.map.addLayer(clusters);
+          var self = this;
+          this.map.on('click', function(evt) {
+            console.log(evt);
+            var feature = self.map.forEachFeatureAtPixel(evt.pixel,
+                function(feature) {
+                  return feature;
+                });
+            if (feature && feature.values_.features.length == 1) {
+                var clickedMarkerID = feature.values_.features[0].get("marker_id");
+                self.showAlertViewMarker(clickedMarkerID);
+            }
+            });
+      }
+
+  }
+
+ 
+
+  loadImportedLayers(){
+    var self = this;
+    console.log("load kml");
+    for (var k in this.mapEntity.layers){
+    var layer = this.mapEntity.layers[k];
+    this.appFilesProvider.getFileContent(layer.path, this.appFilesProvider.getFileType()).then( result => {
+        var vectorSource = new SourceVector({
+              format: new KML(),
+              loader: function(extent, resolution, projection) {
+                  vectorSource.addFeatures(
+                    vectorSource.getFormat().readFeatures(result));
+              }
+        });
+        var vectorKML = new LayerVector({
+          source: vectorSource,
+          name: layer.path,
+          visible: layer.visible,
+        });
+
+        self.map.addLayer(vectorKML);
+    });
+    }
+   
+  }
+
+
+
+  async showAlertViewMarker(markerID){
+    var marker = await this.markersRepository.findOneById(markerID, );
+    console.log(marker);
+    if (marker){
+      var self = this;
+      let actionSheet = this.actionsheetCtrl.create({
+      title: 'Marcador',
+      cssClass: 'action-sheets-basic-page',
+      buttons: [
+        {
+          text: 'Ver/Editar datos',
+          icon: !this.platform.is('ios') ? 'information-circle' : null,
+          handler: () => {
+              this.navCtrl.push(CreateMarkerPage, {
+                    map: self.mapEntity,
+                    marker: marker
+                });
+          }
+        }
+      ]
+      });
+      actionSheet.present();
+    }
+  }
+
+
+  ionViewDidEnter(){
+    this.map.updateSize();
+    this.map.render();
+  }
 
   openMenu() {
       let actionSheet = this.actionsheetCtrl.create({
@@ -122,11 +297,11 @@ export class ViewMapPage {
       cssClass: 'action-sheets-basic-page',
       buttons: [
         {
-          text: 'Información del mapa',
+          text: 'Ver detalles del mapa',
           icon: !this.platform.is('ios') ? 'information-circle' : null,
           handler: () => {
               this.navCtrl.push(DetailMapPage, {
-                  
+                    map: this.mapEntity
                 });
           }
         }
@@ -137,9 +312,10 @@ export class ViewMapPage {
 
 
   addNewMarker(){
-    console.log(this.map.getView().getCenter());
     this.navCtrl.push(CreateMarkerPage,  {
-        location: this.map.getView().getCenter()
+        map: this.mapEntity,
+        location: this.map.getView().getCenter(),
+        marker: null
     });
   }
 
@@ -156,6 +332,21 @@ export class ViewMapPage {
     }).catch((error) => {
       console.log('Error getting location', error);
     });
+  }
+
+
+  showMapLayersManager(){
+    var self = this;
+    const modalLayers = this.modalController.create(ModalSelectLayersPage, {
+        mapEntity: this.mapEntity,
+        mapUI: this.map
+    });
+    modalLayers.present();
+
+     modalLayers.onDidDismiss((data) => { // data recibe mapa
+        //self.loadImportedLayers();
+      });
+
   }
 
 }

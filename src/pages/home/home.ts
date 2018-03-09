@@ -1,48 +1,90 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, Platform, ActionSheetController} from 'ionic-angular';
+import { getRepository, Repository } from 'typeorm';
 
 import {CreateMapPage} from '../createmap/createmap';
 import {ViewMapPage} from '../viewmap/viewmap';
+
+import {Map} from "../../entities/map";
+import {Marker} from "../../entities/marker";
+import {Survey} from "../../entities/survey";
+import {MediaFileEntity} from "../../entities/mediafileentity";
+import {MapLayer} from "../../entities/maplayer";
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
-	  selectedItem: any;
-	  icons: string[];
-	  items: Array<{title: string, note: string, icon: string}>;
-	  numitems: number;
+    maps:any;
+    mapRepository: any;
+
 
 	  constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController) {
-	  		this.selectedItem = navParams.get('item');
-
-	  	    this.items = [];
-		    this.numitems = 3;
-		    for (let i = 1; i < this.numitems; i++) {
-		      this.items.push({
-		        title: 'Salida a campo' + i,
-		        note: 'Test salida a campo #' + i,
-		        icon: 'map'
-		      });
-		    }
-
-
+      this.mapRepository = getRepository('map') as Repository<Map>;
+      this.maps = [];
 	  }
 
-  	itemTapped(event, item) {
-  	    // That's right, we're pushing to ourselves!
-  	    this.navCtrl.push(HomePage, {
-  	      item: item
-        });
+    ionViewDidLoad() {
+    }
+
+    ionViewWillEnter(){
+      this.loadHome();
     }
 
 
-    viewMap(){
+    async loadHome(){
+
+      this.maps = await this.mapRepository.find({relations:["surveys", "layers", "surveys.form"]});
+      console.log(this.maps);
+      this.clearDatabase();
+    }
+
+    async clearDatabase(){
+      let mediaRep = getRepository('mediafile') as Repository<MediaFileEntity>;
+      let m = await mediaRep.find();
+      console.log(m);
+      //mediaRep.clear();
+      let media = await mediaRep.find();
+      console.log(media);
+
+      let markersRep = getRepository('marker') as Repository<Marker>;
+      let ma = await markersRep.find();
+      console.log(ma);
+      //markersRep.clear();
+      let markers = await markersRep.find();
+      console.log(markers);
+
+      let surveyRep = getRepository('survey') as Repository<Survey>;
+      let surveys = await surveyRep.find();
+      console.log(surveys);
+      //surveyRep.clear();
+      let lsurveys = await surveyRep.find();
+      console.log(lsurveys);
+
+      let layRep = getRepository('maplayer') as Repository<MapLayer>;
+      let layers = await layRep.find();
+      console.log(layers);
+      //layRep.clear();
+
+      let mapRep = getRepository('map') as Repository<Map>;
+      let map = await mapRep.find();
+      console.log(map);
+      //mapRep.clear();
+    }
+
+
+    viewMap(event, item){
+        console.log(item);
         this.navCtrl.push(ViewMapPage, {
-          
+            map: item
         });
     }
+
+    createNewMap(){
+      this.navCtrl.push(CreateMapPage, {
+      });
+    } 
 
 
   	 openMenu() {
@@ -54,8 +96,7 @@ export class HomePage {
           text: 'Nuevo mapa',
           icon: !this.platform.is('ios') ? 'add' : null,
           handler: () => {
-            this.navCtrl.push(CreateMapPage, {
-            });
+            this.createNewMap();
           }
         },
         {
