@@ -20,7 +20,7 @@
   </ion-item>
   <ion-item>
       <ion-label stacked>Formulario padre</ion-label>
-      <ion-select [(ngModel)]="formEntity.parent_form.id" (ionChange)="parentFormInitChange($event)">
+      <ion-select [(ngModel)]="parentFormSelected" (ionChange)="parentFormInitChange($event)">
         <ng-container *ngFor="let form of formsList">
             <ion-option *ngIf="form.id != formEntity.id"  [value]="form.id">{{form.name}}</ion-option>
         </ng-container>
@@ -31,7 +31,7 @@
         Campos del formulario
     </ion-card-header>
 		<ion-card-content>
-			<app-dynamic-form [formElements]="formEntity.form_elements" [form]="form"></app-dynamic-form>
+			<app-dynamic-form [formEntity]="formEntity"></app-dynamic-form>
 		</ion-card-content>
 		<ion-item>
       <button ion-button clear item-start (click)="presentModalFieldCreator('textbox')">Añadir Input</button>

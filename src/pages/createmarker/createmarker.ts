@@ -92,7 +92,7 @@ export class CreateMarkerPage {
   	}
 
 	async updateForm(){
-		this.formComponent = this.qcs.toFormGroup(this.marker.survey.form.form_elements);
+		//this.formComponent = this.qcs.toFormGroup(this.marker.survey.form.form_elements);
 	}
 
 	async loadMediaFilesRelations(){

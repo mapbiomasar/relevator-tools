@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { IonicPage, NavController, NavParams, Platform, ModalController, ViewController, ActionSheetController} from 'ionic-angular';
 import { getRepository, Repository } from 'typeorm';
 import { Toast } from '@ionic-native/toast';
@@ -31,9 +31,11 @@ export class CreateCustomFormPage {
   form:FormGroup;
   formsList:CustomForm[] = [];
 
+  parentFormSelected:number = null;
+
   contextData = {};
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, private qcs: QuestionControlService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, private qcs: QuestionControlService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController, private zone: NgZone) {
     this.formRepository = getRepository('customForm') as Repository<CustomForm>;
     this.formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     this.formEntity = this.navParams.get("form");
@@ -41,8 +43,14 @@ export class CreateCustomFormPage {
         this.formEntity = new CustomForm();
         this.formEntity.name = "Nuevo formulario";
         this.formEntity.form_elements = [];
-        this.formEntity.parent_form = new CustomForm();
     }
+    if (this.formEntity.parent_form){
+      this.parentFormSelected = this.formEntity.parent_form.id;
+    }
+    /*if (!this.formEntity.parent_form){
+        this.formEntity.parent_form = new CustomForm();
+        this.formEntity.parent_form.id = 0;
+    }*/
     this.setContextData();
     this.getFormsList();
     this.updateForm();
@@ -72,11 +80,11 @@ export class CreateCustomFormPage {
 
 
   updateForm(){
-      this.form = this.qcs.toFormGroup(this.formEntity.form_elements);
+      //this.form = this.qcs.toFormGroup(this.formEntity.form_elements);
   }
 
   async getFormsList(){
-    let forms = await this.formRepository.find();
+    let forms = await this.formRepository.find({relations:["form_elements"]});
     if (forms){
         this.formsList = forms;
     }
@@ -88,10 +96,9 @@ export class CreateCustomFormPage {
 
 
   parentFormInitChange(selectedFormID: any) {
-    alert(selectedFormID);
     if (this.parentFormCanBeChanged()){
-        console.log(selectedFormID);
-        this.formEntity.parent_form = this.getFormObject(selectedFormID);
+        console.log(this.parentFormSelected);
+        this.formEntity.parent_form = this.getFormObject(this.parentFormSelected);
     }
   }
 
@@ -113,11 +120,14 @@ export class CreateCustomFormPage {
       modalNewFormField.present();
 
       modalNewFormField.onDidDismiss((data) => {
+
           if (data.formElement){
-            let newFormElement = data.formElement;
-            newFormElement.form = this.formEntity;
-            this.formEntity.form_elements.push(newFormElement);
-            self.updateForm();
+              let newFormElement = data.formElement;
+              newFormElement.form = this.formEntity;
+              let newElements = this.formEntity.form_elements.concat([newFormElement]);
+              this.formEntity.form_elements = newElements;
+              console.log(this.formEntity.form_elements);
+              self.updateForm();
           }
       });
   }
@@ -126,6 +136,7 @@ export class CreateCustomFormPage {
     var self = this;
     var message = "Formulario " + ((self.isEditingContext()) ? "editado" : "creado") + " con éxito";
     var toastFiredOnce = false;
+    console.log(this.formEntity);
     this.formRepository.save(this.formEntity)
     .then(function(savedForm) {
         self.toast.showShortTop(message).subscribe(
