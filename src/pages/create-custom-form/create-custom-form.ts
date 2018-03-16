@@ -172,6 +172,7 @@ export class CreateCustomFormPage {
     presentAlertDelete() {
       if (this.isEditingContext()){ // Solo permitir eliminar si se está editando
       var self = this;
+      var toastFiredOnce = false;
       let alert = this.alertCtrl.create({
       title: 'Eliminar formulario',
       message: '¿Está seguro de que desea eliminar el formulario?. Esta acción borrara a este formulario y a todos sus formularios hijos',
@@ -190,7 +191,10 @@ export class CreateCustomFormPage {
               this.formRepository.remove(this.formEntity).then(entity => {
               self.toast.showShortTop("Formulario eliminado con éxito").subscribe(
                 entity => {
-                   self.navCtrl.popToRoot();
+                   if (!toastFiredOnce){
+                     self.navCtrl.popToRoot();
+                     toastFiredOnce = true;
+                   }
                 }   
               );
             });

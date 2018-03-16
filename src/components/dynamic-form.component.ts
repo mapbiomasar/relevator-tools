@@ -33,6 +33,7 @@ export class DynamicFormComponent implements OnChanges, DoCheck {
   }
 
   updateFormElements(){
+    this.formElements = [];
     this.loadFormElements(this.formEntity, false);
     this.form = this.qcs.toFormGroup(this.formElements);
   }
