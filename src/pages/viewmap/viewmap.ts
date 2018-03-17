@@ -4,6 +4,7 @@ import { getRepository, getManager, Repository } from 'typeorm';
 import { Geolocation } from '@ionic-native/geolocation';
 
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
+import { FormsProvider }  from '../../providers/forms/forms';
 
 //import 'ol/ol.css';
 import OLMap from 'ol/map';
@@ -61,19 +62,30 @@ export class ViewMapPage {
 
   clusterDistance:number = 30;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider) {
     this.markersRepository = getRepository('marker') as Repository<Marker>;
     this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
     this.mapEntity = navParams.get('map');
     this.surveySelected = this.mapEntity.surveys[0] || null;
     this.defaultGeolocZoom = 15;
-    this.loadFormElements()
 	}
 
-  async loadFormElements(){
-    let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
+
+  ionViewDidLoad(){
+    this.loadSurveysForms();
+  }
+
+  async loadSurveysForms(){
+    for (let k in this.mapEntity.surveys){
+      let tmpSurvey = this.mapEntity.surveys[k];
+      let tmpSurveyForm = await this.formsProvider.loadForm(tmpSurvey.form.id);
+      tmpSurvey.form = tmpSurveyForm;
+    }
+    console.log("LOAD FORMSSSSS!");
+    console.log(this.mapEntity);
+    /*let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     let elements = await formElementsRepository.find({where:{'formId':this.surveySelected.form.id}});
-    this.surveySelected.form.form_elements = elements;
+    this.surveySelected.form.form_elements = elements;*/
   }
 
 	ionViewWillEnter() {

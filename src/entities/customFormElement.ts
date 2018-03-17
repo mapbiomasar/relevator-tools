@@ -8,7 +8,6 @@ export class CustomFormElement {
     id: number;
 
     @ManyToOne(type => CustomForm, customForm => customForm.form_elements, {
-        eager: true,
         cascadeInsert: true,
         cascadeUpdate: true
     })

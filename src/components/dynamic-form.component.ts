@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, DoCheck }  from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, DoCheck }  from '@angular/core';
 import { FormGroup }                 from '@angular/forms';
  
 import { QuestionBase }              from './question-base';
@@ -15,9 +15,13 @@ import {CustomFormElement} from "../entities/customFormElement";
 export class DynamicFormComponent implements OnChanges, DoCheck {
  
   @Input() formEntity:CustomForm;
+  @Input() formData = null;
+
+  form: FormGroup;
+  @Output() formGroupChange:EventEmitter<FormGroup> = new EventEmitter<FormGroup>();
 
   formElements: CustomFormElement[] = [];
-  form: FormGroup;
+
   payLoad = '';
 
   oldFormElements = [];
@@ -33,9 +37,13 @@ export class DynamicFormComponent implements OnChanges, DoCheck {
   }
 
   updateFormElements(){
+    let self = this;
     this.formElements = [];
     this.loadFormElements(this.formEntity, false);
-    this.form = this.qcs.toFormGroup(this.formElements);
+    this.form = this.qcs.toFormGroup(this.formElements, this.formData);
+    this.form.valueChanges.subscribe(val => {
+        self.formGroupChange.emit(val);
+    });
   }
 
   ngDoCheck() {

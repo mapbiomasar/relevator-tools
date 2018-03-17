@@ -23,6 +23,9 @@ export class Marker {
     @Column("int")
     lng: number;
 
+    @Column("int", { nullable: true })
+    orientation: number;    
+
     @Column("text")
     attributes: string;
 

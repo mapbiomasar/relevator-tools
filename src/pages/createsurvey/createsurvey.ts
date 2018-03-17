@@ -16,14 +16,19 @@ import { getRepository, Repository } from 'typeorm';
 })
 export class CreatesurveyPage {
 
+	formRepository:any;
 	surveyRepository:any;
 
 	map:Map;
 	survey:Survey;
+	formsList:CustomForm[] = [];
+
+	surveyFormSelected:number = null;
 
 	contextData = {};
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private utils: UtilsProvider, private formsProvider: FormsProvider) {
+		this.formRepository = getRepository('customForm') as Repository<CustomForm>;
 	 	this.surveyRepository = getRepository('survey') as Repository<Survey>;
 		this.map = navParams.get("map");
 		this.survey = navParams.get("survey");
@@ -33,22 +38,52 @@ export class CreatesurveyPage {
 	        this.survey.description = "Descripción";
 	        this.survey.author_name = "Usuario";
 	        this.survey.map = this.map;
-	        this.bindDefaultForm(this.survey);
-	      }
-      this.setContextData();
+	        //this.bindDefaultForm(this.survey);
+      	}
+      	this.getFormsList();
+      	this.setContextData();
 	}
 
+  	ionViewDidLoad() {	
+  		//this.surveyFormSelected = this.survey.form.id;
+  		this.surveyFormSelected = this.survey.form.id || null;
+  	}
+
+
+	async getFormsList(){
+		let forms = await this.formRepository.find({relations:["form_elements", "parent_form", "parent_form.form_elements"]});
+		if (forms){
+		    this.formsList = forms;
+		}
+	}
 
 	async bindDefaultForm(survey){
 		let form = await this.formsProvider.getDefaultForm();
 		if (form){
 			survey.form = form;
+			this.surveyFormSelected = survey.form.id;
 		}
 	}
 
-	ionViewDidLoad() {
-	console.log('ionViewDidLoad CreatesurveyPage');
-	}
+  	getFormObject(formID){
+		for (let i in this.formsList){
+			if (this.formsList[i].id == formID){
+			  return this.formsList[i];
+			}
+		}
+		return null;
+  	}
+
+  	surveyFormCanBeChanged(){
+    	return true;
+  	}
+
+  	surveyFormInitChange(selectedFormID: any) {
+	    if (this.surveyFormCanBeChanged()){
+	        console.log(this.surveyFormSelected);
+	        this.survey.form = this.getFormObject(this.surveyFormSelected);
+	    }
+  	}
 
 	private isEditingContext(){
       if (this.surveyRepository.hasId(this.survey)){

@@ -63,7 +63,7 @@
               Atributos
             </ion-card-header>
             <ion-card-content>
-                <app-dynamic-form [formEntity]="this.marker.survey.form"></app-dynamic-form>
+                <app-dynamic-form [formEntity]="this.marker.survey.form" [formData]="markerAttributes" (formGroupChange)="formGroupChange($event)"></app-dynamic-form>
               </ion-card-content>
           </form>
           </ion-card>
@@ -76,7 +76,7 @@
                         <ion-row> 
                           <ion-col>
                             <div><button ion-button block round [color]="savedOrientation ? 'secondary' : 'warning'" (click)="toogleOrientationSubsctription();" type="button">
-                {{markerLocalAttributes.orientation | number:0 }}º
+                {{marker.orientation | number:0 }}º
               </button></div>
                           </ion-col>
                         </ion-row>
@@ -163,7 +163,7 @@
     
 
             <button ion-button type="submit" (click)="saveForm()" block>{{contextData.button_save_text}} datos</button>
-          
+            {{formgroupPayload}}
         </ion-list>
       </ion-col>
     </ion-row>

@@ -19,6 +19,7 @@ import {ViewMapPage} from '../viewmap/viewmap';
 import {ModalselectsurveyPage} from '../modalselectsurvey/modalselectsurvey';
 
 import { QuestionControlService }  from '../../providers/questions/question-control.service';
+import { FormsProvider }  from '../../providers/forms/forms';
 
 import {Marker} from "../../entities/marker";
 import {Map} from "../../entities/map";
@@ -41,9 +42,9 @@ export class CreateMarkerPage {
 	mapViewEntity:Map;
 	marker:Marker;
 
-	currentSurvey:Survey;
+	markerAttributes:{} = null;
 
-	markerLocalAttributes:{};
+	currentSurvey:Survey;
 
 	orientationSubscription:any;
 	savedOrientation:boolean;
@@ -57,10 +58,12 @@ export class CreateMarkerPage {
 	formComponent:FormGroup;
 	formElements:CustomFormElement[] = [];
 
+	dynamicSurveyFormGroup:any;
+	formgroupPayload = '';
 
   	contextData = {};
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider, private modalController: ModalController,  private qcs: QuestionControlService) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider, private modalController: ModalController,  private qcs: QuestionControlService, private formsProvider: FormsProvider) {
 			this.markerRepository = getRepository('marker') as Repository<Marker>;
 			this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
 			this.mapViewEntity = navParams.get('map');
@@ -69,7 +72,7 @@ export class CreateMarkerPage {
 			if (this.marker){
 				//this.populateMediaLists();
 				this.savedOrientation = true;
-				this.markerLocalAttributes = JSON.parse(this.marker.attributes);
+				this.markerAttributes = JSON.parse(this.marker.attributes);
 			} else {
 				this.marker = new Marker();
 				this.marker.lat = navParams.get('location')[0];
@@ -77,23 +80,30 @@ export class CreateMarkerPage {
 				this.marker.mediaFiles = [];
 				this.marker.creation_date = this.utils.getNowUnixTimestamp();
 				this.savedOrientation = false;
-				this.markerLocalAttributes = {};
 			}
 			this.setCurrentSurvey(this.mapViewEntity.surveys[this.mapViewEntity.surveys.length-1]);
 			this.marker.survey = this.currentSurvey;
 			this.setContextData();
 			this.populateMediaLists();
-			this.updateForm();
+			//this.updateForm();
+			console.log(this.markerAttributes);
 			this.toogleOrientationSubsctription();
 	}
 
- 	ionViewWillEnter() {
-    	this.updateForm();
-  	}
+	ionViewDidLoad() {
+		console.log(this.marker.survey.form);
+		//this.loadSurveyFormElements(this.marker.survey.form);
+		console.log(this.marker.survey.form);
+    }
 
-	async updateForm(){
-		//this.formComponent = this.qcs.toFormGroup(this.marker.survey.form.form_elements);
-	}
+    // Recibe customForm y llama a cargar sus formElements (db). De forma recursiva tmb carga
+    // los elementos de su padre
+    loadSurveyFormElements(form){
+    	this.formsProvider.loadFormElements(form);
+    	if (form.parent_form){
+    		this.loadSurveyFormElements(form.parent_form);
+    	}
+    }
 
 	async loadMediaFilesRelations(){
 		this.marker.mediaFiles = [];
@@ -125,6 +135,13 @@ export class CreateMarkerPage {
 	}
 
 
+	formGroupChange(event){
+		console.log("receive event!");
+		console.log(event);
+		this.dynamicSurveyFormGroup = event;
+	}
+
+
 	// Chequea los mediafiles del marker
 	// Si no tiene, inicializa el array
 	// Si tiene, los divide en dos listas de imagenes y audio
@@ -146,7 +163,7 @@ export class CreateMarkerPage {
 	startOrientationSubscription(){
 		this.orientationSubscription = this.deviceOrientation.watchHeading({frequency: 300}).subscribe(
 			  (data: DeviceOrientationCompassHeading) => {
-			  		this.markerLocalAttributes["orientation"] = data.trueHeading; // trueHeading o magneticHeading (Canadá)? 
+			  		this.marker.orientation = data.trueHeading; // trueHeading o magneticHeading (Canadá)? 
 		  		}
 			);
 	}
@@ -165,11 +182,6 @@ export class CreateMarkerPage {
 			this.stopOrientationSubsctription();
 		}
 	}
-
-
-	ionViewDidLoad() {
-    }
-
 
 	takePicture(){
 		const options: CameraOptions = {
@@ -366,8 +378,9 @@ export class CreateMarkerPage {
 
 
 	saveForm(){
-	 	this.marker.attributes = JSON.stringify(this.markerLocalAttributes);
 	 	this.marker.creation_date = this.utils.getNowUnixTimestamp();
+	 	let dynamicAttributes = this.dynamicSurveyFormGroup || {};
+	 	this.marker.attributes = JSON.stringify(dynamicAttributes);
 	 	this.saveMarker();
 	}
 

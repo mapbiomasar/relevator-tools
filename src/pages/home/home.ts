@@ -34,7 +34,6 @@ export class HomePage {
 
 
     async loadHome(){
-
       this.maps = await this.mapRepository.find({relations:["surveys", "layers", "surveys.form"]});
       console.log(this.maps);
       this.clearDatabase();

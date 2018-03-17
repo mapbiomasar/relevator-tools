@@ -42,9 +42,7 @@ export class ModalCreateFormFieldPage {
 
 
   addOption(){
-    console.log("add");
-    this.elementOptions.push({key: 'newoption', value:'Opcion'});
-    console.log(this.elementOptions);
+    this.elementOptions.push({value:'Nueva opción'});
   }
 
   dismiss(newQuestion) {
@@ -52,7 +50,6 @@ export class ModalCreateFormFieldPage {
     if (newQuestion){
       newQuestion.options = JSON.stringify(this.elementOptions);
     }
-    console.log(newQuestion);
     this.viewCtrl.dismiss({
         formElement: newQuestion
     });

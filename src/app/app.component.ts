@@ -55,7 +55,7 @@ export class MyApp {
 
       let connOptions = {
         type: 'cordova',
-        database: 'mapbiomas_db_13',
+        database: 'mapbiomas_db_14',
         location: 'default',
         logging: ['error', 'query', 'schema'],
         synchronize: true,
