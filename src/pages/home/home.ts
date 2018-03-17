@@ -34,9 +34,7 @@ export class HomePage {
 
 
     async loadHome(){
-
       this.maps = await this.mapRepository.find({relations:["surveys", "layers", "surveys.form"]});
-      console.log(this.maps);
       this.clearDatabase();
     }
 
@@ -75,7 +73,6 @@ export class HomePage {
 
 
     viewMap(event, item){
-        console.log(item);
         this.navCtrl.push(ViewMapPage, {
             map: item
         });

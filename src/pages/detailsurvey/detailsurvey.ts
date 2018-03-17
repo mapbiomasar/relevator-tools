@@ -44,7 +44,6 @@ export class DetailsurveyPage {
 	      var tmpMarker = markersRepository.create(surveyMarkers[i]);
 	      markers.push(tmpMarker);
 	    }
-	    console.log(markers);
 	    this.markers = markers;
 	}
 
@@ -54,6 +53,7 @@ export class DetailsurveyPage {
 
 
 	viewMarker(event, marker){
+    marker.survey = this.survey;
 	  var self = this;
 	  this.navCtrl.push(CreateMarkerPage, {
 	      map: self.map,

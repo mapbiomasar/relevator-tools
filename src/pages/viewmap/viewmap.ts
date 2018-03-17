@@ -4,6 +4,7 @@ import { getRepository, getManager, Repository } from 'typeorm';
 import { Geolocation } from '@ionic-native/geolocation';
 
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
+import { FormsProvider }  from '../../providers/forms/forms';
 
 //import 'ol/ol.css';
 import OLMap from 'ol/map';
@@ -61,23 +62,36 @@ export class ViewMapPage {
 
   clusterDistance:number = 30;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider) {
+
+  surveyMarkersColors = [
+    "#FF0000", "#00FF00", "#0000FF"
+  ]
+
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider) {
     this.markersRepository = getRepository('marker') as Repository<Marker>;
     this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
     this.mapEntity = navParams.get('map');
     this.surveySelected = this.mapEntity.surveys[0] || null;
     this.defaultGeolocZoom = 15;
-    this.loadFormElements()
 	}
 
-  async loadFormElements(){
-    let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
+
+  ionViewDidLoad(){
+    this.loadSurveysForms();
+  }
+
+  async loadSurveysForms(){
+    for (let k in this.mapEntity.surveys){
+      let tmpSurvey = this.mapEntity.surveys[k];
+      let tmpSurveyForm = await this.formsProvider.loadForm(tmpSurvey.form.id);
+      tmpSurvey.form = tmpSurveyForm;
+    }
+    /*let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     let elements = await formElementsRepository.find({where:{'formId':this.surveySelected.form.id}});
-    this.surveySelected.form.form_elements = elements;
+    this.surveySelected.form.form_elements = elements;*/
   }
 
 	ionViewWillEnter() {
-    console.log(this.mapEntity);
 	    // start map,
 	    let arg = [-60.0953938, -34.8902802]
       this.map = new OLMap({
@@ -140,9 +154,7 @@ export class ViewMapPage {
       this.mapCrosshair.setGeometry(new Point(this.map.getView().getCenter()));
       let that = this; 
       this.map.getView().on('change:center', function(){ 
-          //console.log(this.getCenter());
           that.mapCrosshair.getGeometry().setCoordinates(this.getCenter());
-          //console.log(that.mapCrosshair.getGeometry().getCoordinates());
           //that.mapCrosshair.changed();
       });
       this.loadMarkersFeatures();
@@ -150,86 +162,101 @@ export class ViewMapPage {
 
   	}
 
-  async loadRawSurveyMarkersAndPopulate(){
+  async loadRawSurveyMarkersAndPopulate(survey){
     var markers = [];
     const manager = getManager();
-    let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID = ` + this.surveySelected.id);
+    let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID = ` + survey.id);
     for (let i = 0; i < surveyMarkers.length; ++i){
       var tmpMarker = this.markersRepository.create(surveyMarkers[i]);
+      tmpMarker.survey = survey;
       markers.push(tmpMarker);
     }
-    console.log(markers);
     return markers;
   }
 
-  async loadMarkersFeatures(){
-      this.mapMarkers = await this.loadRawSurveyMarkersAndPopulate();
-      console.log(this.mapMarkers);
-      if (this.mapMarkers){
-          var features = Array();
-          for (var i = 0; i < this.mapMarkers.length; ++i) {
-            var markerEntity = this.mapMarkers[i];
-            var coordinates = [markerEntity.lat, markerEntity.lng];
-            var newFeature = new Feature({
-                geometry: new Point(coordinates),
-                marker_id: markerEntity.id,
-            });
-            features[i] = newFeature;
 
-          }
-          var source = new SourceVector({
-            features: features
-          });
-          var clusterSource = new Cluster({
-            distance: this.clusterDistance,
-            source: source
-          });
-          var styleCache = {};
-          var clusters = new LayerVector({
-            source: clusterSource,
-            style: function(feature) {
-              var size = feature.get('features').length;
-              var style = styleCache[size];
-              if (!style) {
-                var circleColor = (size > 1) ? '#FFC100' : '#3399CC';
-                style = new Style({
-                  image: new Circle({
-                    radius: 10,
-                    stroke: new Stroke({
-                      color: '#fff'
-                    }),
-                    fill: new Fill({
-                      color: circleColor
-                    })
-                  }),
-                  text: new Text({
-                    text: (size > 1) ? size.toString() : "+",
-                    fill: new Fill({
-                      color: '#fff'
-                    })
-                  })
-                });
-                styleCache[size] = style;
-              }
-              return style;
-            }
-          });
-          this.map.addLayer(clusters);
-          var self = this;
-          this.map.on('click', function(evt) {
-            console.log(evt);
-            var feature = self.map.forEachFeatureAtPixel(evt.pixel,
-                function(feature) {
-                  return feature;
-                });
-            if (feature && feature.values_.features.length == 1) {
-                var clickedMarkerID = feature.values_.features[0].get("marker_id");
-                self.showAlertViewMarker(clickedMarkerID);
-            }
-            });
-      }
-
+  getSurveyColor(index){
+    var position = index % this.surveyMarkersColors.length;
+    return this.surveyMarkersColors[position];
   }
+
+  async loadMarkersFeatures(){
+      var self = this;
+      var features = [];
+      for (var k in this.mapEntity.surveys){
+          let currentSurvey = this.mapEntity.surveys[k];
+          console.log("loading markers");
+          this.mapMarkers = await this.loadRawSurveyMarkersAndPopulate(currentSurvey);
+          console.log(this.mapMarkers);
+          if (this.mapMarkers){
+              for (var i = 0; i < this.mapMarkers.length; ++i) {
+                  var markerEntity = this.mapMarkers[i];
+                  var coordinates = [markerEntity.lat, markerEntity.lng];
+                  var newFeature = new Feature({
+                      geometry: new Point(coordinates),
+                      marker_id: markerEntity.id,
+                      survey_id: currentSurvey.id
+                  });
+                  features.push(newFeature);
+              }
+          }
+        }
+        var source = new SourceVector({
+          features: features
+        });
+        var clusterSource = new Cluster({
+          distance: this.clusterDistance,
+          source: source
+        });
+        var styleCluster = null;
+        var surveyStyles = {};
+        var clusters = new LayerVector({
+          source: clusterSource,
+          style: function(feature) {
+            var size = feature.get('features').length;
+            var style = (size > 1) ? styleCluster : surveyStyles[feature.values_.features[0].get("survey_id")];
+            if (!style) {
+              var circleColor = (size > 1) ? '#FFC100' : self.getSurveyColor(feature.values_.features[0].get("survey_id"));
+              style = new Style({
+                image: new Circle({
+                  radius: 10,
+                  stroke: new Stroke({
+                    color: '#fff'
+                  }),
+                  fill: new Fill({
+                    color: circleColor
+                  })
+                }),
+                text: new Text({
+                  text: (size > 1) ? size.toString() : "+",
+                  fill: new Fill({
+                    color: '#fff'
+                  })
+                })
+              });
+              if (size > 1){
+                  styleCluster = style;
+              } else {
+                  surveyStyles[feature.values_.features[0].get("survey_id")] = style;
+              }
+            }
+            return style;
+          }
+        });
+        this.map.addLayer(clusters);
+        var self = this;
+        this.map.on('click', function(evt) {
+          console.log(evt);
+          var feature = self.map.forEachFeatureAtPixel(evt.pixel,
+              function(feature) {
+                return feature;
+              });
+          if (feature && feature.values_.features.length == 1) {
+              var clickedMarkerID = feature.values_.features[0].get("marker_id");
+              self.showAlertViewMarker(clickedMarkerID);
+          }
+          });
+      }
 
  
 
@@ -261,8 +288,7 @@ export class ViewMapPage {
 
 
   async showAlertViewMarker(markerID){
-    var marker = await this.markersRepository.findOneById(markerID, );
-    console.log(marker);
+    var marker = await this.markersRepository.findOneById(markerID, {relations:["survey", "survey.form"]});
     if (marker){
       var self = this;
       let actionSheet = this.actionsheetCtrl.create({

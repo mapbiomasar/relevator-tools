@@ -27,10 +27,24 @@
     <ion-input [(ngModel)]="survey.author_name" name="author_name" type="text"></ion-input>
   </ion-item>
 
-  <ion-item>
-    <ion-label stacked>Formulario</ion-label>
-    <ion-input [(ngModel)]="survey.form" name="form" type="text"></ion-input>
-  </ion-item>
+<ion-card>
+   <ion-card-header>
+        Formulario
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label stacked>Seleccione formulario a utilizar</ion-label>
+        <ion-select [(ngModel)]="surveyFormSelected" name="survey_form" (ionChange)="surveyFormInitChange($event)">
+          <ng-container *ngFor="let form of formsList">
+              <ion-option [value]="form.id">{{form.name}}</ion-option>
+          </ng-container>
+        </ion-select>
+    </ion-item>
+      <ng-container *ngIf="survey.form">
+        <app-dynamic-form [formEntity]="survey.form"></app-dynamic-form>
+      </ng-container>
+    </ion-card-content>
+</ion-card>
 
 </ion-list>
 <button ion-button color="primary" type="submit" block>{{contextData.button_save_text}} datos</button>

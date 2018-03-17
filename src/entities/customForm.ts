@@ -25,6 +25,7 @@ export class CustomForm {
     child_forms: CustomForm[];
 
     @OneToMany(type => CustomFormElement, customformelement => customformelement.form, {
+        
         cascadeInsert: true,
         cascadeUpdate: true
     })

@@ -26,8 +26,7 @@ export class CustomFormsPage {
     }
 
     async loadForms(){
-    	this.forms = await this.formRepository.find({relations:["child_forms", "form_elements"]});
-      console.log(this.forms);
+    	this.forms = await this.formRepository.find({relations:["parent_form", "parent_form.form_elements", "child_forms", "form_elements"]});
     }
 
 

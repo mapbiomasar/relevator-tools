@@ -8,13 +8,21 @@ import {CustomFormElement} from "../../entities/customFormElement";
 export class QuestionControlService {
   constructor() { }
 
-  toFormGroup(questions: CustomFormElement[] ) {
-  	console.log(questions);
+  toFormGroup(questions: CustomFormElement[], data) {
     let group: any = {};
 
     questions.forEach(question => {
-      group[question.key] = new FormControl('' || '');
+      group[question.key] = new FormControl(this.getFormControlValue(question.key, data));
     });
     return new FormGroup(group);
+  }
+
+
+  private getFormControlValue(key, data){
+  	if (data){
+  		return data[key];
+  	} else {
+  		return "";
+  	}
   }
 }

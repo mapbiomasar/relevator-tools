@@ -23,7 +23,7 @@ export class AppFilesProvider {
 
 	public checkAppDirectory(dirName){
 		this.file.checkDir(this.file.externalDataDirectory, dirName).then(success => {
-			console.log("Directorio chequeado " + dirName);
+			
 		}, error => {
 			this.createAppDir(dirName);
 		});
