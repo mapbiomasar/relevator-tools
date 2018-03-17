@@ -39,19 +39,19 @@
                     <ion-item >
                         Nombre
                         <ion-note item-end>
-                          {{currentSurvey.name}}
+                          {{marker.survey.name}}
                         </ion-note>
                     </ion-item>
                     <ion-item >
                         Autor
                         <ion-note item-end>
-                          {{currentSurvey.author_name}}
+                          {{marker.survey.author_name}}
                         </ion-note>
                     </ion-item>
                     <ion-item >
                         Fecha creación
                         <ion-note item-end>
-                         {{ getFormattedDate(currentSurvey.creation_date) }}
+                         {{ getFormattedDate(marker.survey.creation_date) }}
                         </ion-note>
                     </ion-item>
                   </ion-list>

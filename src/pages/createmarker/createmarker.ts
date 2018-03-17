@@ -69,10 +69,12 @@ export class CreateMarkerPage {
 			this.mapViewEntity = navParams.get('map');
 			// el survey activo es el ultimo creado
 			this.marker = navParams.get('marker');
+			console.log(this.marker);
 			if (this.marker){
 				//this.populateMediaLists();
 				this.savedOrientation = true;
 				this.markerAttributes = JSON.parse(this.marker.attributes);
+				this.marker.survey = this.getMapSurvey(this.marker.survey.form.id);
 			} else {
 				this.marker = new Marker();
 				this.marker.lat = navParams.get('location')[0];
@@ -80,9 +82,8 @@ export class CreateMarkerPage {
 				this.marker.mediaFiles = [];
 				this.marker.creation_date = this.utils.getNowUnixTimestamp();
 				this.savedOrientation = false;
+				this.marker.survey = this.mapViewEntity.surveys[this.mapViewEntity.surveys.length-1];
 			}
-			this.setCurrentSurvey(this.mapViewEntity.surveys[this.mapViewEntity.surveys.length-1]);
-			this.marker.survey = this.currentSurvey;
 			this.setContextData();
 			this.populateMediaLists();
 			//this.updateForm();
@@ -131,6 +132,15 @@ export class CreateMarkerPage {
 		} else {
 			this.contextData["title"] = "Nuevo";
 			this.contextData["button_save_text"] = "Guardar";
+		}
+	}
+
+	// los surveys en mapViewEntity estan poblados con todas las relaciones necesarias
+	getMapSurvey(surveyId){
+		for(var i in this.mapViewEntity.surveys){
+			if (this.mapViewEntity.surveys[i].id == surveyId){
+				return this.mapViewEntity.surveys[i];
+			}
 		}
 	}
 
@@ -346,7 +356,8 @@ export class CreateMarkerPage {
 
 		 modalSurveys.onDidDismiss((data) => {
 	      console.log(data);
-	      self.setCurrentSurvey(data.survey_selected);
+	      self.marker.survey = data.survey_selected;
+	      //self.setCurrentSurvey(data.survey_selected);
 	    });
 
 	}

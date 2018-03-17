@@ -54,6 +54,7 @@ export class DetailsurveyPage {
 
 
 	viewMarker(event, marker){
+    marker.survey = this.survey;
 	  var self = this;
 	  this.navCtrl.push(CreateMarkerPage, {
 	      map: self.map,
