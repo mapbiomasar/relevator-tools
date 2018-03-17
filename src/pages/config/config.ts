@@ -30,8 +30,6 @@ export class ConfigPage {
 
 	async loadConfig(){
 		let config = await this.configProvider.getAppConfig();
-		console.log("config!");
-		console.log(config);
 		this.defaultFormSelected = config.default_form;
 	}
 

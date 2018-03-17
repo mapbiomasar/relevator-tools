@@ -32,7 +32,6 @@ export class DynamicFormComponent implements OnChanges, DoCheck {
   }
 
   ngOnChanges(){
-    console.log("changes");
     this.updateFormElements();
   }
 

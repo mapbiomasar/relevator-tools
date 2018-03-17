@@ -26,7 +26,6 @@ export class ModalselectsurveyPage {
 
   updateSurvey(survey){
   	this.surveySelected = survey;
-  	console.log(this.surveySelected);
   	this.dismiss();
   }
 

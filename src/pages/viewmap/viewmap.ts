@@ -86,15 +86,12 @@ export class ViewMapPage {
       let tmpSurveyForm = await this.formsProvider.loadForm(tmpSurvey.form.id);
       tmpSurvey.form = tmpSurveyForm;
     }
-    console.log("LOAD FORMSSSSS!");
-    console.log(this.mapEntity);
     /*let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     let elements = await formElementsRepository.find({where:{'formId':this.surveySelected.form.id}});
     this.surveySelected.form.form_elements = elements;*/
   }
 
 	ionViewWillEnter() {
-    console.log(this.mapEntity);
 	    // start map,
 	    let arg = [-60.0953938, -34.8902802]
       this.map = new OLMap({
@@ -157,9 +154,7 @@ export class ViewMapPage {
       this.mapCrosshair.setGeometry(new Point(this.map.getView().getCenter()));
       let that = this; 
       this.map.getView().on('change:center', function(){ 
-          //console.log(this.getCenter());
           that.mapCrosshair.getGeometry().setCoordinates(this.getCenter());
-          //console.log(that.mapCrosshair.getGeometry().getCoordinates());
           //that.mapCrosshair.changed();
       });
       this.loadMarkersFeatures();

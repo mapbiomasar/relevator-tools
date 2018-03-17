@@ -100,7 +100,6 @@ export class CreateCustomFormPage {
 
   parentFormInitChange(selectedFormID: any) {
     if (this.parentFormCanBeChanged()){
-        console.log(this.parentFormSelected);
         this.formEntity.parent_form = this.getFormObject(this.parentFormSelected);
     }
   }
@@ -129,7 +128,6 @@ export class CreateCustomFormPage {
               newFormElement.form = this.formEntity;
               let newElements = this.formEntity.form_elements.concat([newFormElement]);
               this.formEntity.form_elements = newElements;
-              console.log(this.formEntity.form_elements);
               self.updateForm();
           }
       });
@@ -139,7 +137,6 @@ export class CreateCustomFormPage {
     var self = this;
     var message = "Formulario " + ((self.isEditingContext()) ? "editado" : "creado") + " con éxito";
     var toastFiredOnce = false;
-    console.log(this.formEntity);
     this.formRepository.save(this.formEntity)
     .then(function(savedForm) {
         self.setDefaultFormconfig();
@@ -159,7 +156,6 @@ export class CreateCustomFormPage {
       if (uniqueForm){
         let config = await this.configProvider.getAppConfig();
         config.default_form = uniqueForm.id;
-        console.log(config);
         this.configProvider.saveConfig(config);
       }
   }

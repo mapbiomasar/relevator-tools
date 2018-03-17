@@ -32,7 +32,6 @@ export class DetailMapPage {
 	}
 
   ionViewDidLoad() {
-      console.log("load detail");
       this.loadRawSurveyMarkersAndPopulate();
       this.loadMapSurveys();
   }
@@ -52,13 +51,11 @@ export class DetailMapPage {
       const manager = getManager();
       var surveysIds = this.getSurveysIds();
       var idList = '('+surveysIds.join(',')+')';
-      console.log(idList);
       let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID IN ` + idList);
       for (let i = 0; i < surveyMarkers.length; ++i){
         var tmpMarker = markersRepository.create(surveyMarkers[i]);
         markers.push(tmpMarker);
       }
-      console.log(markers);
       this.markers = markers;
   }
 

@@ -81,7 +81,6 @@ export class CreatesurveyPage {
 
   	surveyFormInitChange(selectedFormID: any) {
 	    if (this.surveyFormCanBeChanged()){
-	        console.log(this.surveyFormSelected);
 	        this.survey.form = this.getFormObject(this.surveyFormSelected);
 	    }
   	}

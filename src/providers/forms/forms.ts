@@ -29,7 +29,6 @@ export class FormsProvider {
       return form;
   	}
   	return null;*/
-    console.log(this.formRepository.find());
     let forms = await this.formRepository.find();
     if (forms){
       let defaultForm = forms[0];
@@ -62,8 +61,6 @@ export class FormsProvider {
 
   public async getUniqueForm(){
     let forms = await this.formRepository.find();
-    console.log("exists!!");
-    console.log(forms);
     if (forms.length == 1){
       return forms[0];
     }

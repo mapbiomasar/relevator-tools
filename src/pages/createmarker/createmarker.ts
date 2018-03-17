@@ -69,7 +69,6 @@ export class CreateMarkerPage {
 			this.mapViewEntity = navParams.get('map');
 			// el survey activo es el ultimo creado
 			this.marker = navParams.get('marker');
-			console.log(this.marker);
 			if (this.marker){
 				//this.populateMediaLists();
 				this.savedOrientation = true;
@@ -87,14 +86,11 @@ export class CreateMarkerPage {
 			this.setContextData();
 			this.populateMediaLists();
 			//this.updateForm();
-			console.log(this.markerAttributes);
 			this.toogleOrientationSubsctription();
 	}
 
 	ionViewDidLoad() {
-		console.log(this.marker.survey.form);
 		//this.loadSurveyFormElements(this.marker.survey.form);
-		console.log(this.marker.survey.form);
     }
 
     // Recibe customForm y llama a cargar sus formElements (db). De forma recursiva tmb carga
@@ -146,8 +142,6 @@ export class CreateMarkerPage {
 
 
 	formGroupChange(event){
-		console.log("receive event!");
-		console.log(event);
 		this.dynamicSurveyFormGroup = event;
 	}
 
@@ -162,7 +156,6 @@ export class CreateMarkerPage {
 		if (this.marker.mediaFiles){
 			var i;
 			for (i = 0; i < this.marker.mediaFiles.length; ++i) {
-    			console.log(this.marker.mediaFiles[i]);
     			this.addMediaEntityToLocalList(this.marker.mediaFiles[i]);
 			}
 		} else {
@@ -216,9 +209,7 @@ export class CreateMarkerPage {
 	captureAudio() {
 		this.mediaCapture.captureAudio().then(
  			(mediaFileArray: MediaFile[]) => {
- 				console.log(mediaFileArray);
  				var mediaFile = mediaFileArray[0];
- 				console.log(mediaFile);
 				var currentName = mediaFile.name;
 				var correctPath = mediaFile.fullPath.substr(0, mediaFile.fullPath.lastIndexOf('/') + 1);
 				this.copyFileToLocalDir(correctPath, currentName, currentName, this.appFilesProvider.getAudioMediaType())
@@ -256,8 +247,6 @@ export class CreateMarkerPage {
 
   	play(audioMediaFile) {
 	    if (audioMediaFile.path.indexOf('.wav') > -1 || audioMediaFile.path.indexOf('.amr') > -1) {
-	      console.log("playing");
-	      console.log(this.getPathForMedia(this.appFilesProvider.getAudioMediaType(), audioMediaFile.path));
 	      const audioFile: MediaObject = this.media.create(this.getPathForMedia(this.appFilesProvider.getAudioMediaType(), audioMediaFile.path));
 	      audioFile.play();
 	    }
@@ -355,7 +344,6 @@ export class CreateMarkerPage {
 		modalSurveys.present();
 
 		 modalSurveys.onDidDismiss((data) => {
-	      console.log(data);
 	      self.marker.survey = data.survey_selected;
 	      //self.setCurrentSurvey(data.survey_selected);
 	    });
@@ -374,7 +362,6 @@ export class CreateMarkerPage {
 	    var toastFiredOnce = false;
 	    this.markerRepository.save(this.marker)
 	    .then(function(savedMarker) {
-	    	console.log(savedMarker);
 	    	self.toast.showShortTop("Marcador creado con éxito").subscribe(
 	    		toast =>  {
 			            if (!toastFiredOnce){

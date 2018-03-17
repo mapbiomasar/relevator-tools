@@ -48,8 +48,6 @@ export class CreateMapPage {
     async checkFormExistence(){
       let formRepository = getRepository('customForm') as Repository<CustomForm>;
       let forms = await formRepository.find();
-      console.log("check");
-      console.log(forms);
       if (!forms.length){
           let alert = this.alertCtrl.create({
             title: 'No existen formularios',
@@ -95,15 +93,12 @@ export class CreateMapPage {
     	survey.creation_date = this.map.creation_date;
       survey.author_name = "Usuario";
       this.bindDefaultForm(survey);
-      console.log(survey);
     	return survey;
     }
 
 
     async bindDefaultForm(survey){
       let form = await this.formsProvider.getDefaultForm();
-      console.log("FORM!");
-      console.log(form);
       if (form){
         survey.form = form;
       }

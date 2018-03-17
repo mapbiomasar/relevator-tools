@@ -44,7 +44,6 @@ export class DetailsurveyPage {
 	      var tmpMarker = markersRepository.create(surveyMarkers[i]);
 	      markers.push(tmpMarker);
 	    }
-	    console.log(markers);
 	    this.markers = markers;
 	}
 

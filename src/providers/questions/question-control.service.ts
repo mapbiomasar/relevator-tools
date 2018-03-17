@@ -9,8 +9,6 @@ export class QuestionControlService {
   constructor() { }
 
   toFormGroup(questions: CustomFormElement[], data) {
-  	console.log("existent data");
-  	console.log(data);
     let group: any = {};
 
     questions.forEach(question => {
