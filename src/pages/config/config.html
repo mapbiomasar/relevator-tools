@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Configuración</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+<ion-card>
+   <ion-card-header>
+        Configuración Formularios
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label stacked>Formulario por defecto</ion-label>
+        <ion-select [(ngModel)]="defaultFormSelected" name="survey_form" (ionChange)="defaultFormInitChange($event)">
+          <ng-container *ngFor="let form of formsList">
+              <ion-option [value]="form.id">{{form.name}}</ion-option>
+          </ng-container>
+        </ion-select>
+    </ion-item>
+    </ion-card-content>
+</ion-card>
+
+
+
+</ion-content>

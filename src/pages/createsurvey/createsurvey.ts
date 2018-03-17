@@ -4,10 +4,11 @@ import { Toast } from '@ionic-native/toast';
 import { UtilsProvider } from '../../providers/utils/utils';
 import { FormsProvider } from '../../providers/forms/forms';
 
+import { getRepository, Repository } from 'typeorm';
+
 import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
 import {CustomForm} from "../../entities/customForm";
-import { getRepository, Repository } from 'typeorm';
 
 @IonicPage()
 @Component({

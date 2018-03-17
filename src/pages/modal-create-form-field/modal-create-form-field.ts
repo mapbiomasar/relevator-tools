@@ -32,11 +32,12 @@ export class ModalCreateFormFieldPage {
       this.formElementObject.tipo = this.fieldType;
   }
 
-  
-
-
   addField(){
     this.dismiss(this.formElementObject);
+  }
+
+  labelChanged(event){
+    this.formElementObject.key = event;
   }
 
 

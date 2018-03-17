@@ -1,14 +1,21 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams} from 'ionic-angular';
+import { NavController, NavParams, AlertController} from 'ionic-angular';
 import { Toast } from '@ionic-native/toast';
+
 import {HomePage} from '../home/home';
+import {CustomFormsPage} from '../custom-forms/custom-forms';
+
 import { UtilsProvider } from '../../providers/utils/utils';
 import { FormsProvider } from '../../providers/forms/forms';
 import { ToastProvider } from '../../providers/toast/toast';
 
+import { getRepository, Repository } from 'typeorm';
+
 import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
-import { getRepository, Repository } from 'typeorm';
+import {CustomForm} from "../../entities/customForm";
+
+
 
 @Component({
   selector: 'page-createmap',
@@ -22,7 +29,7 @@ export class CreateMapPage {
   contextData = {};
 
 
-  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private toastProvider: ToastProvider, private utils: UtilsProvider, private formsProvider: FormsProvider) {
+  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private toastProvider: ToastProvider, private utils: UtilsProvider, private formsProvider: FormsProvider, public alertCtrl: AlertController) {
       this.mapRepository = getRepository('map') as Repository<Map>;
   		this.map = this.navParams.get("map");
       if (!this.isEditingContext()){
@@ -31,6 +38,33 @@ export class CreateMapPage {
         this.map.description = "";
       }
       this.setContextData();
+    }
+
+
+    ionViewDidLoad(){
+      this.checkFormExistence();
+    }
+
+    async checkFormExistence(){
+      let formRepository = getRepository('customForm') as Repository<CustomForm>;
+      let forms = await formRepository.find();
+      console.log("check");
+      console.log(forms);
+      if (!forms.length){
+          let alert = this.alertCtrl.create({
+            title: 'No existen formularios',
+            message: 'Para crear un mapa, primero es necesario tener un formulario creado.',
+            buttons: [
+              {
+                text: 'Crear un formulario',
+                handler: () => {
+                    this.navCtrl.setRoot(CustomFormsPage)
+                }
+              }
+            ]
+          });
+          alert.present();
+      }
     }
 
 

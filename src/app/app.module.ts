@@ -2,6 +2,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
+import { RemoveSpacesPipe } from '../components/remove-spaces-pipe.component';
+
 // Plugins
 import { IonicStorageModule } from '@ionic/storage';
 
@@ -16,7 +18,7 @@ import { FileChooser } from '@ionic-native/file-chooser';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
-import { ListPage } from '../pages/list/list';
+import { ConfigPage } from '../pages/config/config';
 import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
 import { CreateCustomFormPage } from '../pages/create-custom-form/create-custom-form';
 import { CreateMapPage } from '../pages/createmap/createmap';
@@ -37,16 +39,19 @@ import { AppFilesProvider } from '../providers/appfiles/appfiles';
 import { ToastProvider } from '../providers/toast/toast';
 
 
+
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormComponent }         from '../components/dynamic-form.component';
 import { DynamicFormQuestionComponent } from '../components/dynamic-form-question.component';
 import { FormsProvider } from '../providers/forms/forms';
+import { ConfigProvider } from '../providers/config/config';
 
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
-    ListPage,
+    ConfigPage,
     CustomFormsPage,
     CreateCustomFormPage,
     CreateMapPage,
@@ -60,7 +65,8 @@ import { FormsProvider } from '../providers/forms/forms';
     ModalSelectLayersPage,
     ModalCreateFormFieldPage,
     DynamicFormComponent,
-    DynamicFormQuestionComponent
+    DynamicFormQuestionComponent,
+    RemoveSpacesPipe
   ],
   imports: [
     BrowserModule,
@@ -72,7 +78,7 @@ import { FormsProvider } from '../providers/forms/forms';
   entryComponents: [
     MyApp,
     HomePage,
-    ListPage,
+    ConfigPage,
     CustomFormsPage,
     CreateCustomFormPage,
     CreateMapPage,
@@ -104,7 +110,7 @@ import { FormsProvider } from '../providers/forms/forms';
     ToastProvider,
     FileChooser,
     FormsProvider,
-    FormsProvider
+    ConfigProvider,
   ]
 })
 export class AppModule {}

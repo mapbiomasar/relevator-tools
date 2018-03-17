@@ -6,6 +6,9 @@ import { AppFilesProvider } from '../providers/appfiles/appfiles';
 import { getRepository, Repository } from 'typeorm';
 
 import { createConnection } from 'typeorm'
+
+import {AppConfig} from "../entities/appConfig";
+
 import {Map} from "../entities/map";
 import {MapLayer} from "../entities/maplayer";
 import {Survey} from "../entities/survey";
@@ -15,7 +18,7 @@ import {CustomForm} from "../entities/customForm";
 import {CustomFormElement} from "../entities/customFormElement";
 
 import { HomePage } from '../pages/home/home';
-import { ListPage } from '../pages/list/list';
+import { ConfigPage } from '../pages/config/config';
 import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
 
 import { Storage } from '@ionic/storage';
@@ -41,7 +44,7 @@ export class MyApp {
     this.pages = [
       { title: 'Mis mapas', component: HomePage },
       { title: 'Formularios', component: CustomFormsPage },
-      { title: 'Configuracion', component: ListPage },
+      { title: 'Configuracion', component: ConfigPage },
     ];
 
   }
@@ -55,7 +58,7 @@ export class MyApp {
 
       let connOptions = {
         type: 'cordova',
-        database: 'mapbiomas_db_14',
+        database: 'mapbiomasv1_0',
         location: 'default',
         logging: ['error', 'query', 'schema'],
         synchronize: true,
@@ -66,7 +69,8 @@ export class MyApp {
           Marker,
           MediaFileEntity,
           CustomForm,
-          CustomFormElement
+          CustomFormElement,
+          AppConfig
         ]
       }
 

@@ -5,6 +5,9 @@ import { Toast } from '@ionic-native/toast';
 
 import { QuestionService } from '../../providers/questions/question.service';
 import { QuestionControlService }  from '../../providers/questions/question-control.service';
+import { FormsProvider }  from '../../providers/forms/forms';
+import { ConfigProvider }  from '../../providers/config/config';
+
 
 import { AlertController } from 'ionic-angular';
 
@@ -35,7 +38,7 @@ export class CreateCustomFormPage {
 
   contextData = {};
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, private qcs: QuestionControlService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController, private zone: NgZone) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, private qcs: QuestionControlService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController, private zone: NgZone, private formsProvider: FormsProvider, private configProvider: ConfigProvider) {
     this.formRepository = getRepository('customForm') as Repository<CustomForm>;
     this.formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     this.formEntity = this.navParams.get("form");
@@ -139,6 +142,7 @@ export class CreateCustomFormPage {
     console.log(this.formEntity);
     this.formRepository.save(this.formEntity)
     .then(function(savedForm) {
+        self.setDefaultFormconfig();
         self.toast.showShortTop(message).subscribe(
           toast => {
             if (!toastFiredOnce){
@@ -148,6 +152,16 @@ export class CreateCustomFormPage {
           }
         );
       });
+  }
+
+  async setDefaultFormconfig(){
+      let uniqueForm = await this.formsProvider.getUniqueForm();
+      if (uniqueForm){
+        let config = await this.configProvider.getAppConfig();
+        config.default_form = uniqueForm.id;
+        console.log(config);
+        this.configProvider.saveConfig(config);
+      }
   }
 
   openMenu() {
