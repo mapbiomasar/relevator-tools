@@ -5,6 +5,7 @@ import { Geolocation } from '@ionic-native/geolocation';
 
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 import { FormsProvider }  from '../../providers/forms/forms';
+import { UtilsProvider }  from '../../providers/utils/utils';
 
 //import 'ol/ol.css';
 import OLMap from 'ol/map';
@@ -67,7 +68,7 @@ export class ViewMapPage {
     "#FF0000", "#00FF00", "#0000FF"
   ]
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider, private utilsProvider: UtilsProvider) {
     this.markersRepository = getRepository('marker') as Repository<Marker>;
     this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
     this.mapEntity = navParams.get('map');
@@ -177,7 +178,9 @@ export class ViewMapPage {
 
   getSurveyColor(index){
     var position = index % this.surveyMarkersColors.length;
-    return this.surveyMarkersColors[position];
+    var colors = this.utilsProvider.getSurveyColors();
+    console.log(colors);
+    return colors[position]["code"];
   }
 
   async loadMarkersFeatures(){
@@ -372,6 +375,13 @@ export class ViewMapPage {
      modalLayers.onDidDismiss((data) => { // data recibe mapa
         //self.loadImportedLayers();
       });
+
+  }
+
+
+  showSurveysSwitcher(){
+      alert("switcher");
+      console.log(this.mapEntity.surveys);
 
   }
 

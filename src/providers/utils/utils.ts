@@ -3,6 +3,13 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class UtilsProvider {
 
+
+  surveyColors = [
+    {"name":"primary", "code":"#488aff"},
+    {"name":"energized", "code":"#ffc527"},
+    {"name":"danger", "code":"#f53d3d"},
+  ]
+
   constructor() {
   }
 
@@ -30,6 +37,11 @@ export class UtilsProvider {
   // retorna timestamp unix ("now") en segundos
   getNowUnixTimestamp(){
   	return Date.now() / 1000;
+  }
+
+
+  getSurveyColors(){
+    return this.surveyColors;
   }
 
 }

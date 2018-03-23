@@ -3,9 +3,11 @@ import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { AppFilesProvider } from '../providers/appfiles/appfiles';
-import { getRepository, Repository } from 'typeorm';
 
-import { createConnection } from 'typeorm'
+import { getRepository, Repository } from 'typeorm';
+import { createConnection } from 'typeorm';
+
+import { Diagnostic } from '@ionic-native/diagnostic';
 
 import {AppConfig} from "../entities/appConfig";
 
@@ -37,7 +39,7 @@ export class MyApp {
 
   pages: Array<{title: string, component: any}>;
 
-  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private appFilesProvider: AppFilesProvider) {
+  constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private appFilesProvider: AppFilesProvider, private diagnostic: Diagnostic) {
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -58,7 +60,7 @@ export class MyApp {
 
       let connOptions = {
         type: 'cordova',
-        database: 'mapbiomasv1_0',
+        database: 'mapbiomasv1_1',
         location: 'default',
         logging: ['error', 'query', 'schema'],
         synchronize: true,
@@ -80,6 +82,23 @@ export class MyApp {
       this.rootPage = HomePage;
 
       this.showDatabase(false);
+
+      this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.READ_EXTERNAL_STORAGE).then((status) => {
+            console.log(`AuthorizationStatus`);
+            console.log(status);
+            if (status != this.diagnostic.permissionStatus.GRANTED) {
+              this.diagnostic.requestRuntimePermission(this.diagnostic.permission.READ_EXTERNAL_STORAGE).then((data) => {
+                console.log(`getREADAuthorizationStatus`);
+                console.log(data);
+              })
+            } else {
+              console.log("We have the permission");
+            }
+          }, (statusError) => {
+            console.log(`statusError`);
+            console.log(statusError);
+          });
+
 
     });
   }

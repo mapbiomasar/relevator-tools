@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+import { FilePath } from '@ionic-native/file-path';
 import { File } from '@ionic-native/file';
 
 @Injectable()
@@ -9,7 +10,7 @@ export class AppFilesProvider {
   audioMediaType:string = "audio";
   fileType:string = "files";
 
-  constructor(private file: File) {
+  constructor(private file: File, private filePath: FilePath) {
   }
 
 
@@ -99,11 +100,16 @@ export class AppFilesProvider {
 	}
 
 	public copyFileToLocalDir(namePath, currentName, newFileName, fileType) {
-	  return this.file.copyFile(namePath, currentName, this.getAppDir(fileType), newFileName)
+		console.log("COPYING");
+		console.log(currentName);
+		console.log(newFileName);
+		console.log(fileType);
+	  	return this.file.copyFile(namePath, currentName, this.getAppDir(fileType), newFileName)
 	}
 
 
 	public getFileContent(filePath, fileType){
+		console.log("READING");
 		return this.file.readAsText(this.getAppDir(fileType), filePath)
 	}
 

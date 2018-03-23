@@ -3,6 +3,8 @@ import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angul
 import { FileChooser } from '@ionic-native/file-chooser';
 import { getRepository, getManager, Repository } from 'typeorm';
 
+import { FilePath } from '@ionic-native/file-path';
+
 import { AlertController } from 'ionic-angular';
 
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
@@ -26,7 +28,7 @@ export class ModalSelectLayersPage {
   private mapLayers:any;
   private layerRep;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController,  private filePath: FilePath) {
     this.layerRep = getRepository('maplayer') as Repository<MapLayer>;
     this.mapUIObject = navParams.get("mapUI");
   	this.mapEntity = navParams.get("mapEntity");
@@ -53,21 +55,31 @@ export class ModalSelectLayersPage {
 
   importLayerFile(uri){
     var self = this;
-    var currentName = uri.substr(uri.lastIndexOf('/') + 1);
-    var correctPath = uri.substr(0, uri.lastIndexOf('/') + 1);
-    var randomName = this.appFilesProvider.createFileRandomName(".kml");
-    this.appFilesProvider.copyFileToLocalDir(correctPath, currentName, randomName, this.appFilesProvider.getFileType())
-    .then(result => {
-      var newMapLayer = new MapLayer();
-      newMapLayer.map = self.mapEntity;
-      newMapLayer.tipo = "kml";
-      newMapLayer.path = result.name;
-      newMapLayer.visible = 1;
-      self.presentLayerNamePrompt(newMapLayer);
-    }, error => {
-      console.log(error);
-      alert("Error al importar el archivo");
-    });
+
+    this.filePath.resolveNativePath(uri)
+    .then(filePath => {
+          console.log("NUEVO FILEPATH " + filePath);
+          var currentName = filePath.substr(filePath.lastIndexOf('/') + 1);
+          var correctPath = filePath.substr(0, filePath.lastIndexOf('/') + 1);
+          var randomName = this.appFilesProvider.createFileRandomName(".kml");
+          console.log(currentName);
+          console.log(correctPath);
+          this.appFilesProvider.copyFileToLocalDir(correctPath, currentName, randomName, this.appFilesProvider.getFileType())
+          .then(result => {
+            var newMapLayer = new MapLayer();
+            newMapLayer.map = self.mapEntity;
+            newMapLayer.tipo = "kml";
+            newMapLayer.path = result.name;
+            newMapLayer.visible = 1;
+            self.presentLayerNamePrompt(newMapLayer);
+          }, error => {
+            console.log(error);
+            alert("Error al importar el archivo");
+          });
+    })
+    .catch(err => console.log(err));
+
+    uri = decodeURIComponent(uri);
 
   }
 
@@ -118,7 +130,7 @@ export class ModalSelectLayersPage {
       inputs: [
         {
           name: 'name',
-          placeholder: 'Nombr de la capa'
+          placeholder: 'Nombre de la capa'
         },
       ],
       buttons: [

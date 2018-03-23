@@ -2,6 +2,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
+import { FilePath } from '@ionic-native/file-path';
+import { Diagnostic } from '@ionic-native/diagnostic';
+
 import { RemoveSpacesPipe } from '../components/remove-spaces-pipe.component';
 
 // Plugins
@@ -37,9 +40,6 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { UtilsProvider } from '../providers/utils/utils';
 import { AppFilesProvider } from '../providers/appfiles/appfiles';
 import { ToastProvider } from '../providers/toast/toast';
-
-
-
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormComponent }         from '../components/dynamic-form.component';
@@ -111,6 +111,8 @@ import { ConfigProvider } from '../providers/config/config';
     FileChooser,
     FormsProvider,
     ConfigProvider,
+    Diagnostic,
+    FilePath
   ]
 })
 export class AppModule {}
