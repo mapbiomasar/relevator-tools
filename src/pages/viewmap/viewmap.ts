@@ -63,11 +63,6 @@ export class ViewMapPage {
 
   clusterDistance:number = 30;
 
-
-  surveyMarkersColors = [
-    "#FF0000", "#00FF00", "#0000FF"
-  ]
-
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider, private utilsProvider: UtilsProvider) {
     this.markersRepository = getRepository('marker') as Repository<Marker>;
     this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
@@ -177,8 +172,8 @@ export class ViewMapPage {
 
 
   getSurveyColor(index){
-    var position = index % this.surveyMarkersColors.length;
     var colors = this.utilsProvider.getSurveyColors();
+    var position = index % Object.keys(colors).length;
     console.log(colors);
     return colors[position]["code"];
   }

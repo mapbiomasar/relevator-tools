@@ -5,6 +5,8 @@ import { getRepository, getManager, Repository } from 'typeorm';
 
 import { FilePath } from '@ionic-native/file-path';
 
+import { Diagnostic } from '@ionic-native/diagnostic';
+
 import { AlertController } from 'ionic-angular';
 
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
@@ -28,7 +30,7 @@ export class ModalSelectLayersPage {
   private mapLayers:any;
   private layerRep;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController,  private filePath: FilePath) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController,  private filePath: FilePath, private diagnostic: Diagnostic) {
     this.layerRep = getRepository('maplayer') as Repository<MapLayer>;
     this.mapUIObject = navParams.get("mapUI");
   	this.mapEntity = navParams.get("mapEntity");
@@ -46,10 +48,31 @@ export class ModalSelectLayersPage {
     this.mapLayers = []
   }
 
+  // Inicia proceso para importar archivo. Se deben preguntar por los permisos
+  initImportLayer(){
+      let self = this;
+      this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.READ_EXTERNAL_STORAGE).then((status) => {
+            console.log(`AuthorizationStatus`);
+            console.log(status);
+            if (status != this.diagnostic.permissionStatus.GRANTED) {
+              this.diagnostic.requestRuntimePermission(this.diagnostic.permission.READ_EXTERNAL_STORAGE).then((data) => {
+                console.log(`getREADAuthorizationStatus`);
+                console.log(data);
+                self.importLayer();
+              })
+            } else {
+                self.importLayer();
+            }
+          }, (statusError) => {
+            console.log(`statusError`);
+            console.log(statusError);
+          });
+  }
+
   importLayer(){
-  	this.fileChooser.open()
-  .then(uri => this.importLayerFile(uri))
-  .catch(e => alert(e));
+      this.fileChooser.open()
+              .then(uri => this.importLayerFile(uri))
+              .catch(e => alert(e));
   }
 
 

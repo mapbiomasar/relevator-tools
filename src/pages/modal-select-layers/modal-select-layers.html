@@ -19,6 +19,10 @@
         Relevamientos
     </ion-card-header>
      <ion-card-content>
+     <ion-item *ngFor="let survey of mapEntity.surveys; let i = index">
+          <ion-label>{{ survey.name }}</ion-label>
+          <ion-toggle color="secondary" (ionChange)="layerSurveyVisibility(survey)"></ion-toggle>
+     </ion-item>
    </ion-card-content>
  </ion-card>
 
@@ -32,7 +36,7 @@
     <ion-label>{{ layer.name }}</ion-label>
     <ion-toggle color="secondary" [(ngModel)]="layer.visible" (ionChange)="layerChangeVisibility(layer)"></ion-toggle>
   </ion-item>
-  <button ion-button type="submit" (click)="importLayer()" block>Importar nueva capa (.kml)</button>
+  <button ion-button type="submit" (click)="initImportLayer()" block>Importar nueva capa (.kml)</button>
    </ion-card-content>
  </ion-card>
 
