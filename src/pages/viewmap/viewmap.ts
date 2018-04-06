@@ -104,7 +104,7 @@ export class ViewMapPage {
       this.map = new OLMap({
         target: 'map',
         layers: [
-            
+            osm_layer
         ], 
         view: new View({
         projection: 'EPSG:4326',
