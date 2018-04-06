@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
 import { FileChooser } from '@ionic-native/file-chooser';
 import { getRepository, getManager, Repository } from 'typeorm';
+import { UtilsProvider }  from '../../providers/utils/utils';
 
 import { FilePath } from '@ionic-native/file-path';
 
@@ -30,10 +31,17 @@ export class ModalSelectLayersPage {
   private mapLayers:any;
   private layerRep;
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController,  private filePath: FilePath, private diagnostic: Diagnostic) {
+  private surveyColors:any;
+
+  private localTiles:any;
+
+  constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController,  private filePath: FilePath, private diagnostic: Diagnostic,  private utilsProvider: UtilsProvider) {
     this.layerRep = getRepository('maplayer') as Repository<MapLayer>;
     this.mapUIObject = navParams.get("mapUI");
   	this.mapEntity = navParams.get("mapEntity");
+    this.localTiles = navParams.get("localTiles");
+
+    this.surveyColors = this.utilsProvider.getSurveyColors();
   }
 
   ionViewDidLoad() {
@@ -181,6 +189,30 @@ export class ModalSelectLayersPage {
     prompt.present();
   }
 
+
+  getSurveyColorName(i){
+    let name = this.surveyColors[i]['name'];
+    console.log(name);
+    return name;
+  }
+
+
+  getSurveyLayerName(survey){
+    return "surveyLayer" + survey.id;
+  }
+
+
+
+  layerSurveyVisibility(event, survey){
+      let visible = event.checked;
+      let surveyLayerName = this.getSurveyLayerName(survey);
+      console.log(surveyLayerName);
+      console.log(visible);
+      let surveyLayer = this.getMapLayerUIByName(surveyLayerName);
+      if (surveyLayer){
+        surveyLayer.setVisible(visible);
+      }
+  }
 
 
 

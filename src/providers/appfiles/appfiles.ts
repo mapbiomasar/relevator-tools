@@ -9,6 +9,7 @@ export class AppFilesProvider {
   imageMediaType:string = "image";
   audioMediaType:string = "audio";
   fileType:string = "files";
+  tileFileType:string = "tiles";
 
   constructor(private file: File, private filePath: FilePath) {
   }
@@ -18,6 +19,7 @@ export class AppFilesProvider {
 		this.checkAppDirectory(this.imageMediaType);
 		this.checkAppDirectory(this.audioMediaType);
 		this.checkAppDirectory(this.fileType);
+		this.checkAppDirectory(this.tileFileType);
 	}
 
 
@@ -57,6 +59,11 @@ export class AppFilesProvider {
 
 	public getFileDir(){
 		return this.getAppDir(this.fileType);
+	}
+
+
+	public getTileFileDir(){
+		return this.getAppDir(this.tileFileType);
 	}
 
 
@@ -111,6 +118,23 @@ export class AppFilesProvider {
 	public getFileContent(filePath, fileType){
 		console.log("READING");
 		return this.file.readAsText(this.getAppDir(fileType), filePath)
+	}
+
+
+	public async getTilesDirs(){
+		let localTilesDirs = await this.getTilesDirectoryContent();
+		let dirs = [];
+		for (var i in localTilesDirs){
+			if (localTilesDirs[i].isDirectory){
+				dirs.push({"name": localTilesDirs[i].name, "fullPath":localTilesDirs[i].nativeURL});
+			}
+		}
+		return dirs;
+	}
+
+
+	getTilesDirectoryContent(){
+		return this.file.listDir(this.file.externalDataDirectory, this.tileFileType);
 	}
 
 

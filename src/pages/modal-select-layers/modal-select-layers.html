@@ -20,12 +20,26 @@
     </ion-card-header>
      <ion-card-content>
      <ion-item *ngFor="let survey of mapEntity.surveys; let i = index">
-          <ion-label>{{ survey.name }}</ion-label>
-          <ion-toggle color="secondary" (ionChange)="layerSurveyVisibility(survey)"></ion-toggle>
+          <ion-label>{{survey.name}}</ion-label>
+          
+          <ion-toggle [attr.color]="primary" (ionChange)="layerSurveyVisibility($event, survey)"></ion-toggle>
      </ion-item>
    </ion-card-content>
  </ion-card>
 
+
+
+ <ion-card>
+    <ion-card-header>
+        Local Tiles
+    </ion-card-header>
+     <ion-card-content>
+  <ion-item *ngFor="let localTilesDir of localTiles; let i = index">
+    <ion-label>{{ localTilesDir.name }}</ion-label>
+    <ion-toggle color="secondary"></ion-toggle>
+  </ion-item>
+   </ion-card-content>
+ </ion-card>
 
 <ion-card>
     <ion-card-header>
@@ -39,5 +53,7 @@
   <button ion-button type="submit" (click)="initImportLayer()" block>Importar nueva capa (.kml)</button>
    </ion-card-content>
  </ion-card>
+
+
 
 </ion-content>

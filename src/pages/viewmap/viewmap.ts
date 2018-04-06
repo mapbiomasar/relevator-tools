@@ -24,6 +24,7 @@ import LayerVector from 'ol/layer/vector';
 import SourceVector  from 'ol/source/vector';
 import Cluster  from 'ol/source/cluster';
 import Point from 'ol/geom/point';
+import OSMSource from 'ol/source/osm';
 import KML from 'ol/format/kml';
 
 import {CreateMarkerPage} from '../createmarker/createmarker';
@@ -48,6 +49,8 @@ export class ViewMapPage {
   map: any;
   mapEntity:Map;
   surveySelected:Survey;
+
+  localTilesDirectories:any;
 
   scaleLineControl:any;
   mousePosition:any;
@@ -89,15 +92,19 @@ export class ViewMapPage {
 
 	ionViewWillEnter() {
 	    // start map,
-	    let arg = [-60.0953938, -34.8902802]
-      this.map = new OLMap({
-        target: 'map',
-        layers: [
-          new TileLayer({
+	    let arg = [-60.0953938, -34.8902802];
+
+
+      var osm_layer = new TileLayer({
             source: new XYZ({
               url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             })
           })
+
+      this.map = new OLMap({
+        target: 'map',
+        layers: [
+            
         ], 
         view: new View({
         projection: 'EPSG:4326',
@@ -154,9 +161,24 @@ export class ViewMapPage {
           //that.mapCrosshair.changed();
       });
       this.loadMarkersFeatures();
+      this.loadLocalTiles();
       this.loadImportedLayers();
 
   	}
+
+
+  async loadLocalTiles(){
+      this.localTilesDirectories = await this.appFilesProvider.getTilesDirs();
+
+      for (var k in this.localTilesDirectories){
+          var tmp_local_osm_layer = new TileLayer({
+                source: new OSMSource({
+                        url: this.localTilesDirectories[k].fullPath + '{z}/{x}/{y}.png'
+                })
+          });
+          this.map.addLayer(tmp_local_osm_layer);
+      }
+  }
 
   async loadRawSurveyMarkersAndPopulate(survey){
     var markers = [];
@@ -174,7 +196,6 @@ export class ViewMapPage {
   getSurveyColor(index){
     var colors = this.utilsProvider.getSurveyColors();
     var position = index % Object.keys(colors).length;
-    console.log(colors);
     return colors[position]["code"];
   }
 
@@ -182,10 +203,8 @@ export class ViewMapPage {
       var self = this;
       var features = [];
       for (var k in this.mapEntity.surveys){
-          let currentSurvey = this.mapEntity.surveys[k];
-          console.log("loading markers");
+          var currentSurvey = this.mapEntity.surveys[k];
           this.mapMarkers = await this.loadRawSurveyMarkersAndPopulate(currentSurvey);
-          console.log(this.mapMarkers);
           if (this.mapMarkers){
               for (var i = 0; i < this.mapMarkers.length; ++i) {
                   var markerEntity = this.mapMarkers[i];
@@ -200,7 +219,8 @@ export class ViewMapPage {
           }
         }
         var source = new SourceVector({
-          features: features
+          features: features,
+          name: "surveyLayer" + currentSurvey.id
         });
         var clusterSource = new Cluster({
           distance: this.clusterDistance,
@@ -363,7 +383,8 @@ export class ViewMapPage {
     var self = this;
     const modalLayers = this.modalController.create(ModalSelectLayersPage, {
         mapEntity: this.mapEntity,
-        mapUI: this.map
+        mapUI: this.map,
+        localTiles: this.localTilesDirectories
     });
     modalLayers.present();
 
