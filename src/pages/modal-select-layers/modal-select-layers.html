@@ -22,7 +22,7 @@
      <ion-item *ngFor="let survey of mapEntity.surveys; let i = index">
           <ion-label>{{survey.name}}</ion-label>
           
-          <ion-toggle [attr.color]="primary" (ionChange)="layerSurveyVisibility($event, survey)"></ion-toggle>
+          <ion-toggle [attr.color]="primary" [(ngModel)]="mapConfig.layers_config.surveys[i]"  (ionChange)="layerSurveyVisibility($event, survey)"></ion-toggle>
      </ion-item>
    </ion-card-content>
  </ion-card>
@@ -36,7 +36,7 @@
      <ion-card-content>
   <ion-item *ngFor="let localTilesDir of localTiles; let i = index">
     <ion-label>{{ localTilesDir.name }}</ion-label>
-    <ion-toggle color="secondary"></ion-toggle>
+    <ion-toggle color="secondary"  [(ngModel)]="mapConfig.layers_config.local[localTilesDir.name]" (ionChange)="layerLocalVisibility($event, localTilesDir.name)"></ion-toggle>
   </ion-item>
    </ion-card-content>
  </ion-card>

@@ -50,6 +50,8 @@ export class ViewMapPage {
   mapEntity:Map;
   surveySelected:Survey;
 
+  private mapConfigObject:any;
+
   localTilesDirectories:any;
 
   scaleLineControl:any;
@@ -60,13 +62,16 @@ export class ViewMapPage {
   currentLocation:any;
   mapCrosshair:any;
 
+  mapRepository:any;
   markersRepository:any;
   mediaRepository:any;
+
   mapMarkers:Marker[];
 
   clusterDistance:number = 30;
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider, private utilsProvider: UtilsProvider) {
+    this.mapRepository = getRepository('map') as Repository<Map>;
     this.markersRepository = getRepository('marker') as Repository<Marker>;
     this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
     this.mapEntity = navParams.get('map');
@@ -76,6 +81,8 @@ export class ViewMapPage {
 
 
   ionViewDidLoad(){
+    this.mapConfigObject = JSON.parse(this.mapEntity.config);
+    console.log(this.mapConfigObject);
     this.loadSurveysForms();
   }
 
@@ -92,9 +99,6 @@ export class ViewMapPage {
 
 	ionViewWillEnter() {
 	    // start map,
-	    let arg = [-60.0953938, -34.8902802];
-
-
       var osm_layer = new TileLayer({
             source: new XYZ({
               url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -104,12 +108,12 @@ export class ViewMapPage {
       this.map = new OLMap({
         target: 'map',
         layers: [
-            osm_layer
+            //osm_layer
         ], 
         view: new View({
         projection: 'EPSG:4326',
-          center: arg,
-          zoom: 4
+          center: this.mapConfigObject.center,
+          zoom: this.mapConfigObject.zoom
         })
       });
 
@@ -157,13 +161,13 @@ export class ViewMapPage {
       this.mapCrosshair.setGeometry(new Point(this.map.getView().getCenter()));
       let that = this; 
       this.map.getView().on('change:center', function(){ 
-          that.mapCrosshair.getGeometry().setCoordinates(this.getCenter());
+          let newCenter = this.getCenter();
+          that.mapCrosshair.getGeometry().setCoordinates(newCenter);
           //that.mapCrosshair.changed();
       });
-      this.loadMarkersFeatures();
       this.loadLocalTiles();
       this.loadImportedLayers();
-
+      this.loadMarkersFeatures();
   	}
 
 
@@ -174,7 +178,9 @@ export class ViewMapPage {
           var tmp_local_osm_layer = new TileLayer({
                 source: new OSMSource({
                         url: this.localTilesDirectories[k].fullPath + '{z}/{x}/{y}.png'
-                })
+                }),
+                visible: this.mapConfigObject.layers_config.local[this.localTilesDirectories[k].name] || false,
+                name: this.localTilesDirectories[k].name
           });
           this.map.addLayer(tmp_local_osm_layer);
       }
@@ -200,23 +206,23 @@ export class ViewMapPage {
   }
 
   async loadMarkersFeatures(){
-      var self = this;
-      var features = [];
-      for (var k in this.mapEntity.surveys){
-          var currentSurvey = this.mapEntity.surveys[k];
-          this.mapMarkers = await this.loadRawSurveyMarkersAndPopulate(currentSurvey);
-          if (this.mapMarkers){
-              for (var i = 0; i < this.mapMarkers.length; ++i) {
-                  var markerEntity = this.mapMarkers[i];
-                  var coordinates = [markerEntity.lat, markerEntity.lng];
-                  var newFeature = new Feature({
-                      geometry: new Point(coordinates),
-                      marker_id: markerEntity.id,
-                      survey_id: currentSurvey.id
-                  });
-                  features.push(newFeature);
-              }
-          }
+        var self = this;
+        var features = [];
+        for (var k in this.mapEntity.surveys){
+            var currentSurvey = this.mapEntity.surveys[k];
+            this.mapMarkers = await this.loadRawSurveyMarkersAndPopulate(currentSurvey);
+            if (this.mapMarkers){
+                for (var i = 0; i < this.mapMarkers.length; ++i) {
+                    var markerEntity = this.mapMarkers[i];
+                    var coordinates = [markerEntity.lat, markerEntity.lng];
+                    var newFeature = new Feature({
+                        geometry: new Point(coordinates),
+                        marker_id: markerEntity.id,
+                        survey_id: currentSurvey.id
+                    });
+                    features.push(newFeature);
+                }
+            }
         }
         var source = new SourceVector({
           features: features,
@@ -230,6 +236,7 @@ export class ViewMapPage {
         var surveyStyles = {};
         var clusters = new LayerVector({
           source: clusterSource,
+          name:"surveys_cluster",
           style: function(feature) {
             var size = feature.get('features').length;
             var style = (size > 1) ? styleCluster : surveyStyles[feature.values_.features[0].get("survey_id")];
@@ -274,7 +281,7 @@ export class ViewMapPage {
               self.showAlertViewMarker(clickedMarkerID);
           }
           });
-      }
+  }
 
  
 
@@ -384,6 +391,7 @@ export class ViewMapPage {
     const modalLayers = this.modalController.create(ModalSelectLayersPage, {
         mapEntity: this.mapEntity,
         mapUI: this.map,
+        mapConfig: this.mapConfigObject,
         localTiles: this.localTilesDirectories
     });
     modalLayers.present();
@@ -396,9 +404,20 @@ export class ViewMapPage {
 
 
   showSurveysSwitcher(){
-      alert("switcher");
       console.log(this.mapEntity.surveys);
+  }
 
+  ionViewWillLeave(){
+      let lastCenter = this.map.getView().getCenter();
+      let lastZoom = this.map.getView().getZoom();
+      console.log(lastCenter);
+      this.mapConfigObject.center = lastCenter;
+      this.mapConfigObject.zoom = lastZoom
+      this.mapEntity.config = JSON.stringify(this.mapConfigObject);
+      // save new config
+      console.log("saving");
+      console.log(this.mapConfigObject);
+      this.mapRepository.save(this.mapEntity);
   }
 
 }

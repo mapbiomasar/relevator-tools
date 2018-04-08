@@ -31,20 +31,25 @@ export class ModalSelectLayersPage {
   private mapLayers:any;
   private layerRep;
 
+
+
   private surveyColors:any;
 
+  private mapConfig:any;
   private localTiles:any;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController,  private filePath: FilePath, private diagnostic: Diagnostic,  private utilsProvider: UtilsProvider) {
     this.layerRep = getRepository('maplayer') as Repository<MapLayer>;
     this.mapUIObject = navParams.get("mapUI");
   	this.mapEntity = navParams.get("mapEntity");
+    this.mapConfig = navParams.get("mapConfig");
     this.localTiles = navParams.get("localTiles");
 
     this.surveyColors = this.utilsProvider.getSurveyColors();
   }
 
   ionViewDidLoad() {
+      
   }
 
   ionViewWillEnter(){
@@ -117,6 +122,7 @@ export class ModalSelectLayersPage {
   getMapLayerUIByName(name){
       var layer = null;
       this.mapUIObject.getLayers().forEach(function(el) {
+          console.log(el.get('name'));
           if (el.get('name') === name) {
               layer = el;
           }
@@ -203,14 +209,24 @@ export class ModalSelectLayersPage {
 
 
 
+  layerLocalVisibility(event, localLayerName){
+      this.updateLayerVisibility(localLayerName, event.checked);
+  }
+
+
+
   layerSurveyVisibility(event, survey){
-      let visible = event.checked;
       let surveyLayerName = this.getSurveyLayerName(survey);
-      console.log(surveyLayerName);
-      console.log(visible);
-      let surveyLayer = this.getMapLayerUIByName(surveyLayerName);
-      if (surveyLayer){
-        surveyLayer.setVisible(visible);
+      this.updateLayerVisibility(surveyLayerName, event.checked);
+      
+  }
+
+
+  updateLayerVisibility(layerName, visible){
+      console.log(this.mapConfig);
+      let layer = this.getMapLayerUIByName(layerName);
+      if (layer){
+        layer.setVisible(visible);
       }
   }
 
