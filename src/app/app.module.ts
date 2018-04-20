@@ -34,6 +34,7 @@ import { DetailsurveyPage } from '../pages/detailsurvey/detailsurvey';
 import { ModalselectsurveyPage } from '../pages/modalselectsurvey/modalselectsurvey';
 import { ModalSelectLayersPage } from '../pages/modal-select-layers/modal-select-layers';
 import { ModalCreateFormFieldPage } from '../pages/modal-create-form-field/modal-create-form-field';
+import { ModalExportMapDataPage } from '../pages/modal-export-map-data/modal-export-map-data';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -46,6 +47,7 @@ import { DynamicFormComponent }         from '../components/dynamic-form.compone
 import { DynamicFormQuestionComponent } from '../components/dynamic-form-question.component';
 import { FormsProvider } from '../providers/forms/forms';
 import { ConfigProvider } from '../providers/config/config';
+import { ExportFormatsProvider } from '../providers/export-formats/export-formats';
 
 @NgModule({
   declarations: [
@@ -64,6 +66,7 @@ import { ConfigProvider } from '../providers/config/config';
     ModalselectsurveyPage,
     ModalSelectLayersPage,
     ModalCreateFormFieldPage,
+    ModalExportMapDataPage,
     DynamicFormComponent,
     DynamicFormQuestionComponent,
     RemoveSpacesPipe
@@ -90,6 +93,7 @@ import { ConfigProvider } from '../providers/config/config';
     CreatesurveyPage,
     ModalselectsurveyPage,
     ModalSelectLayersPage,
+    ModalExportMapDataPage,
     ModalCreateFormFieldPage,
     DynamicFormComponent,
     DynamicFormQuestionComponent
@@ -112,7 +116,8 @@ import { ConfigProvider } from '../providers/config/config';
     FormsProvider,
     ConfigProvider,
     Diagnostic,
-    FilePath
+    FilePath,
+    ExportFormatsProvider
   ]
 })
 export class AppModule {}

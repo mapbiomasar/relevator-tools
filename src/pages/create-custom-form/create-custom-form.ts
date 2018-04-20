@@ -1,4 +1,4 @@
-import { Component, NgZone } from '@angular/core';
+import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams, Platform, ModalController, ViewController, ActionSheetController} from 'ionic-angular';
 import { getRepository, Repository } from 'typeorm';
 import { Toast } from '@ionic-native/toast';
@@ -14,7 +14,6 @@ import { AlertController } from 'ionic-angular';
 import {CustomForm} from "../../entities/customForm";
 import {CustomFormElement} from "../../entities/customFormElement";
 
-import { FormControl } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
 
 import {ModalCreateFormFieldPage} from '../modal-create-form-field/modal-create-form-field';
@@ -38,7 +37,7 @@ export class CreateCustomFormPage {
 
   contextData = {};
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, private qcs: QuestionControlService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController, private zone: NgZone, private formsProvider: FormsProvider, private configProvider: ConfigProvider) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController, private formsProvider: FormsProvider, private configProvider: ConfigProvider) {
     this.formRepository = getRepository('customForm') as Repository<CustomForm>;
     this.formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     this.formEntity = this.navParams.get("form");

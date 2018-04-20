@@ -134,7 +134,6 @@ async loadMediaFilesRelations(){
 
 
 presentAlertDelete() {
-    var self = this;
     let alert = this.alertCtrl.create({
     title: 'Eliminar Relevamiento',
     message: '¿Está seguro de que desea eliminar el relevamiento? Esta acción eliminará tanto al relevamiento como a sus marcadores y archivos de imagen y sonido asociados',

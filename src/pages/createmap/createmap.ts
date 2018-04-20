@@ -2,12 +2,10 @@ import { Component } from '@angular/core';
 import { NavController, NavParams, AlertController} from 'ionic-angular';
 import { Toast } from '@ionic-native/toast';
 
-import {HomePage} from '../home/home';
 import {CustomFormsPage} from '../custom-forms/custom-forms';
 
 import { UtilsProvider } from '../../providers/utils/utils';
 import { FormsProvider } from '../../providers/forms/forms';
-import { ToastProvider } from '../../providers/toast/toast';
 
 import { getRepository, Repository } from 'typeorm';
 
@@ -36,7 +34,7 @@ export class CreateMapPage {
 
 
 
-  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private toastProvider: ToastProvider, private utils: UtilsProvider, private formsProvider: FormsProvider, public alertCtrl: AlertController) {
+  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private utils: UtilsProvider, private formsProvider: FormsProvider, public alertCtrl: AlertController) {
       this.mapRepository = getRepository('map') as Repository<Map>;
   		this.map = this.navParams.get("map");
       if (!this.isEditingContext()){
@@ -123,7 +121,6 @@ export class CreateMapPage {
                                                       "local":{}
                                               }
             });
-        		var defSurvey = this.getDefaultSurvey();
         		this.map.surveys = [this.getDefaultSurvey()];
       }
 	    const mapRepository = getRepository('map') as Repository<Map>;

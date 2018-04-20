@@ -9,13 +9,10 @@ import { Camera, CameraOptions } from '@ionic-native/camera';
 import { DeviceOrientation, DeviceOrientationCompassHeading } from '@ionic-native/device-orientation';
 import { Toast } from '@ionic-native/toast';
 
-
-import { Storage } from '@ionic/storage';
 import { Media, MediaObject } from '@ionic-native/media';
 import { File } from '@ionic-native/file';
 import { MediaCapture, MediaFile, CaptureError} from '@ionic-native/media-capture';
 
-import {ViewMapPage} from '../viewmap/viewmap';
 import {ModalselectsurveyPage} from '../modalselectsurvey/modalselectsurvey';
 
 import { QuestionControlService }  from '../../providers/questions/question-control.service';
@@ -63,7 +60,7 @@ export class CreateMarkerPage {
 
   	contextData = {};
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private storage: Storage, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider, private modalController: ModalController,  private qcs: QuestionControlService, private formsProvider: FormsProvider) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private camera: Camera, private deviceOrientation: DeviceOrientation, private mediaCapture: MediaCapture, private file: File, private media: Media, private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider, private modalController: ModalController, private formsProvider: FormsProvider) {
 			this.markerRepository = getRepository('marker') as Repository<Marker>;
 			this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
 			this.mapViewEntity = navParams.get('map');
@@ -73,7 +70,7 @@ export class CreateMarkerPage {
 				//this.populateMediaLists();
 				this.savedOrientation = true;
 				this.markerAttributes = JSON.parse(this.marker.attributes);
-				this.marker.survey = this.getMapSurvey(this.marker.survey.form.id);
+				this.marker.survey = this.getMapSurvey(this.marker.survey.id);
 			} else {
 				this.marker = new Marker();
 				this.marker.lat = navParams.get('location')[0];
@@ -300,6 +297,7 @@ export class CreateMarkerPage {
   	}
 
   	presentAlertDelete() {
+  		var toastFiredOnce = false;
   		if (this.isEditingContext()){ // Solo permitir eliminar si se está editando
 			var self = this;
 			let alert = this.alertCtrl.create({
@@ -320,7 +318,10 @@ export class CreateMarkerPage {
 			      this.markerRepository.remove(this.marker).then(entity => {
 			        self.toast.showShortTop("Marcador eliminado con éxito").subscribe(
 			          entity => {
-			             self.navCtrl.popToRoot();
+			          	if (!toastFiredOnce){
+			            	 self.navCtrl.popToRoot();
+			            	 toastFiredOnce = true;
+		             	}
 			          }   
 			        );
 			      });

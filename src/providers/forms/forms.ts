@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 
 import { getRepository, Repository } from 'typeorm';
 
-import { ConfigProvider }  from '../config/config';
 
 import {CustomForm} from "../../entities/customForm";
 import {CustomFormElement} from "../../entities/customFormElement";
@@ -15,7 +14,7 @@ export class FormsProvider {
   formElementsRepository:any;
   configRepository:any;
 
-  constructor(private configProvider: ConfigProvider) {
+  constructor() {
   	this.formRepository = getRepository('customForm') as Repository<CustomForm>;
     this.formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     this.configRepository = getRepository('appconfig') as Repository<AppConfig>;

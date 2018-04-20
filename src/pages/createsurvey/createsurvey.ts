@@ -111,11 +111,10 @@ export class CreatesurveyPage {
 		this.survey.creation_date = this.utils.getNowUnixTimestamp();
 		this.surveyRepository.save(this.survey)
 	    .then(function(savedSurvey) {
-	    	// Creo un survey por defecto para el mapa
 	    	self.toast.showShortTop(message).subscribe(
 	    		toast => {
 				     if (!toastFiredOnce){
-				      	self.navCtrl.pop();
+				      	 self.navCtrl.popToRoot();
 		              	toastFiredOnce = true;
 		            }
 				  }

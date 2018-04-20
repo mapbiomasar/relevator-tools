@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 
-import { FilePath } from '@ionic-native/file-path';
 import { File } from '@ionic-native/file';
 
 @Injectable()
@@ -11,7 +10,7 @@ export class AppFilesProvider {
   fileType:string = "files";
   tileFileType:string = "tiles";
 
-  constructor(private file: File, private filePath: FilePath) {
+  constructor(private file: File) {
   }
 
 

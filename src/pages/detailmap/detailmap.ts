@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, Platform, ActionSheetController, AlertController} from 'ionic-angular';
+import { NavController, NavParams, Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
 import { Toast } from '@ionic-native/toast';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 
-import {HomePage} from '../home/home';
 import {CreateMapPage} from '../createmap/createmap';
-import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailsurveyPage} from '../detailsurvey/detailsurvey';
 import {CreatesurveyPage} from '../createsurvey/createsurvey';
+
+import {ModalExportMapDataPage} from '../modal-export-map-data/modal-export-map-data';
 
 import {Map} from "../../entities/map";
 import {Marker} from "../../entities/marker";
@@ -26,7 +26,7 @@ export class DetailMapPage {
 
   markers:any;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider) {
+	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController,  private toast: Toast, private utils: UtilsProvider, private appFilesProvider: AppFilesProvider,  private modalController: ModalController) {
       this.mapRepository = getRepository('map') as Repository<Map>;
       this.mapEntity = navParams.get('map');
 	}
@@ -67,6 +67,14 @@ export class DetailMapPage {
     });
   }
 
+  // Muestra modal para seleccionar que datos se quieren exportar
+  exportMapData(){
+      const modalExportMap = this.modalController.create(ModalExportMapDataPage, {
+          mapEntity: this.mapEntity
+      })
+      modalExportMap.present();
+  }
+
   openMenu() {
       var self = this;
       let actionSheet = this.actionsheetCtrl.create({
@@ -74,12 +82,19 @@ export class DetailMapPage {
       cssClass: 'action-sheets-basic-page',
       buttons: [
         {
-          text: 'Editar datos',
+          text: 'Editar datos del mapa',
           icon: !this.platform.is('ios') ? 'information-circle' : null,
           handler: () => {
               this.navCtrl.push(CreateMapPage, {
                     map: self.mapEntity
                 });
+          }
+        },
+        {
+          text: 'Exportar mapa',
+          icon: !this.platform.is('ios') ? 'download' : null,
+          handler: () => {
+              self.exportMapData();
           }
         },
         {
@@ -104,8 +119,6 @@ export class DetailMapPage {
   // Borra tanto el mapa como el survey y los marcadores asociados
   async deleteMapEntity(){
       let manager = getManager();
-      let surveyRep = getRepository('survey') as Repository<Survey>;
-      let mapSurveys = await surveyRep.find();
       var self = this;
       var toastFiredOnce = false;
       await manager.transaction(async manager => {
@@ -163,7 +176,6 @@ export class DetailMapPage {
 
 
   presentAlertDelete() {
-      var self = this;
       let alert = this.alertCtrl.create({
       title: 'Eliminar mapa',
       message: '¿Está seguro de que desea eliminar el mapa? Esta acción eliminará tanto al mapa como a los relevamientos, marcadores y archivos de imagen y sonido asociados',

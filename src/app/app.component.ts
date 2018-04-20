@@ -21,8 +21,6 @@ import { HomePage } from '../pages/home/home';
 import { ConfigPage } from '../pages/config/config';
 import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
 
-import { Storage } from '@ionic/storage';
-
 @Component({
   templateUrl: 'app.html'
 })
@@ -58,7 +56,7 @@ export class MyApp {
 
       let connOptions = {
         type: 'cordova',
-        database: 'mapbiomasv1_2',
+        database: 'mapbiomasv1_4',
         location: 'default',
         logging: ['error', 'query', 'schema'],
         synchronize: true,

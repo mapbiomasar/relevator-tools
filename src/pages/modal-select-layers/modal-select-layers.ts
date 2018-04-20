@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
 import { FileChooser } from '@ionic-native/file-chooser';
-import { getRepository, getManager, Repository } from 'typeorm';
+import { getRepository, Repository } from 'typeorm';
 import { UtilsProvider }  from '../../providers/utils/utils';
 
 import { FilePath } from '@ionic-native/file-path';
@@ -18,6 +18,7 @@ import {MapLayer} from "../../entities/maplayer";
 import LayerVector from 'ol/layer/vector';
 import SourceVector  from 'ol/source/vector';
 import KML from 'ol/format/kml';
+import Style from 'ol/style/style';
 
 @IonicPage()
 @Component({
@@ -30,22 +31,26 @@ export class ModalSelectLayersPage {
   private mapUIObject:any;
   private mapLayers:any;
   private layerRep;
+  private mapRepository;
 
 
-
+  private surveyStyles:any;
   private surveyColors:any;
 
   private mapConfig:any;
   private localTiles:any;
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private fileChooser: FileChooser, private appFilesProvider: AppFilesProvider, public alertCtrl: AlertController,  private filePath: FilePath, private diagnostic: Diagnostic,  private utilsProvider: UtilsProvider) {
+    this.mapRepository = getRepository('map') as Repository<Map>;
     this.layerRep = getRepository('maplayer') as Repository<MapLayer>;
     this.mapUIObject = navParams.get("mapUI");
   	this.mapEntity = navParams.get("mapEntity");
     this.mapConfig = navParams.get("mapConfig");
     this.localTiles = navParams.get("localTiles");
 
+    this.surveyStyles = navParams.get("surveyStyles");
     this.surveyColors = this.utilsProvider.getSurveyColors();
+
   }
 
   ionViewDidLoad() {
@@ -216,8 +221,23 @@ export class ModalSelectLayersPage {
 
 
   layerSurveyVisibility(event, survey){
-      let surveyLayerName = this.getSurveyLayerName(survey);
-      this.updateLayerVisibility(surveyLayerName, event.checked);
+      let markersLayer = this.getMapLayerUIByName("markers_cluster_vector_layer");
+      let mapFeatures = markersLayer.getSource().getFeatures();
+      let visible = event.checked;
+      console.log(mapFeatures);
+      for (var i in mapFeatures){
+          let features = mapFeatures[i].get("features");
+          for (var k in features){
+              let style = (visible) ?  this.surveyStyles[features[k].get("survey_id")]  : new Style({ image: '' }) ;
+              console.log(style);
+              features[k].setStyle(style);
+
+          }
+      }
+      markersLayer.getSource().refresh();
+      //this.updateLayerVisibility(surveyLayerName, event.checked);
+      //this.mapUIObject.render();
+      //this.mapUIObject.removeLayer(markersLayer);
       
   }
 
@@ -230,9 +250,17 @@ export class ModalSelectLayersPage {
       }
   }
 
+  async saveMapConfig(){
+    console.log("saving");
+    this.mapEntity.config = JSON.stringify(this.mapConfig);
+    await this.mapRepository.save(this.mapEntity);
+  }
+
 
 
   dismiss() {
+    // momento adecuado para guardar la configuracion del mapa
+    this.saveMapConfig();
     this.viewCtrl.dismiss({
       mapEntity: this.mapEntity
     });

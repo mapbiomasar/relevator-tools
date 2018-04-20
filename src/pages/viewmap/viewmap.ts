@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { NavController, NavParams, Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { Geolocation } from '@ionic-native/geolocation';
@@ -35,7 +35,6 @@ import {Map} from "../../entities/map";
 import {Survey} from "../../entities/survey";
 import {Marker} from "../../entities/marker";
 import {MediaFileEntity} from "../../entities/mediafileentity";
-import {CustomFormElement} from "../../entities/customFormElement";
 
 import {ModalSelectLayersPage} from '../modal-select-layers/modal-select-layers';
 
@@ -68,6 +67,8 @@ export class ViewMapPage {
 
   mapMarkers:Marker[];
 
+  surveyStyles = {};
+
   clusterDistance:number = 30;
 
 	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider, private utilsProvider: UtilsProvider) {
@@ -83,18 +84,29 @@ export class ViewMapPage {
   ionViewDidLoad(){
     this.mapConfigObject = JSON.parse(this.mapEntity.config);
     console.log(this.mapConfigObject);
-    this.loadSurveysForms();
+    this.initSurveyData();
   }
 
-  async loadSurveysForms(){
+
+  // Carga formulario de cada survey, y chequea config por defecto
+  async initSurveyData(){
     for (let k in this.mapEntity.surveys){
       let tmpSurvey = this.mapEntity.surveys[k];
-      let tmpSurveyForm = await this.formsProvider.loadForm(tmpSurvey.form.id);
-      tmpSurvey.form = tmpSurveyForm;
+      //let tmpSurveyForm = await this.formsProvider.loadForm(tmpSurvey.form.id);
+      //tmpSurvey.form = tmpSurveyForm;
+      this.setDefaultSurveyConfig(tmpSurvey);
     }
+    console.log(this.mapConfigObject);
     /*let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     let elements = await formElementsRepository.find({where:{'formId':this.surveySelected.form.id}});
     this.surveySelected.form.form_elements = elements;*/
+  }
+
+
+  setDefaultSurveyConfig(survey){
+      if (!this.mapConfigObject.layers_config.surveys[survey.id]){
+          this.mapConfigObject.layers_config.surveys[survey.id] = true;
+      }
   }
 
 	ionViewWillEnter() {
@@ -108,12 +120,12 @@ export class ViewMapPage {
       this.map = new OLMap({
         target: 'map',
         layers: [
-            //osm_layer
+            osm_layer
         ], 
         view: new View({
         projection: 'EPSG:4326',
-          center: this.mapConfigObject.center,
-          zoom: this.mapConfigObject.zoom
+          center: [-60.0953938, -34.8902802],
+          zoom: 4
         })
       });
 
@@ -165,9 +177,9 @@ export class ViewMapPage {
           that.mapCrosshair.getGeometry().setCoordinates(newCenter);
           //that.mapCrosshair.changed();
       });
+      //this.loadMarkersFeatures();
       this.loadLocalTiles();
       this.loadImportedLayers();
-      this.loadMarkersFeatures();
   	}
 
 
@@ -176,7 +188,7 @@ export class ViewMapPage {
 
       for (var k in this.localTilesDirectories){
           var tmp_local_osm_layer = new TileLayer({
-                source: new OSMSource({
+                source: new XYZ({
                         url: this.localTilesDirectories[k].fullPath + '{z}/{x}/{y}.png'
                 }),
                 visible: this.mapConfigObject.layers_config.local[this.localTilesDirectories[k].name] || false,
@@ -184,6 +196,7 @@ export class ViewMapPage {
           });
           this.map.addLayer(tmp_local_osm_layer);
       }
+      this.loadMarkersFeatures();
   }
 
   async loadRawSurveyMarkersAndPopulate(survey){
@@ -221,25 +234,27 @@ export class ViewMapPage {
                         survey_id: currentSurvey.id
                     });
                     features.push(newFeature);
+                    //features[i] = newFeature;
                 }
             }
         }
+        console.log(features);
         var source = new SourceVector({
           features: features,
-          name: "surveyLayer" + currentSurvey.id
         });
         var clusterSource = new Cluster({
           distance: this.clusterDistance,
-          source: source
+          source: source,
+          name: "markers_cluster_source_layer"
         });
         var styleCluster = null;
-        var surveyStyles = {};
+        //var surveyStyles = {};
         var clusters = new LayerVector({
           source: clusterSource,
-          name:"surveys_cluster",
+          name:"markers_cluster_vector_layer",
           style: function(feature) {
             var size = feature.get('features').length;
-            var style = (size > 1) ? styleCluster : surveyStyles[feature.values_.features[0].get("survey_id")];
+            var style = (size > 1) ? styleCluster : self.surveyStyles[feature.values_.features[0].get("survey_id")];
             if (!style) {
               var circleColor = (size > 1) ? '#FFC100' : self.getSurveyColor(feature.values_.features[0].get("survey_id"));
               style = new Style({
@@ -262,20 +277,20 @@ export class ViewMapPage {
               if (size > 1){
                   styleCluster = style;
               } else {
-                  surveyStyles[feature.values_.features[0].get("survey_id")] = style;
+                  self.surveyStyles[feature.values_.features[0].get("survey_id")] = style;
               }
             }
             return style;
           }
         });
         this.map.addLayer(clusters);
-        var self = this;
         this.map.on('click', function(evt) {
           console.log(evt);
           var feature = self.map.forEachFeatureAtPixel(evt.pixel,
               function(feature) {
                 return feature;
               });
+          console.log(feature);
           if (feature && feature.values_.features.length == 1) {
               var clickedMarkerID = feature.values_.features[0].get("marker_id");
               self.showAlertViewMarker(clickedMarkerID);
@@ -387,12 +402,12 @@ export class ViewMapPage {
 
 
   showMapLayersManager(){
-    var self = this;
     const modalLayers = this.modalController.create(ModalSelectLayersPage, {
         mapEntity: this.mapEntity,
         mapUI: this.map,
         mapConfig: this.mapConfigObject,
-        localTiles: this.localTilesDirectories
+        localTiles: this.localTilesDirectories,
+        surveyStyles: this.surveyStyles
     });
     modalLayers.present();
 
@@ -408,7 +423,7 @@ export class ViewMapPage {
   }
 
   ionViewWillLeave(){
-      let lastCenter = this.map.getView().getCenter();
+      /*let lastCenter = this.map.getView().getCenter();
       let lastZoom = this.map.getView().getZoom();
       console.log(lastCenter);
       this.mapConfigObject.center = lastCenter;
@@ -417,7 +432,7 @@ export class ViewMapPage {
       // save new config
       console.log("saving");
       console.log(this.mapConfigObject);
-      this.mapRepository.save(this.mapEntity);
+      this.mapRepository.save(this.mapEntity);*/
   }
 
 }
