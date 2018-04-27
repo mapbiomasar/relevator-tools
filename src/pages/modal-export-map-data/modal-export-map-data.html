@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Exportar mapa
+    </ion-title>
+    <ion-buttons start>
+      <button ion-button (click)="dismiss()">
+        <span ion-text color="primary" showWhen="ios">Salir</span>
+        <ion-icon name="md-close" showWhen="android, windows"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content padding>
+<ion-card>
+  <ion-card-content>
+        <ion-list>
+            <ion-item>
+            <ion-label>Nombre del archivo</ion-label>
+            <ion-input type="text" [(ngModel)]="exportFileName"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>Formato</ion-label>
+            <ion-select [(ngModel)]="exportOutputFormat">
+              <ion-option value="geojson">GeoJSON</ion-option>
+              <ion-option value="kml">KML</ion-option>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+  </ion-card-content>
+</ion-card>
+
+<ion-content padding>
+<ion-card>
+  <ion-card-header>
+      Relevamientos
+  </ion-card-header>
+  <ion-card-content>
+      <ion-item *ngFor="let survey of mapEntity.surveys; let i = index">
+          <ion-label>{{survey.name}}</ion-label>
+          <ion-toggle [(ngModel)]="exportDataConfig.surveys[survey.id]" checked="true"></ion-toggle>
+     </ion-item>
+  </ion-card-content>
+</ion-card>
+
+
+ <button ion-button  color="primary" [disabled]="!canInitExport()" (click)="initExportData()" block>Exportar</button>
+
+  <ion-card *ngIf="fileExported">
+      <ion-card-header>
+        Exported
+      </ion-card-header>
+     <ion-card-content>
+        <button ion-button  color="secondary" (click)="shareData()" block>Compartir archivo</button>
+     </ion-card-content>
+  </ion-card>
+
+</ion-content>

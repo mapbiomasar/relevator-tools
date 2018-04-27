@@ -8,6 +8,7 @@ export class AppFilesProvider {
   imageMediaType:string = "image";
   audioMediaType:string = "audio";
   fileType:string = "files";
+  exportedDataType:string = "exported";
   tileFileType:string = "tiles";
 
   constructor(private file: File) {
@@ -18,6 +19,7 @@ export class AppFilesProvider {
 		this.checkAppDirectory(this.imageMediaType);
 		this.checkAppDirectory(this.audioMediaType);
 		this.checkAppDirectory(this.fileType);
+		this.checkAppDirectory(this.exportedDataType);
 		this.checkAppDirectory(this.tileFileType);
 	}
 
@@ -60,6 +62,10 @@ export class AppFilesProvider {
 		return this.getAppDir(this.fileType);
 	}
 
+	public getExportDir(){
+		return this.getAppDir(this.exportedDataType);
+	}
+
 
 	public getTileFileDir(){
 		return this.getAppDir(this.tileFileType);
@@ -68,6 +74,23 @@ export class AppFilesProvider {
 
 	public getAppDir(mediaType){
 		return this.file.externalDataDirectory + mediaType;
+	}
+
+
+	public getImageMediaType(){
+		return this.imageMediaType;
+	}
+
+	public getAudioMediaType(){
+		return this.audioMediaType;
+	}
+
+	public getExportedDataType(){
+		return this.exportedDataType;
+	}
+
+	public getFileType(){
+		return this.fileType;
 	}
 
 	public getPathForMedia(mediaType, filePath){
@@ -93,23 +116,7 @@ export class AppFilesProvider {
 	  return text + extension;
 	}
 
-	public getImageMediaType(){
-		return this.imageMediaType;
-	}
-
-	public getAudioMediaType(){
-		return this.audioMediaType;
-	}
-
-	public getFileType(){
-		return this.fileType;
-	}
-
 	public copyFileToLocalDir(namePath, currentName, newFileName, fileType) {
-		console.log("COPYING");
-		console.log(currentName);
-		console.log(newFileName);
-		console.log(fileType);
 	  	return this.file.copyFile(namePath, currentName, this.getAppDir(fileType), newFileName)
 	}
 
@@ -134,6 +141,16 @@ export class AppFilesProvider {
 
 	getTilesDirectoryContent(){
 		return this.file.listDir(this.file.externalDataDirectory, this.tileFileType);
+	}
+
+
+	public writeFile(fileType, fileName, content, replaceFile = true){
+		return this.file.writeFile(this.getAppDir(fileType), fileName, content, {replace:replaceFile});
+	}
+
+
+	public removeFile(fileType, fileName){
+		return this.file.removeFile(this.getAppDir(fileType), fileName);
 	}
 
 

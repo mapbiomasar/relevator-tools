@@ -17,4 +17,14 @@ export class ExportFormatsProvider {
 	};
   }
 
+
+  public getFileExtension(format){
+  	switch(format){
+  		case "kml":
+  			return ".kml";
+  		case "geojson":
+  			return ".json";
+  	}
+  }
+
 }

@@ -7,8 +7,10 @@ import { Diagnostic } from '@ionic-native/diagnostic';
 
 import { RemoveSpacesPipe } from '../components/remove-spaces-pipe.component';
 
+
 // Plugins
 import { IonicStorageModule } from '@ionic/storage';
+import { SocialSharing } from '@ionic-native/social-sharing';
 
 import { Camera } from '@ionic-native/camera';
 import { Geolocation } from '@ionic-native/geolocation';
@@ -117,7 +119,8 @@ import { ExportFormatsProvider } from '../providers/export-formats/export-format
     ConfigProvider,
     Diagnostic,
     FilePath,
-    ExportFormatsProvider
+    ExportFormatsProvider,
+    SocialSharing
   ]
 })
 export class AppModule {}

@@ -208,6 +208,8 @@ export class ViewMapPage {
       tmpMarker.survey = survey;
       markers.push(tmpMarker);
     }
+    survey.markers = markers;
+    console.log(survey);
     return markers;
   }
 

@@ -32,20 +32,24 @@ export class DetailMapPage {
 	}
 
   ionViewDidLoad() {
-      this.loadRawSurveyMarkersAndPopulate();
-      this.loadMapSurveys();
+      this.loadSurveysData();
   }
 
-  async loadMapSurveys(){
+
+  async loadSurveysData(){
       let surveysRepository = getRepository('survey') as Repository<Survey>;
-      let mapSurveys = await surveysRepository.find({where:{mapId:this.mapEntity.id}, relations:["form", "form.form_elements", "form.parent_form", "form.parent_form.form_elements"]});
+      let mapSurveys = await surveysRepository.find({where:{mapId:this.mapEntity.id}, relations:["form", "form.form_elements", "form.parent_form"]});
       if (mapSurveys){
         this.mapEntity.surveys = mapSurveys;
+          for (let s in this.mapEntity.surveys){
+              this.loadRawSurveyMarkersAndPopulate(this.mapEntity.surveys[s]);
+          }
       }
+      console.log(this.mapEntity);
   }
 
 
-  async loadRawSurveyMarkersAndPopulate(){
+  async loadRawSurveyMarkersAndPopulate(survey){
       let markersRepository = getRepository('marker') as Repository<Marker>;
       var markers = [];
       const manager = getManager();
@@ -56,6 +60,7 @@ export class DetailMapPage {
         var tmpMarker = markersRepository.create(surveyMarkers[i]);
         markers.push(tmpMarker);
       }
+      survey.markers = markers;
       this.markers = markers;
   }
 
