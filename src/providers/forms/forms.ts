@@ -7,6 +7,8 @@ import {CustomForm} from "../../entities/customForm";
 import {CustomFormElement} from "../../entities/customFormElement";
 import {AppConfig} from "../../entities/appConfig";
 
+import { ConfigProvider } from "../config/config";
+
 @Injectable()
 export class FormsProvider {
 
@@ -14,7 +16,7 @@ export class FormsProvider {
   formElementsRepository:any;
   configRepository:any;
 
-  constructor() {
+  constructor(private configProvider: ConfigProvider) {
   	this.formRepository = getRepository('customForm') as Repository<CustomForm>;
     this.formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     this.configRepository = getRepository('appconfig') as Repository<AppConfig>;
@@ -22,27 +24,23 @@ export class FormsProvider {
 
 
   public async getDefaultForm(){
-  	/*let appConfig = await this.configProvider.getAppConfig();
-  	let form = await this.formRepository.findOne({where:{id:appConfig.default_form}, relations:["parent_form","form_elements", "parent_form.form_elements"]});
-  	if (form){
-      return form;
-  	}
-  	return null;*/
-    let forms = await this.formRepository.find();
-    if (forms){
-      let defaultForm = forms[0];
-      if (defaultForm){
-        return defaultForm;
-      }
+    let defaultForm = null;
+    let appConfig = await this.configProvider.getAppConfig();
+    let defaultFormID = appConfig.default_form || null;
+    if (defaultFormID){
+        defaultForm = await this.formRepository.findOne({where:{id:defaultFormID}});
+    } else { 
+        let forms = await this.formRepository.find();
+        defaultForm = forms[0];
     }
-    return null;
+    return defaultForm;
   }
 
 
   public async loadFormElements(customForm){
     if (!customForm.form_elements){
         customForm.form_elements = [];
-        let elements = await this.formElementsRepository.find({where:{formId:customForm.id}});
+        let elements = await this.formElementsRepository.find({where:{formId:customForm.id}, relations:["form_elements", "parent_form", "parent_form.form_elements"]});
         if (elements){
           customForm.form_elements = elements;
         }

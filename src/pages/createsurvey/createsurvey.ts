@@ -41,20 +41,21 @@ export class CreatesurveyPage {
 	        this.survey.map = this.map;
 	        //this.bindDefaultForm(this.survey);
       	}
-      	this.getFormsList();
       	this.setContextData();
 	}
 
-  	ionViewDidLoad() {	
-  		//this.surveyFormSelected = this.survey.form.id;
-  		this.surveyFormSelected = this.survey.form.id || null;
+  	async ionViewDidLoad() {	
+  		await this.getFormsList();
+  		if (this.survey.form) {
+  			this.surveyFormSelected = this.survey.form.id;
+		} else {
+			this.bindDefaultForm(this.survey);
+		}
   	}
 
 
 	async getFormsList(){
 		let forms = await this.formsProvider.getFormsList();
-		console.log("formsssssssssss");
-		console.log(forms);
 		if (forms){
 		    this.formsList = forms;
 		}
