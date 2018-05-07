@@ -55,6 +55,9 @@ export class CreateMarkerPage {
 	formComponent:FormGroup;
 	formElements:CustomFormElement[] = [];
 
+
+	formsList:any;
+
 	dynamicSurveyFormGroup:any;
 	formgroupPayload = '';
 
@@ -88,11 +91,30 @@ export class CreateMarkerPage {
 
 	ionViewDidLoad() {
 		//this.loadSurveyFormElements(this.marker.survey.form);
+		this.loadForms();
     }
+
+
+
+    private async loadForms(){
+    	this.formsList = await this.formsProvider.getFormsList();
+    	this.marker.survey.form = this.getFormObject(this.marker.survey.form.id);
+    }
+
+    private	getFormObject(formID){
+		for (let i in this.formsList){
+			if (this.formsList[i].id == formID){
+			  return this.formsList[i];
+			}
+		}
+		return null;
+  	}
+
 
     // Recibe customForm y llama a cargar sus formElements (db). De forma recursiva tmb carga
     // los elementos de su padre
     loadSurveyFormElements(form){
+    	console.log("loading form in marker");
     	this.formsProvider.loadFormElements(form);
     	if (form.parent_form){
     		this.loadSurveyFormElements(form.parent_form);

@@ -52,7 +52,9 @@ export class CreatesurveyPage {
 
 
 	async getFormsList(){
-		let forms = await this.formRepository.find({relations:["form_elements", "parent_form", "parent_form.form_elements"]});
+		let forms = await this.formsProvider.getFormsList();
+		console.log("formsssssssssss");
+		console.log(forms);
 		if (forms){
 		    this.formsList = forms;
 		}

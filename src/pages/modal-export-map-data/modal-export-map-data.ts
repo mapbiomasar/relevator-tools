@@ -30,29 +30,33 @@ export class ModalExportMapDataPage {
   private exportDataConfig:any = {};
 
 
+  private shareSubjectText:string = "MapbiomasApp - Datos";
+  private shareBodyText:string = "Este es un archivo generado desde MapbiomasAPP";
+
+
   constructor(public navCtrl: NavController, public navParams: NavParams,  public viewCtrl: ViewController, public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, private socialSharing: SocialSharing) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
   		this.mapEntity = navParams.get("mapEntity");
       this.exportDataConfig = {"surveys":{}};
-
-  		console.log(this.mapEntity);
-      console.dir(tokml);
   }
 
   ionViewDidLoad() {
     
   }
 
-
+  async exportData(){
+      let fileContent = await this.initExportData();
+      if (fileContent){
+          this.saveMapData(fileContent);
+      }
+  }
 
   async initExportData(){
-    //this.removeExportedFile();
     this.fileExported = null;
     if (this.exportOutputFormat){
       	let geoJSONObject = this.exportFormats.getGeoJSONObjectBase();
-      	//geoJSONObject.features.push(this.getFeatureFromMarker());
       	let jsonObject = await this.populateWithMapMarkers(geoJSONObject);
-      	console.log(geoJSONObject);
+      	console.log(jsonObject);
         let outFileContent = "";
         switch(this.exportOutputFormat){
           case "geojson":
@@ -61,8 +65,9 @@ export class ModalExportMapDataPage {
           case "kml":
                 outFileContent = tokml(jsonObject); // tokml retorna string
         }
-        this.saveMapData(outFileContent);
+        return outFileContent;
     }
+    return null;
   }
 
 
@@ -126,16 +131,23 @@ export class ModalExportMapDataPage {
       }
   }
 
+
+  private shareViaEmail(){
+    this.socialSharing.shareViaEmail(this.shareBodyText, this.shareSubjectText, [''],[''],[''],this.fileExported.nativeURL ).then( () => {
+
+    })
+  }
+
   private shareData(){
       // Check if sharing via email is supported
-        this.socialSharing.canShareViaEmail().then(() => {
+      /*  this.socialSharing.canShareViaEmail().then(() => {
           console.log("Sharing via email is possible")
         }).catch(() => {
           console.log("Sharing via email is not possible")
-        });
+        });*/
 
         // Share via email
-        this.socialSharing.share('Body', 'Subject', this.fileExported.nativeURL).then(() => {
+        this.socialSharing.share(this.shareBodyText, this.shareSubjectText, this.fileExported.nativeURL).then(() => {
           console.log("success");
         }).catch(() => {
           console.log("Error!");

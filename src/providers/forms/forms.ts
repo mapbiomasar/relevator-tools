@@ -66,4 +66,9 @@ export class FormsProvider {
     return null;
   }
 
+  public async getFormsList(){
+    let forms = await this.formRepository.find({relations:["form_elements", "parent_form", "parent_form.form_elements"]});
+    return forms;
+  }
+
 }
