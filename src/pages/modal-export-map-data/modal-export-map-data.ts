@@ -44,11 +44,14 @@ export class ModalExportMapDataPage {
     
   }
 
-  async exportData(){
-      let fileContent = await this.initExportData();
-      if (fileContent){
-          this.saveMapData(fileContent);
-      }
+  exportData(){
+      console.log("INIT EXPORT");
+      this.initExportData().then((content) =>{
+          if (content){
+              console.log("saving");
+              this.saveMapData(content);
+          }
+      })
   }
 
   async initExportData(){
@@ -63,6 +66,9 @@ export class ModalExportMapDataPage {
                 outFileContent = JSON.stringify(jsonObject);
                 break;
           case "kml":
+                jsonObject = this.explodeFeaturesAttributes(jsonObject);
+                console.log("modified!");
+                console.log(jsonObject);
                 outFileContent = tokml(jsonObject); // tokml retorna string
         }
         return outFileContent;
@@ -70,15 +76,28 @@ export class ModalExportMapDataPage {
     return null;
   }
 
+  explodeFeaturesAttributes(jsonObject){
+      for (var x in jsonObject.features){
+        var feature = jsonObject.features[x];
+        feature.properties.attributes = JSON.parse(feature.properties.attributes);
+        for (var attr_key in feature.properties.attributes){
+            feature.properties["attribute_"+attr_key] = feature.properties.attributes[attr_key];
+        }
+        delete feature.properties.attributes;
+      }
+      return jsonObject;
+  }
 
-  private async populateWithMapMarkers(geoJSONObject){
+
+  async populateWithMapMarkers(geoJSONObject){
       let self = this;
-      this.mapEntity.surveys.forEach(function(survey){
+      this.mapEntity.surveys.forEach(async function(survey){
           console.log(survey);
           if (self.exportDataConfig.surveys[survey.id]){
                 survey.markers.forEach(async function(marker){
                      console.log(marker);
                      let feature = await self.getFeatureFromMarker(survey, marker);
+                     console.log("PUSHHHHHHHHHHHHHHH");
                      geoJSONObject.features.push(feature);
                 })
           }
@@ -87,7 +106,7 @@ export class ModalExportMapDataPage {
   }
 
   private async getFeatureFromMarker(survey, marker){
-    if (!marker.mediaFiles){
+    /*if (!marker.mediaFiles){
       marker.mediaFiles = [];
       const manager = getManager();
         let mediaFiles = await  manager.query(`SELECT * FROM mediafile WHERE markerID = ` + marker.id);
@@ -95,7 +114,7 @@ export class ModalExportMapDataPage {
             var tmpMediafile = this.mediafilesRepository.create(mediaFiles[i]);
             marker.mediaFiles.push(tmpMediafile);
         }
-    }
+    }*/
     let markerData =  {
            "type": "Feature",
            "geometry": {
@@ -104,7 +123,7 @@ export class ModalExportMapDataPage {
            },
            "properties": {
                "survey_id": survey.id,
-               "atrributes": marker.attributes,
+               "attributes": marker.attributes,
                "orientation": marker.orientation,
                "media_files": {
                     "images":[],
@@ -139,13 +158,6 @@ export class ModalExportMapDataPage {
   }
 
   private shareData(){
-      // Check if sharing via email is supported
-      /*  this.socialSharing.canShareViaEmail().then(() => {
-          console.log("Sharing via email is possible")
-        }).catch(() => {
-          console.log("Sharing via email is not possible")
-        });*/
-
         // Share via email
         this.socialSharing.share(this.shareBodyText, this.shareSubjectText, this.fileExported.nativeURL).then(() => {
           console.log("success");

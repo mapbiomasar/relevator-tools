@@ -180,6 +180,7 @@ export class ViewMapPage {
       //this.loadMarkersFeatures();
       this.loadLocalTiles();
       this.loadImportedLayers();
+
   	}
 
 
@@ -351,12 +352,6 @@ export class ViewMapPage {
       });
       actionSheet.present();
     }
-  }
-
-
-  ionViewDidEnter(){
-    this.map.updateSize();
-    this.map.render();
   }
 
   openMenu() {

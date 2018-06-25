@@ -1,5 +1,5 @@
-import { Component} from '@angular/core';
-import { NavController, NavParams,  Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
+import { Component, ViewChild} from '@angular/core';
+import { NavController, NavParams, Navbar, Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { UtilsProvider } from '../../providers/utils/utils';
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
@@ -60,6 +60,8 @@ export class CreateMarkerPage {
 
 	dynamicSurveyFormGroup:any;
 	formgroupPayload = '';
+
+	@ViewChild('navbar') navBar: Navbar;
 
   	contextData = {};
 

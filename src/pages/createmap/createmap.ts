@@ -90,14 +90,14 @@ export class CreateMapPage {
     }
 
 
-    getDefaultSurvey(){
+    async getDefaultSurvey(){
     	var survey = new Survey();
     	survey.map = this.map;
     	survey.name = "Relevamiento 1";
     	survey.description = "Relevamiento creado por defecto";
     	survey.creation_date = this.map.creation_date;
       survey.author_name = "Usuario";
-      this.bindDefaultForm(survey);
+      await this.bindDefaultForm(survey);
     	return survey;
     }
 
@@ -110,7 +110,7 @@ export class CreateMapPage {
     }
     
 
-  	saveMap(){
+  	async saveMap(){
       if (!this.isEditingContext()){
         		this.map.user = 1;
         		this.map.creation_date = this.utils.getNowUnixTimestamp(); // UNIX timestamp, in seconds
@@ -121,7 +121,9 @@ export class CreateMapPage {
                                                       "local":{}
                                               }
             });
-        		this.map.surveys = [this.getDefaultSurvey()];
+            let defaultSurvey = await this.getDefaultSurvey();
+            console.log(defaultSurvey);
+        		this.map.surveys = [defaultSurvey];
       }
 	    const mapRepository = getRepository('map') as Repository<Map>;
 	    var self  = this;

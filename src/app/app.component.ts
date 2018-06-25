@@ -21,6 +21,8 @@ import { HomePage } from '../pages/home/home';
 import { ConfigPage } from '../pages/config/config';
 import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
 
+import { timer } from 'rxjs/observable/timer';
+
 @Component({
   templateUrl: 'app.html'
 })
@@ -35,7 +37,10 @@ export class MyApp {
 
   pages: Array<{title: string, component: any}>;
 
+  showSplash = true; // <-- show animation
+
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private appFilesProvider: AppFilesProvider) {
+
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -48,11 +53,9 @@ export class MyApp {
   }
 
   initializeApp() {
-
     this.platform.ready().then(async () => {
 
       this.statusBar.styleDefault();
-      //this.splashScreen.hide();
 
       let connOptions = {
         type: 'cordova',
@@ -78,8 +81,8 @@ export class MyApp {
       this.rootPage = HomePage;
 
       this.showDatabase(false);
-
-
+      this.splashScreen.hide();
+      timer(5000).subscribe(() => this.showSplash = false);
 
     });
   }
