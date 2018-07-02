@@ -14,38 +14,45 @@
 
 
 <ion-content padding>
+
+
 <ion-card>
-  <ion-card-content>
+    <ion-card-header>
+        Exportar marcadores
+    </ion-card-header>
+    <ion-card-content>
         <ion-list>
-            <ion-item>
-            <ion-label>Nombre del archivo</ion-label>
-            <ion-input type="text" [(ngModel)]="exportFileName"></ion-input>
-          </ion-item>
           <ion-item>
-            <ion-label>Formato</ion-label>
+            <ion-label>Formato archivo marcadores</ion-label>
             <ion-select [(ngModel)]="exportOutputFormat">
               <ion-option value="geojson">GeoJSON</ion-option>
               <ion-option value="kml">KML</ion-option>
             </ion-select>
           </ion-item>
+          <ion-item *ngFor="let survey of mapEntity.surveys; let i = index">
+              <ion-label>{{survey.name}}</ion-label>
+              <ion-toggle [(ngModel)]="exportDataConfig.surveys[survey.id]" checked="true"></ion-toggle>
+         </ion-item>
         </ion-list>
   </ion-card-content>
 </ion-card>
 
 <ion-card>
   <ion-card-header>
-      Relevamientos
+      Exportar esquema
   </ion-card-header>
   <ion-card-content>
-      <ion-item *ngFor="let survey of mapEntity.surveys; let i = index">
-          <ion-label>{{survey.name}}</ion-label>
-          <ion-toggle [(ngModel)]="exportDataConfig.surveys[survey.id]" checked="true"></ion-toggle>
-     </ion-item>
+      <ion-list>
+      <ion-item>
+          <ion-label>Incluir esquema</ion-label>
+        <ion-toggle [(ngModel)]="exportDataConfig.include_scheme" color="danger"></ion-toggle>
+      </ion-item>
+     </ion-list>
   </ion-card-content>
 </ion-card>
 
 
- <button ion-button  color="primary" [disabled]="!canInitExport()" (click)="exportData()" block>Exportar</button>
+ <button ion-button  color="primary" [disabled]="!canInitExport()" (click)="presentPromptExportData()" block>Exportar</button>
 
   <ion-card *ngIf="fileExported">
       <ion-card-header>

@@ -71,7 +71,12 @@ export class ViewMapPage {
 
   clusterDistance:number = 30;
 
-	constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, private geolocation: Geolocation,  private modalController: ModalController, private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider, private utilsProvider: UtilsProvider) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, 
+              public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, 
+              private geolocation: Geolocation,  private modalController: ModalController, 
+              private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider, 
+              private utilsProvider: UtilsProvider) {
+                
     this.mapRepository = getRepository('map') as Repository<Map>;
     this.markersRepository = getRepository('marker') as Repository<Marker>;
     this.mediaRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
@@ -116,7 +121,7 @@ export class ViewMapPage {
               url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             })
           })
-
+        console.log("creating map object");
       this.map = new OLMap({
         target: 'map',
         layers: [
@@ -180,11 +185,12 @@ export class ViewMapPage {
       //this.loadMarkersFeatures();
       this.loadLocalTiles();
       this.loadImportedLayers();
-
+      console.log("finish map");
   	}
 
 
   async loadLocalTiles(){
+    console.log("load tiles, markers");
       this.localTilesDirectories = await this.appFilesProvider.getTilesDirs();
 
       for (var k in this.localTilesDirectories){
@@ -288,12 +294,10 @@ export class ViewMapPage {
         });
         this.map.addLayer(clusters);
         this.map.on('click', function(evt) {
-          console.log(evt);
           var feature = self.map.forEachFeatureAtPixel(evt.pixel,
               function(feature) {
                 return feature;
               });
-          console.log(feature);
           if (feature && feature.values_.features.length == 1) {
               var clickedMarkerID = feature.values_.features[0].get("marker_id");
               self.showAlertViewMarker(clickedMarkerID);

@@ -80,7 +80,7 @@ export class MyApp {
       this.appFilesProvider.checkMediaDirs();
       this.rootPage = HomePage;
 
-      this.showDatabase(false);
+      //this.showDatabase(false);
       this.splashScreen.hide();
       timer(5000).subscribe(() => this.showSplash = false);
 

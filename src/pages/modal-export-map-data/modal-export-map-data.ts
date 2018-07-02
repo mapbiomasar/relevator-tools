@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, ViewController, LoadingController, AlertController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 
 import { SocialSharing } from '@ionic-native/social-sharing';
@@ -34,21 +34,59 @@ export class ModalExportMapDataPage {
   private shareBodyText:string = "Este es un archivo generado desde MapbiomasAPP";
 
 
-  constructor(public navCtrl: NavController, public navParams: NavParams,  public viewCtrl: ViewController, public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, private socialSharing: SocialSharing) {
+  constructor(public navCtrl: NavController, public navParams: NavParams,  public viewCtrl: ViewController, 
+              public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, 
+              private socialSharing: SocialSharing,  public loadingCtrl: LoadingController,
+              private alertCtrl: AlertController) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
   		this.mapEntity = navParams.get("mapEntity");
-      this.exportDataConfig = {"surveys":{}};
+      this.exportDataConfig = {"surveys":{}, "include_scheme":true};
   }
 
   ionViewDidLoad() {
     
   }
 
+
+  presentPromptExportData(){
+    let alert = this.alertCtrl.create({
+      title: 'Exportar datos',
+      inputs: [
+        {
+          name: 'export_filename',
+          placeholder: 'Nombre de archivos'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: data => {
+          }
+        },
+        {
+          text: 'Exportar',
+          handler: data => {
+            var loading = this.loadingCtrl.create({
+              content: 'Exportando marcadores...'
+            });
+            loading.present();
+            setTimeout(() => {
+              loading.dismiss();
+            }, 5000);
+          }
+        }
+      ]
+    });
+    alert.present();
+  }
+
   exportData(){
-      console.log("INIT EXPORT");
+    
+  
+    
       this.initExportData().then((content) =>{
           if (content){
-              console.log("saving");
               this.saveMapData(content);
           }
       })
@@ -66,7 +104,7 @@ export class ModalExportMapDataPage {
                 outFileContent = JSON.stringify(jsonObject);
                 break;
           case "kml":
-                jsonObject = this.explodeFeaturesAttributes(jsonObject);
+                jsonObject = this.explodeFeaturesProperties(jsonObject);
                 console.log("modified!");
                 console.log(jsonObject);
                 outFileContent = tokml(jsonObject); // tokml retorna string
@@ -76,14 +114,21 @@ export class ModalExportMapDataPage {
     return null;
   }
 
-  explodeFeaturesAttributes(jsonObject){
+  explodeFeaturesProperties(jsonObject){
       for (var x in jsonObject.features){
         var feature = jsonObject.features[x];
         feature.properties.attributes = JSON.parse(feature.properties.attributes);
         for (var attr_key in feature.properties.attributes){
-            feature.properties["attribute_"+attr_key] = feature.properties.attributes[attr_key];
+            feature.properties["mapbiomas.attribute_"+attr_key] = feature.properties.attributes[attr_key];
         }
         delete feature.properties.attributes;
+        for (var imageIdx in feature.properties.media_files.images){
+              feature.properties["mapbiomas.media_file_image_"+imageIdx] = feature.properties.media_files.images[imageIdx];
+        }
+        for (var audioIdx in feature.properties.media_files.audio){
+          feature.properties["mapbiomas.media_file_audio_"+imageIdx] = feature.properties.media_files.audio[audioIdx];
+        }
+        delete feature.properties.media_files;
       }
       return jsonObject;
   }
@@ -106,7 +151,7 @@ export class ModalExportMapDataPage {
   }
 
   private async getFeatureFromMarker(survey, marker){
-    /*if (!marker.mediaFiles){
+    if (!marker.mediaFiles){
       marker.mediaFiles = [];
       const manager = getManager();
         let mediaFiles = await  manager.query(`SELECT * FROM mediafile WHERE markerID = ` + marker.id);
@@ -114,7 +159,7 @@ export class ModalExportMapDataPage {
             var tmpMediafile = this.mediafilesRepository.create(mediaFiles[i]);
             marker.mediaFiles.push(tmpMediafile);
         }
-    }*/
+    }
     let markerData =  {
            "type": "Feature",
            "geometry": {
@@ -133,9 +178,9 @@ export class ModalExportMapDataPage {
     }
     for (let m in marker.mediaFiles){
       if (marker.mediaFiles[m].tipo == this.appFilesProvider.getImageMediaType()){
-            markerData.properties.media_files.images.push(marker.mediaFiles[m]);
+            markerData.properties.media_files.images.push(marker.mediaFiles[m].path);
       } else { 
-            markerData.properties.media_files.audio.push(marker.mediaFiles[m]);
+            markerData.properties.media_files.audio.push(marker.mediaFiles[m].path);
       }
     }
     return markerData;
@@ -179,7 +224,7 @@ export class ModalExportMapDataPage {
 
 
   private canInitExport(){
-    return this.exportOutputFormat && this.exportFileName;
+    return this.exportOutputFormat
   }
 
   dismiss() {
