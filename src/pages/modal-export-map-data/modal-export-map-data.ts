@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, ViewController, LoadingController, AlertController} from 'ionic-angular';
+import { Platform, IonicPage, NavController, NavParams, ViewController, LoadingController, AlertController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 
 import { SocialSharing } from '@ionic-native/social-sharing';
@@ -11,6 +11,9 @@ import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 import {Map} from "../../entities/map";
 
 import tokml from 'tokml';
+
+declare var cordova;
+declare var Zeep;
 
 @IonicPage()
 @Component({
@@ -34,10 +37,12 @@ export class ModalExportMapDataPage {
   private shareBodyText:string = "Este es un archivo generado desde MapbiomasAPP";
 
 
+
+
   constructor(public navCtrl: NavController, public navParams: NavParams,  public viewCtrl: ViewController, 
               public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, 
               private socialSharing: SocialSharing,  public loadingCtrl: LoadingController,
-              private alertCtrl: AlertController) {
+              private alertCtrl: AlertController, public platform: Platform) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
   		this.mapEntity = navParams.get("mapEntity");
       this.exportDataConfig = {"surveys":{}, "include_scheme":true};
@@ -54,7 +59,7 @@ export class ModalExportMapDataPage {
       inputs: [
         {
           name: 'export_filename',
-          placeholder: 'Nombre de archivos'
+          placeholder: 'Nombre del archivo'
         },
       ],
       buttons: [
@@ -67,13 +72,18 @@ export class ModalExportMapDataPage {
         {
           text: 'Exportar',
           handler: data => {
+            this.exportFileName = data.export_filename;
             var loading = this.loadingCtrl.create({
               content: 'Exportando marcadores...'
             });
             loading.present();
-            setTimeout(() => {
+            this.initExportData().then((content) =>{
+              if (content){
+                  this.saveMapData(content);
+                  this.fileExported = true;
+              }
               loading.dismiss();
-            }, 5000);
+            })
           }
         }
       ]
@@ -82,10 +92,7 @@ export class ModalExportMapDataPage {
   }
 
   exportData(){
-    
-  
-    
-      this.initExportData().then((content) =>{
+    this.initExportData().then((content) =>{
           if (content){
               this.saveMapData(content);
           }
@@ -213,12 +220,25 @@ export class ModalExportMapDataPage {
 
   private async saveMapData(content){
     console.log(content);
+    //let a = await this.appFilesProvider.prepareTmpFileDir();
+    //let b = await this.appFilesProvider.checkAppDirectory(this.appFilesProvider.getTmpFileType());
     let fileName = this.exportFileName + this.exportFormats.getFileExtension(this.exportOutputFormat);
-    let fileType = this.appFilesProvider.getExportedDataType();
+    let fileType = this.appFilesProvider.getTmpFileType();
+    console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip');
     this.appFilesProvider.writeFile(fileType, fileName, content).then( result => {
         console.log(result);
         this.fileExported = result;
         this.fileExportedDataType = fileType;
+        console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()));
+        Zeep.zip({
+          from:this.appFilesProvider.getTmpFileDir(),
+          to:this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip'
+        }, function() {
+            console.log('zip success!');
+        }, function(e){
+          console.log(e);
+        }
+        )
     });
   }
 

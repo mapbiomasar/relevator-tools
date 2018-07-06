@@ -10,6 +10,7 @@ export class AppFilesProvider {
   fileType:string = "files";
   exportedDataType:string = "exported";
   tileFileType:string = "tiles";
+  tmpFilesType: string = "tmpfiles";
 
   constructor(private file: File) {
   }
@@ -21,21 +22,22 @@ export class AppFilesProvider {
 		this.checkAppDirectory(this.fileType);
 		this.checkAppDirectory(this.exportedDataType);
 		this.checkAppDirectory(this.tileFileType);
+		this.checkAppDirectory(this.tmpFilesType);
 	}
 
 
 
-	public checkAppDirectory(dirName){
+	public async checkAppDirectory(dirName){
 		this.file.checkDir(this.file.externalDataDirectory, dirName).then(success => {
 			
-		}, error => {
-			this.createAppDir(dirName);
+		}, async error => {
+			await this.createAppDir(dirName);
 		});
 	}
 
 
 
-	public createAppDir(dirName){
+	public async createAppDir(dirName){
 		this.file.createDir(this.file.externalDataDirectory, dirName, false).then(success => {
 			console.log("Directorio creado: " + this.file.externalDataDirectory + dirName);
 		}, error => {
@@ -47,6 +49,12 @@ export class AppFilesProvider {
 	removeMediaFiles(mediaEntity){
 		console.log("removing file" + this.getAppDir(mediaEntity.tipo) + ", " + mediaEntity.path);
 		this.file.removeFile(this.getAppDir(mediaEntity.tipo), mediaEntity.path);
+	}
+
+
+
+	public getAppDir(mediaType){
+		return this.file.externalDataDirectory + mediaType;
 	}
 
 
@@ -71,9 +79,8 @@ export class AppFilesProvider {
 		return this.getAppDir(this.tileFileType);
 	}
 
-
-	public getAppDir(mediaType){
-		return this.file.externalDataDirectory + mediaType;
+	public getTmpFileDir(){
+		return this.getAppDir(this.tmpFilesType);
 	}
 
 
@@ -91,6 +98,10 @@ export class AppFilesProvider {
 
 	public getFileType(){
 		return this.fileType;
+	}
+
+	public getTmpFileType(){
+		return this.tmpFilesType;
 	}
 
 	public getPathForMedia(mediaType, filePath){
@@ -151,6 +162,12 @@ export class AppFilesProvider {
 
 	public removeFile(fileType, fileName){
 		return this.file.removeFile(this.getAppDir(fileType), fileName);
+	}
+
+
+	// Función que elimina 'resetea' el directorio /tmpfiles
+	public async prepareTmpFileDir(){
+		await this.file.removeRecursively(this.file.externalDataDirectory, this.getTmpFileType());
 	}
 
 
