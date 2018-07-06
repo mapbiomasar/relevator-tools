@@ -12,7 +12,10 @@ import {Map} from "../../entities/map";
 
 import tokml from 'tokml';
 
-declare var cordova;
+
+import { File } from '@ionic-native/file';
+
+
 declare var Zeep;
 
 @IonicPage()
@@ -42,7 +45,8 @@ export class ModalExportMapDataPage {
   constructor(public navCtrl: NavController, public navParams: NavParams,  public viewCtrl: ViewController, 
               public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, 
               private socialSharing: SocialSharing,  public loadingCtrl: LoadingController,
-              private alertCtrl: AlertController, public platform: Platform) {
+              private alertCtrl: AlertController, public platform: Platform,
+              private file: File) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
   		this.mapEntity = navParams.get("mapEntity");
       this.exportDataConfig = {"surveys":{}, "include_scheme":true};
@@ -80,7 +84,6 @@ export class ModalExportMapDataPage {
             this.initExportData().then((content) =>{
               if (content){
                   this.saveMapData(content);
-                  this.fileExported = true;
               }
               loading.dismiss();
             })
@@ -89,14 +92,6 @@ export class ModalExportMapDataPage {
       ]
     });
     alert.present();
-  }
-
-  exportData(){
-    this.initExportData().then((content) =>{
-          if (content){
-              this.saveMapData(content);
-          }
-      })
   }
 
   async initExportData(){
@@ -204,14 +199,14 @@ export class ModalExportMapDataPage {
 
 
   private shareViaEmail(){
-    this.socialSharing.shareViaEmail(this.shareBodyText, this.shareSubjectText, [''],[''],[''],this.fileExported.nativeURL ).then( () => {
+    this.socialSharing.shareViaEmail(this.shareBodyText, this.shareSubjectText, [''],[''],[''],this.fileExported ).then( () => {
 
     })
   }
 
   private shareData(){
         // Share via email
-        this.socialSharing.share(this.shareBodyText, this.shareSubjectText, this.fileExported.nativeURL).then(() => {
+        this.socialSharing.share(this.shareBodyText, this.shareSubjectText, this.fileExported).then(() => {
           console.log("success");
         }).catch(() => {
           console.log("Error!");
@@ -220,21 +215,24 @@ export class ModalExportMapDataPage {
 
   private async saveMapData(content){
     console.log(content);
-    //let a = await this.appFilesProvider.prepareTmpFileDir();
-    //let b = await this.appFilesProvider.checkAppDirectory(this.appFilesProvider.getTmpFileType());
-    let fileName = this.exportFileName + this.exportFormats.getFileExtension(this.exportOutputFormat);
+    var self = this;
+    await this.appFilesProvider.resetTmpFileDir();
+    let fileName = "markers" + this.exportFormats.getFileExtension(this.exportOutputFormat);
     let fileType = this.appFilesProvider.getTmpFileType();
     console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip');
     this.appFilesProvider.writeFile(fileType, fileName, content).then( result => {
         console.log(result);
-        this.fileExported = result;
-        this.fileExportedDataType = fileType;
+        var outputZipFilename = this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip';
         console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()));
         Zeep.zip({
           from:this.appFilesProvider.getTmpFileDir(),
-          to:this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip'
-        }, function() {
+          to: outputZipFilename,
+        }, function(e) {
             console.log('zip success!');
+            console.log(outputZipFilename);
+            console.log(e);
+            self.fileExported = outputZipFilename;
+            self.fileExportedDataType = fileType;
         }, function(e){
           console.log(e);
         }

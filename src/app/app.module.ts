@@ -37,6 +37,7 @@ import { ModalselectsurveyPage } from '../pages/modalselectsurvey/modalselectsur
 import { ModalSelectLayersPage } from '../pages/modal-select-layers/modal-select-layers';
 import { ModalCreateFormFieldPage } from '../pages/modal-create-form-field/modal-create-form-field';
 import { ModalExportMapDataPage } from '../pages/modal-export-map-data/modal-export-map-data';
+import {ModalImportDataPage} from '../pages/modal-import-data/modal-import-data';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -69,6 +70,7 @@ import { ExportFormatsProvider } from '../providers/export-formats/export-format
     ModalSelectLayersPage,
     ModalCreateFormFieldPage,
     ModalExportMapDataPage,
+    ModalImportDataPage,
     DynamicFormComponent,
     DynamicFormQuestionComponent,
     RemoveSpacesPipe
@@ -96,6 +98,7 @@ import { ExportFormatsProvider } from '../providers/export-formats/export-format
     ModalselectsurveyPage,
     ModalSelectLayersPage,
     ModalExportMapDataPage,
+    ModalImportDataPage,
     ModalCreateFormFieldPage,
     DynamicFormComponent,
     DynamicFormQuestionComponent

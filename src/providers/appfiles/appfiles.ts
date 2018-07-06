@@ -164,10 +164,15 @@ export class AppFilesProvider {
 		return this.file.removeFile(this.getAppDir(fileType), fileName);
 	}
 
+	public async readFileAsText(path, file){
+		return this.file.readAsText(path, file);
+	}
+
 
 	// Función que elimina 'resetea' el directorio /tmpfiles
-	public async prepareTmpFileDir(){
+	public async resetTmpFileDir(){
 		await this.file.removeRecursively(this.file.externalDataDirectory, this.getTmpFileType());
+		return this.file.createDir(this.file.externalDataDirectory, this.getTmpFileType(), false);
 	}
 
 
