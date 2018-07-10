@@ -39,9 +39,12 @@ export class ModalImportDataPage {
 
 
   private async loadMapData(){
-      let schemeFile =  this.appFilesProvider.getTmpFileDir() + "scheme.json";
       let markersContent = await this.appFilesProvider.readFileAsText(this.appFilesProvider.getTmpFileDir() , "markers.json");
+      let schemeContent = await this.appFilesProvider.readFileAsText(this.appFilesProvider.getTmpFileDir() , "scheme.json");
       console.log(markersContent);
+      console.log(schemeContent);
+      let schemeObjects = JSON.parse(schemeContent);
+      let markersObjects = JSON.parse(markersContent);
   }
 
 

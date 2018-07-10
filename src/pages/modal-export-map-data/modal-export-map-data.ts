@@ -81,9 +81,9 @@ export class ModalExportMapDataPage {
               content: 'Exportando marcadores...'
             });
             loading.present();
-            this.initExportData().then((content) =>{
-              if (content){
-                  this.saveMapData(content);
+            this.initExportData().then((data) =>{
+              if (data){
+                  this.saveMapData(data);
               }
               loading.dismiss();
             })
@@ -95,6 +95,13 @@ export class ModalExportMapDataPage {
   }
 
   async initExportData(){
+     let markersData = await this.constructMarkersData();
+     let schemeData = await this.constructSchemeData();
+     return {"markers":markersData, "scheme": schemeData};
+  }
+
+
+  private async constructMarkersData(){
     this.fileExported = null;
     if (this.exportOutputFormat){
       	let geoJSONObject = this.exportFormats.getGeoJSONObjectBase();
@@ -116,6 +123,11 @@ export class ModalExportMapDataPage {
     return null;
   }
 
+
+  private async constructSchemeData(){
+      return '{"map":{}}';
+  }
+
   explodeFeaturesProperties(jsonObject){
       for (var x in jsonObject.features){
         var feature = jsonObject.features[x];
@@ -134,21 +146,48 @@ export class ModalExportMapDataPage {
       }
       return jsonObject;
   }
+  
+  
+  getData(){
+      return  {
+        "surveys": [
+            {
+            "id":1,
+            "markers": [
+                {"id":1},{"id":3}
+            ]
+            }
+        ]
+    }
+  }
+
+sleep (seconds) {
+  return new Promise((resolve) => {
+    // wait 3s before calling fn(par)
+    setTimeout(() => resolve(""), seconds * 1000)
+  })
+}
+
+
+async markersAsync(marker) {
+  var fileList = await this.sleep(marker.id);  
+  return marker.id * 2; 
+}
 
 
   async populateWithMapMarkers(geoJSONObject){
-      let self = this;
-      this.mapEntity.surveys.forEach(async function(survey){
-          console.log(survey);
-          if (self.exportDataConfig.surveys[survey.id]){
-                survey.markers.forEach(async function(marker){
-                     console.log(marker);
-                     let feature = await self.getFeatureFromMarker(survey, marker);
-                     console.log("PUSHHHHHHHHHHHHHHH");
-                     geoJSONObject.features.push(feature);
-                })
+      console.log("INIT MAIN");
+      let data = this.getData();
+      for(let i in data.surveys){
+          let survey = data.surveys[i];
+          for (let j in survey.markers){
+              let marker = survey.markers[j];
+              let markerData = await this.getFeatureFromMarker(survey, marker);
+              console.log("WAIT!!");
+              geoJSONObject.features.push(markerData);
           }
-      })
+      }
+      console.log("Finish MAIN!");
       return geoJSONObject;
   }
 
@@ -213,15 +252,16 @@ export class ModalExportMapDataPage {
         });
   }
 
-  private async saveMapData(content){
-    console.log(content);
-    var self = this;
-    await this.appFilesProvider.resetTmpFileDir();
-    let fileName = "markers" + this.exportFormats.getFileExtension(this.exportOutputFormat);
-    let fileType = this.appFilesProvider.getTmpFileType();
-    console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip');
-    this.appFilesProvider.writeFile(fileType, fileName, content).then( result => {
-        console.log(result);
+  private async saveMapData(data){
+        console.log(data);
+        var self = this;
+        var markersContent = data.markers;
+        var markersFilename =  "markers" + this.exportFormats.getFileExtension(this.exportOutputFormat);
+        var schemeContent = data.scheme;
+        var schemeFilename = "scheme.json";
+        await this.appFilesProvider.resetTmpFileDir();
+        await this.appFilesProvider.writeFile(this.appFilesProvider.getTmpFileType(), markersFilename, markersContent);
+        await this.appFilesProvider.writeFile(this.appFilesProvider.getTmpFileType(), schemeFilename, schemeContent);
         var outputZipFilename = this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip';
         console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()));
         Zeep.zip({
@@ -232,12 +272,11 @@ export class ModalExportMapDataPage {
             console.log(outputZipFilename);
             console.log(e);
             self.fileExported = outputZipFilename;
-            self.fileExportedDataType = fileType;
+            self.fileExportedDataType = self.appFilesProvider.getTmpFileType();
         }, function(e){
           console.log(e);
         }
         )
-    });
   }
 
 
