@@ -146,40 +146,11 @@ export class ModalExportMapDataPage {
       }
       return jsonObject;
   }
-  
-  
-  getData(){
-      return  {
-        "surveys": [
-            {
-            "id":1,
-            "markers": [
-                {"id":1},{"id":3}
-            ]
-            }
-        ]
-    }
-  }
-
-sleep (seconds) {
-  return new Promise((resolve) => {
-    // wait 3s before calling fn(par)
-    setTimeout(() => resolve(""), seconds * 1000)
-  })
-}
-
-
-async markersAsync(marker) {
-  var fileList = await this.sleep(marker.id);  
-  return marker.id * 2; 
-}
-
 
   async populateWithMapMarkers(geoJSONObject){
       console.log("INIT MAIN");
-      let data = this.getData();
-      for(let i in data.surveys){
-          let survey = data.surveys[i];
+      for(let i in this.mapEntity.surveys){
+          let survey = this.mapEntity.surveys[i];
           for (let j in survey.markers){
               let marker = survey.markers[j];
               let markerData = await this.getFeatureFromMarker(survey, marker);
