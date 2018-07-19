@@ -26,6 +26,8 @@ import Cluster  from 'ol/source/cluster';
 import Point from 'ol/geom/point';
 import OSMSource from 'ol/source/osm';
 import KML from 'ol/format/kml';
+import MousePosition from 'ol/control/mouseposition';
+import {createStringXY} from 'ol/coordinate.js';
 
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
@@ -115,7 +117,17 @@ export class ViewMapPage {
   }
 
 	ionViewWillEnter() {
-	    // start map,
+      // start map,
+      let mousePositionControl = new MousePosition({
+        projection: 'EPSG:4326',
+        // comment the following two lines to have the mouse position
+        // be placed within the map.
+        //className: 'custom-mouse-position',
+        //target: document.getElementById('mouse-position'),
+        undefinedHTML: '&nbsp;'
+      });
+
+
       var osm_layer = new TileLayer({
             source: new XYZ({
               url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -126,7 +138,11 @@ export class ViewMapPage {
         target: 'map',
         layers: [
             osm_layer
-        ], 
+        ],
+        controls:[
+          new ScaleLine([]),
+          //mousePositionControl,
+        ],
         view: new View({
         projection: 'EPSG:4326',
           center: [-60.0953938, -34.8902802],
@@ -134,9 +150,6 @@ export class ViewMapPage {
         })
       });
 
-      // Controls
-      this.scaleLineControl = new ScaleLine({});
-      this.map.addControl(this.scaleLineControl);
 
 
       // Geolocation objects
