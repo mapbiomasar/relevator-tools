@@ -109,4 +109,5 @@
     <plugin name="cordova-plugin-x-socialsharing" spec="^5.4.1" />
     <engine name="android" spec="~7.0.0" />
     <plugin name="cordova-plugin-zeep" spec="0.0.4" />
+    <allow-navigation href="http://192.168.2.169:8100" />
 </widget>

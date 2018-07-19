@@ -37,29 +37,35 @@
   </ion-card-content>
 </ion-card>
 
-<ion-card>
-  <ion-card-header>
-      Exportar esquema
-  </ion-card-header>
-  <ion-card-content>
-      <ion-list>
-      <ion-item>
-          <ion-label>Incluir esquema</ion-label>
-        <ion-toggle [(ngModel)]="exportDataConfig.include_scheme" color="danger"></ion-toggle>
-      </ion-item>
-     </ion-list>
-  </ion-card-content>
-</ion-card>
-
 
  <button ion-button  color="primary" [disabled]="!canInitExport()" (click)="presentPromptExportData()" block>Exportar</button>
 
   <ion-card *ngIf="fileExported">
       <ion-card-header>
-        Compartir datos exportados
+        Datos exportados
       </ion-card-header>
      <ion-card-content>
         <ion-grid>
+            <ion-list>
+                <ion-item >
+                       Nombre del archivo
+                       <ion-note item-end>
+                         {{exportFileName}}
+                       </ion-note>
+               </ion-item>
+              </ion-list>
+          <ion-row>
+            <ion-list>
+                <ion-item>
+                    <ion-col>
+                    <ion-label>Eliminar archivo luego de compartir</ion-label>
+                    </ion-col>
+                    <ion-col>
+                    <ion-toggle [(ngModel)]="deleteFileAfterExport"></ion-toggle>
+                    </ion-col>
+               </ion-item>
+            </ion-list>
+          </ion-row>
           <ion-row>
           <ion-col>
           <button block ion-button icon-start  color="danger" (click)="shareViaEmail()">

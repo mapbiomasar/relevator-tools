@@ -40,8 +40,8 @@ export class HomePage {
 
     async loadHome(){
       this.maps = await this.mapRepository.find({relations:["surveys", "layers", "surveys.form"]});
-      console.log(this.maps[0].config);
-      //this.clearDatabase();
+      console.log(this.maps[0]);
+      this.clearDatabase();
     }
 
     async clearDatabase(){
@@ -63,8 +63,6 @@ export class HomePage {
       let surveys = await surveyRep.find();
       console.log(surveys);
       //surveyRep.clear();
-      let lsurveys = await surveyRep.find();
-      console.log(lsurveys);
 
       let layRep = getRepository('maplayer') as Repository<MapLayer>;
       let layers = await layRep.find();

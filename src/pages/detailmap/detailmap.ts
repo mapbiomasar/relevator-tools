@@ -38,7 +38,7 @@ export class DetailMapPage {
 
   async loadSurveysData(){
       let surveysRepository = getRepository('survey') as Repository<Survey>;
-      let mapSurveys = await surveysRepository.find({where:{mapId:this.mapEntity.id}, relations:["form", "form.form_elements", "form.parent_form"]});
+      let mapSurveys = await surveysRepository.find({where:{map:{ id:this.mapEntity.id}}, relations:["form", "form.form_elements", "form.parent_form"]});
       if (mapSurveys){
         this.mapEntity.surveys = mapSurveys;
           for (let s in this.mapEntity.surveys){

@@ -14,17 +14,27 @@
 
 
 <ion-content padding>
+    <ion-grid>
+          <ion-row>
+            <ion-col>
+            <p>Seleccione archivo .zip a importar</p>
+            </ion-col>
+            <ion-col>
+            <button ion-button (click)="selectFileToImport()" block> Explorar</button>
+          </ion-col>
+          </ion-row>
+          <ion-row  *ngIf="fileToImport">
+            {{importFileName}}
+            <button ion-button (click)="unzipData()" block> Importar</button>
+          </ion-row>
+    </ion-grid>
+    <ion-card *ngIf="dataImported">
+        <ion-card-header>
+            Datos importados
+        </ion-card-header>
+        <ion-card-content>
 
-
-<ion-card>
-    <ion-card-header>
-        Seleccione archivo .zip a importar
-    </ion-card-header>
-    <ion-card-content>
-      <button block ion-button icon-start  color="primary" (click)="selectFileToImport()">
-       Explorar
-    </button>
-  </ion-card-content>
-</ion-card>
+        </ion-card-content>
+    </ion-card>
 
 </ion-content>

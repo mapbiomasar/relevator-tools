@@ -33,6 +33,7 @@ export class ModalExportMapDataPage {
   private exportFileName:string = null;
   private fileExported = null; 
   private fileExportedDataType:string;
+  private deleteFileAfterExport:boolean = false;
   private exportDataConfig:any = {};
 
 
@@ -49,7 +50,7 @@ export class ModalExportMapDataPage {
               private file: File) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
   		this.mapEntity = navParams.get("mapEntity");
-      this.exportDataConfig = {"surveys":{}, "include_scheme":true};
+      this.exportDataConfig = {"surveys":{}};
   }
 
   ionViewDidLoad() {
@@ -76,9 +77,9 @@ export class ModalExportMapDataPage {
         {
           text: 'Exportar',
           handler: data => {
-            this.exportFileName = data.export_filename;
+            this.exportFileName = (data.export_filename ? data.export_filename : "default_filename");
             var loading = this.loadingCtrl.create({
-              content: 'Exportando marcadores...'
+              content: 'Exportando Mapa...'
             });
             loading.present();
             this.initExportData().then((data) =>{
@@ -86,6 +87,7 @@ export class ModalExportMapDataPage {
                   this.saveMapData(data);
               }
               loading.dismiss();
+              this.showBasicAlertMessage("Exportar Mapa", "Los datos se exportaron con éxito!");
             })
           }
         }
@@ -94,9 +96,19 @@ export class ModalExportMapDataPage {
     alert.present();
   }
 
+
+  showBasicAlertMessage(title, subtitle) {
+    const alert = this.alertCtrl.create({
+      title: title,
+      subTitle: subtitle,
+      buttons: ['OK']
+    });
+    alert.present();
+  }
+
   async initExportData(){
      let markersData = await this.constructMarkersData();
-     let schemeData = await this.constructSchemeData();
+     let schemeData = this.constructSchemeData();
      return {"markers":markersData, "scheme": schemeData};
   }
 
@@ -124,8 +136,16 @@ export class ModalExportMapDataPage {
   }
 
 
-  private async constructSchemeData(){
-      return '{"map":{}}';
+  private constructSchemeData(){
+      let mapObjectClone = JSON.parse(JSON.stringify(this.mapEntity)) // deep clone
+      for (let i = 0; i < mapObjectClone.surveys.length; i++) {
+          let survey = mapObjectClone.surveys[i];
+          if (!this.exportDataConfig.surveys[survey.id]){
+            mapObjectClone.surveys.splice(i, 1);
+            i--;
+          }
+      }
+      return JSON.stringify(mapObjectClone,  (k,v) => (k === 'id')? undefined : v);
   }
 
   explodeFeaturesProperties(jsonObject){
@@ -148,17 +168,16 @@ export class ModalExportMapDataPage {
   }
 
   async populateWithMapMarkers(geoJSONObject){
-      console.log("INIT MAIN");
       for(let i in this.mapEntity.surveys){
           let survey = this.mapEntity.surveys[i];
-          for (let j in survey.markers){
-              let marker = survey.markers[j];
-              let markerData = await this.getFeatureFromMarker(survey, marker);
-              console.log("WAIT!!");
-              geoJSONObject.features.push(markerData);
+          if (this.exportDataConfig.surveys[survey.id]){
+              for (let j in survey.markers){
+                  let marker = survey.markers[j];
+                  let markerData = await this.getFeatureFromMarker(survey, marker);
+                  geoJSONObject.features.push(markerData);
+              }
           }
       }
-      console.log("Finish MAIN!");
       return geoJSONObject;
   }
 
@@ -209,17 +228,27 @@ export class ModalExportMapDataPage {
 
 
   private shareViaEmail(){
+    let self = this;
     this.socialSharing.shareViaEmail(this.shareBodyText, this.shareSubjectText, [''],[''],[''],this.fileExported ).then( () => {
-
+      if (self.deleteFileAfterExport){
+          self.appFilesProvider.removeFile(self.appFilesProvider.getExportedDataType(), self.fileExported).then( () => {
+          });
+      }
+    }).catch(() => {
+      self.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");
     })
   }
 
   private shareData(){
         // Share via email
+        let self = this;
         this.socialSharing.share(this.shareBodyText, this.shareSubjectText, this.fileExported).then(() => {
-          console.log("success");
+          if (self.deleteFileAfterExport){
+            self.appFilesProvider.removeFile(self.appFilesProvider.getExportedDataType(), self.fileExported).then( () => {
+            });
+        }
         }).catch(() => {
-          console.log("Error!");
+          self.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");          
         });
   }
 
@@ -238,21 +267,31 @@ export class ModalExportMapDataPage {
         Zeep.zip({
           from:this.appFilesProvider.getTmpFileDir(),
           to: outputZipFilename,
-        }, function(e) {
+        }, async function(e) {
             console.log('zip success!');
             console.log(outputZipFilename);
             console.log(e);
             self.fileExported = outputZipFilename;
             self.fileExportedDataType = self.appFilesProvider.getTmpFileType();
+            await self.appFilesProvider.resetTmpFileDir();
         }, function(e){
           console.log(e);
         }
         )
   }
 
+  private hasOneSurveyActive(){
+    for (let i in this.exportDataConfig.surveys){
+      if (this.exportDataConfig.surveys[i]){
+        return true;
+      }
+    }
+    return false;
+  }
+
 
   private canInitExport(){
-    return this.exportOutputFormat
+    return this.exportOutputFormat && this.hasOneSurveyActive();
   }
 
   dismiss() {

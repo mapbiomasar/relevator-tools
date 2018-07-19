@@ -1,9 +1,13 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angular';
+import { IonicPage, NavController, NavParams, ViewController, LoadingController, AlertController } from 'ionic-angular';
 
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 
 import { FileChooser } from '@ionic-native/file-chooser';
+
+import { getManager, getRepository, Repository } from 'typeorm';
+import {Map} from "../../entities/map";
+import { HomePage } from '../home/home';
 
 declare var Zeep;
 
@@ -14,16 +18,22 @@ declare var Zeep;
 })
 export class ModalImportDataPage {
 
+
+  private dataImported:boolean = false;
+  private importFileName:string = "";
+  private fileToImport:string = null;
+
   constructor(public navCtrl: NavController, public navParams: NavParams, 
               public viewCtrl: ViewController,
               private appFilesProvider: AppFilesProvider, 
-              private fileChooser: FileChooser) {
+              private fileChooser: FileChooser,
+              public loadingCtrl: LoadingController, 
+              private alertCtrl: AlertController) {
   }
 
   ionViewDidLoad() {
     console.log('ionViewDidLoad ModalImportDataPage');
   }
-
 
   selectFileToImport(){
     console.log("import");
@@ -31,34 +41,67 @@ export class ModalImportDataPage {
       this.fileChooser.open()
       .then(   uri =>  {
               console.log(uri);
-              this.unzipData(uri);
+              this.fileToImport = uri;
+              this.importFileName = this.fileToImport.substr(this.fileToImport.lastIndexOf('/') + 1);
       })
       .catch(e => console.log(e))
     )
   }
 
-
-  private async loadMapData(){
-      let markersContent = await this.appFilesProvider.readFileAsText(this.appFilesProvider.getTmpFileDir() , "markers.json");
-      let schemeContent = await this.appFilesProvider.readFileAsText(this.appFilesProvider.getTmpFileDir() , "scheme.json");
-      console.log(markersContent);
-      console.log(schemeContent);
-      let schemeObjects = JSON.parse(schemeContent);
-      let markersObjects = JSON.parse(markersContent);
+  private async loadSchemeData(){
+    let schemeContent = await this.appFilesProvider.readFileAsText(this.appFilesProvider.getTmpFileDir() , "scheme.json");
+    return JSON.parse(schemeContent);
   }
 
 
-
-  public unzipData(path){
+  private async bindMapData(data){
+      console.log("bind!");
+      console.log(data);
       let self = this;
+      const manager = getManager();
+      let mapRepository = getRepository('map') as Repository<Map>;
+      let mapEntity = manager.create(Map, data);
+      manager.save(Map, mapEntity).then(() => {
+        console.log("saved");
+        self.showImportSuccessAlert("Importación de Mapa", "El Mapa ha sido importado con éxito!");
+      })
+  }
+
+
+  showImportSuccessAlert(title, subtitle) {
+    const alert = this.alertCtrl.create({
+      title: title,
+      subTitle: subtitle,
+      buttons: [{
+        text: 'OK',
+        handler: data => {
+          this.navCtrl.setRoot(HomePage, {
+          });
+        }
+      }],
+    });
+    alert.present();
+  }
+
+
+  public unzipData(){
+      let self = this;
+      var loading = this.loadingCtrl.create({
+        content: 'Importando Mapa...'
+      });
+      loading.present();
       Zeep.unzip({
-        from : path,
+        from : this.fileToImport,
         to   : this.appFilesProvider.getTmpFileDir() 
     }, function() {
       console.log('unzip success!');
-      self.loadMapData();
+      self.loadSchemeData().then( (schemeData) => {
+          self.bindMapData(schemeData);
+      })
+      loading.dismiss();
   }, function(e) {
       console.log('unzip error: ', e);
+      loading.dismiss();
   });
   }
 

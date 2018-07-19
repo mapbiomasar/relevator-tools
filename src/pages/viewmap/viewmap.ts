@@ -88,7 +88,7 @@ export class ViewMapPage {
 
   ionViewDidLoad(){
     this.mapConfigObject = JSON.parse(this.mapEntity.config);
-    console.log(this.mapConfigObject);
+    console.log(this.mapEntity);
     this.initSurveyData();
   }
 
@@ -297,6 +297,8 @@ export class ViewMapPage {
           var feature = self.map.forEachFeatureAtPixel(evt.pixel,
               function(feature) {
                 return feature;
+              }, {
+                hitTolerance: 10
               });
           if (feature && feature.values_.features.length == 1) {
               var clickedMarkerID = feature.values_.features[0].get("marker_id");
