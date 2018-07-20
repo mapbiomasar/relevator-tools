@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-
+import {AlertController} from 'ionic-angular';
 @Injectable()
 export class UtilsProvider {
 
@@ -10,7 +10,7 @@ export class UtilsProvider {
     {"name":"danger", "code":"#f53d3d"},
   ]
 
-  constructor() {
+  constructor( private alertCtrl: AlertController) {
   }
 
 
@@ -42,6 +42,16 @@ export class UtilsProvider {
 
   getSurveyColors(){
     return this.surveyColors;
+  }
+
+
+  showBasicAlertMessage(title, subtitle){
+    const alert = this.alertCtrl.create({
+      title: title,
+      subTitle: subtitle,
+      buttons: ['OK']
+    });
+    alert.present();
   }
 
 }

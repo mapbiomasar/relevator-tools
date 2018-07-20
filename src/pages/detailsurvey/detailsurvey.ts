@@ -134,26 +134,30 @@ async loadMediaFilesRelations(){
 
 
 presentAlertDelete() {
-    let alert = this.alertCtrl.create({
-    title: 'Eliminar Relevamiento',
-    message: '¿Está seguro de que desea eliminar el relevamiento? Esta acción eliminará tanto al relevamiento como a sus marcadores y archivos de imagen y sonido asociados',
-    buttons: [
-      {
-        text: 'Cancelar',
-        role: 'cancel',
-        handler: () => {
-          
-        }
-      },
-      {
-        text: 'Eliminar',
-        handler: () => {
-          this.deleteSurveyEntity();
-        }
+      if (this.map.surveys.length > 1){
+            let alert = this.alertCtrl.create({
+            title: 'Eliminar Relevamiento',
+            message: '¿Está seguro de que desea eliminar el relevamiento? Esta acción eliminará tanto al relevamiento como a sus marcadores y archivos de imagen y sonido asociados',
+            buttons: [
+              {
+                text: 'Cancelar',
+                role: 'cancel',
+                handler: () => {
+                  
+                }
+              },
+              {
+                text: 'Eliminar',
+                handler: () => {
+                  this.deleteSurveyEntity();
+                }
+              }
+            ]
+          });
+          alert.present();
+      } else {
+        this.utils.showBasicAlertMessage("Error", "No se pueden eliminar todos los relevamientos de un Mapa")
       }
-    ]
-  });
-  alert.present();
 }
 
 }

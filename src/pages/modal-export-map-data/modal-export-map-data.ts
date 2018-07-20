@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { Platform, IonicPage, NavController, NavParams, ViewController, LoadingController, AlertController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 
+import { UtilsProvider } from '../../providers/utils/utils';
+
 import { SocialSharing } from '@ionic-native/social-sharing';
 import {MediaFileEntity} from "../../entities/mediafileentity";
 
@@ -47,7 +49,8 @@ export class ModalExportMapDataPage {
               public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, 
               private socialSharing: SocialSharing,  public loadingCtrl: LoadingController,
               private alertCtrl: AlertController, public platform: Platform,
-              private file: File) {
+              private file: File,
+              private utils: UtilsProvider) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
   		this.mapEntity = navParams.get("mapEntity");
       this.exportDataConfig = {"surveys":{}};
@@ -87,21 +90,11 @@ export class ModalExportMapDataPage {
                   this.saveMapData(data);
               }
               loading.dismiss();
-              this.showBasicAlertMessage("Exportar Mapa", "Los datos se exportaron con éxito!");
+              this.utils.showBasicAlertMessage("Exportar Mapa", "Los datos se exportaron con éxito!");
             })
           }
         }
       ]
-    });
-    alert.present();
-  }
-
-
-  showBasicAlertMessage(title, subtitle) {
-    const alert = this.alertCtrl.create({
-      title: title,
-      subTitle: subtitle,
-      buttons: ['OK']
     });
     alert.present();
   }
