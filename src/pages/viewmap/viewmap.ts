@@ -142,10 +142,6 @@ export class ViewMapPage {
         layers: [
             osm_layer
         ],
-        controls:[
-          new ScaleLine([]),
-          //mousePositionControl,
-        ],
         view: new View({
         projection: 'EPSG:4326',
           center: [-60.0953938, -34.8902802],
@@ -153,6 +149,7 @@ export class ViewMapPage {
         })
       });
 
+      this.map.addControl(new ScaleLine({}));
 
 
       // Geolocation objects
