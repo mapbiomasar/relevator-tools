@@ -73,6 +73,9 @@ export class ViewMapPage {
 
   clusterDistance:number = 30;
 
+  watch:any;
+  watchGeolocationStatus:string = "idle";
+
   constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, 
               public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, 
               private geolocation: Geolocation,  private modalController: ModalController, 
@@ -402,19 +405,33 @@ export class ViewMapPage {
   }
 
 
-  getCurrentPosition(){
-    this.geolocation.getCurrentPosition().then((resp) => {
-      this.currentLocation = [resp.coords.longitude, resp.coords.latitude];
-      this.positionFeature.setGeometry(new Point(this.currentLocation));
-      this.map.getView().setCenter(this.currentLocation);
-      if (this.map.getView().getZoom() < this.defaultGeolocZoom){
-        this.map.getView().setZoom(this.defaultGeolocZoom);
-      }
-
-    }).catch((error) => {
-      console.log('Error getting location', error);
-    });
+  toggleWatchPosition(){
+    if (this.watchGeolocationStatus == 'idle'){
+      this.watchGeolocationStatus = 'active';
+      let firstTimeWatch = true;
+      this.watch = this.geolocation.watchPosition().subscribe((data) => {
+        this.currentLocation = [data.coords.longitude, data.coords.latitude];
+        this.positionFeature.setGeometry(new Point(this.currentLocation));
+        if (firstTimeWatch){
+          this.map.getView().setCenter(this.currentLocation);
+          if (this.map.getView().getZoom() < this.defaultGeolocZoom){
+            this.map.getView().setZoom(this.defaultGeolocZoom);
+          }
+          firstTimeWatch = false;
+        }
+      })
+    } else {
+      this.watch.unsubscribe();
+      this.watchGeolocationStatus = 'idle';
+    }
   }
+
+  
+
+  getWatchStatusColor(){
+    return (this.watchGeolocationStatus == 'idle') ? 'primary' : 'secondary'; 
+  }
+   
 
 
   showMapLayersManager(){
