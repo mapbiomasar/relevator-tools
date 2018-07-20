@@ -228,7 +228,7 @@ export class ModalExportMapDataPage {
           });
       }
     }).catch(() => {
-      self.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");
+      self.utils.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");
     })
   }
 
@@ -241,7 +241,7 @@ export class ModalExportMapDataPage {
             });
         }
         }).catch(() => {
-          self.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");          
+          self.utils.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");          
         });
   }
 
