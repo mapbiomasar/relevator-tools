@@ -313,7 +313,7 @@ export class ViewMapPage {
               }, {
                 hitTolerance: 10
               });
-          if (feature && feature.values_.features.length == 1) {
+          if (feature && feature.values_.features && feature.values_.features.length == 1) {
               var clickedMarkerID = feature.values_.features[0].get("marker_id");
               self.showAlertViewMarker(clickedMarkerID);
           }
