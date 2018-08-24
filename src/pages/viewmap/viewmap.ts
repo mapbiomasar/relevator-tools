@@ -273,6 +273,7 @@ export class ViewMapPage {
         });
         var styleCluster = null;
         //var surveyStyles = {};
+        console.log("CREATING AGAINNNNNNNNNNNNNNNNN!");
         var clusters = new LayerVector({
           source: clusterSource,
           name:"markers_cluster_vector_layer",
@@ -455,22 +456,31 @@ export class ViewMapPage {
   }
 
   ionViewWillLeave(){
-      if (this.watchGeolocationStatus == 'active'){
-        this.watch.unsubscribe();
-        this.watchGeolocationStatus = 'idle';
-      }
       this.map.setTarget(null);
-      let lastCenter = this.map.getView().getCenter();
-      let lastZoom = this.map.getView().getZoom();
-      console.log(lastCenter);
-      console.log(lastZoom);
-      this.mapConfigObject.center = lastCenter;
-      this.mapConfigObject.zoom = lastZoom
-      this.mapEntity.config = JSON.stringify(this.mapConfigObject);
-      // save new config
-      console.log("saving");
-      console.log(this.mapConfigObject);
-      this.mapRepository.save(this.mapEntity);
+      if (this.watchGeolocationStatus == 'active'){
+          this.watch.unsubscribe();
+          this.watchGeolocationStatus = 'idle';
+      }
+      if (this.mapRepository.hasId(this.mapEntity)){
+          this.mapConfigObject.center = this.map.getView().getCenter();
+          this.mapConfigObject.zoom = this.map.getView().getZoom();
+          this.mapEntity.config = JSON.stringify(this.mapConfigObject);
+          // save new config
+          console.log("saving");
+          console.log(this.mapConfigObject);
+          this.mapRepository.save(this.mapEntity);
+      }
   }
+
+  getMapLayerUIByName(name){
+    var layer = null;
+    this.map.getLayers().forEach(function(el) {
+        console.log(el.get('name'));
+        if (el.get('name') === name) {
+            layer = el;
+        }
+    })
+  return layer;
+}
 
 }

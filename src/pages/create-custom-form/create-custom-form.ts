@@ -8,11 +8,13 @@ import { QuestionControlService }  from '../../providers/questions/question-cont
 import { FormsProvider }  from '../../providers/forms/forms';
 import { ConfigProvider }  from '../../providers/config/config';
 
+import { UtilsProvider } from '../../providers/utils/utils';
 
 import { AlertController } from 'ionic-angular';
 
 import {CustomForm} from "../../entities/customForm";
 import {CustomFormElement} from "../../entities/customFormElement";
+import {Survey} from "../../entities/survey";
 
 import { FormGroup } from '@angular/forms';
 
@@ -30,6 +32,8 @@ export class CreateCustomFormPage {
   formElementsRepository:any;
   formEntity:CustomForm;
 
+  surveyRepository:any;
+
   form:FormGroup;
   formsList:CustomForm[] = [];
 
@@ -37,8 +41,14 @@ export class CreateCustomFormPage {
 
   contextData = {};
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController, private formsProvider: FormsProvider, private configProvider: ConfigProvider) {
+  constructor(public navCtrl: NavController, public navParams: NavParams, service: QuestionService, 
+              public alertCtrl: AlertController, private modalController: ModalController, public viewCtrl: ViewController,  
+              private toast: Toast, public platform: Platform, public actionsheetCtrl: ActionSheetController, 
+              private formsProvider: FormsProvider, private configProvider: ConfigProvider,
+              private utils: UtilsProvider
+    ) {
     this.formRepository = getRepository('customForm') as Repository<CustomForm>;
+    this.surveyRepository = getRepository('survey') as Repository<Survey>;
     this.formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     this.formEntity = this.navParams.get("form");
     if (!this.isEditingContext()){
@@ -181,6 +191,7 @@ export class CreateCustomFormPage {
     presentAlertDelete() {
       if (this.isEditingContext()){ // Solo permitir eliminar si se está editando
       var self = this;
+      console.log(this.formEntity);
       var toastFiredOnce = false;
       let alert = this.alertCtrl.create({
       title: 'Eliminar formulario',
@@ -196,17 +207,23 @@ export class CreateCustomFormPage {
         {
           text: 'Eliminar',
           handler: () => {
-              this.formElementsRepository.remove(this.formEntity.form_elements);
-              this.formRepository.remove(this.formEntity).then(entity => {
-              self.toast.showShortTop("Formulario eliminado con éxito").subscribe(
-                entity => {
-                   if (!toastFiredOnce){
-                     self.navCtrl.popToRoot();
-                     toastFiredOnce = true;
-                   }
-                }   
-              );
-            });
+              if (this.formHasChilds()){
+                  this.utils.showBasicAlertMessage("Error", "No se puede eliminar el formulario ya que tiene otros formularios asociados (formularios hijos)");
+              } else if (this.formHasSurveys()){
+                this.utils.showBasicAlertMessage("Error", "No se puede eliminar el formulario ya que tiene relevamientos asociados!");
+              } else {
+                  this.formElementsRepository.remove(this.formEntity.form_elements);
+                  this.formRepository.remove(this.formEntity).then(entity => {
+                  self.toast.showShortTop("Formulario eliminado con éxito").subscribe(
+                    entity => {
+                      if (!toastFiredOnce){
+                        self.navCtrl.popToRoot();
+                        toastFiredOnce = true;
+                      }
+                    }   
+                  );
+                });
+              }
           }
         }
       ]
@@ -215,6 +232,16 @@ export class CreateCustomFormPage {
     }
   }
 
+
+  formHasChilds(){
+    return this.formEntity.child_forms.length;
+  }
+
+  async formHasSurveys(){
+    let surveys = await this.surveyRepository.find({formId: this.formEntity.id});
+    console.log(surveys);
+    return surveys.length;
+  }
 
 
 }

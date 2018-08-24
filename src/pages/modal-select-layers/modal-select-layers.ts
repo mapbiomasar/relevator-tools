@@ -19,6 +19,10 @@ import LayerVector from 'ol/layer/vector';
 import SourceVector  from 'ol/source/vector';
 import KML from 'ol/format/kml';
 import Style from 'ol/style/style';
+import Fill from 'ol/style/fill';
+import Circle from 'ol/style/circle';
+import Stroke from 'ol/style/stroke';
+import Text from 'ol/style/text';
 
 @IonicPage()
 @Component({
@@ -221,20 +225,60 @@ export class ModalSelectLayersPage {
 
 
   layerSurveyVisibility(event, survey){
+    let self = this;
       let markersLayer = this.getMapLayerUIByName("markers_cluster_vector_layer");
       let mapFeatures = markersLayer.getSource().getFeatures();
       let visible = event.checked;
-      console.log(mapFeatures);
-      for (var i in mapFeatures){
+      let style = null;
+      //markersLayer.setVisible(visible);
+      console.log(markersLayer.getStyle());
+      markersLayer.setStyle(
+        function(feature) {
+              if (!self.mapConfig.layers_config.surveys[feature.values_.features[0].get("survey_id")]){
+                style = new Style({})
+              } else {
+              var size = feature.get('features').length;
+              var circleColor = (size > 1) ? '#FFC100' : self.getSurveyColor(feature.values_.features[0].get("survey_id"));
+                style = new Style({
+                  image: new Circle({
+                    radius: 10,
+                    stroke: new Stroke({
+                      color: '#fff'
+                    }),
+                    fill: new Fill({
+                      color: circleColor
+                    })
+                  }),
+                  text: new Text({
+                    text: (size > 1) ? size.toString() : "+",
+                    fill: new Fill({
+                      color: '#fff'
+                    })
+                  })
+                });
+              }
+                return style;
+          }
+          
+        
+      );
+      console.log(markersLayer.getStyle());
+      /*for (var i in mapFeatures){
           let features = mapFeatures[i].get("features");
           for (var k in features){
-              let style = (visible) ?  this.surveyStyles[features[k].get("survey_id")]  : new Style({ image: '' }) ;
-              console.log(style);
-              features[k].setStyle(style);
+              //let style = (visible) ?  this.surveyStyles[features[k].get("survey_id")]  : new Style({ image: '' }) ;
+              if (!visible){
+                
+                console.log(features[k].style);
+              } else {
+                features[k].style =  this.surveyStyles[features[k].get("survey_id")];
+              }
+
+              //console.log(style);
+              //features[k].setStyle(style);
 
           }
-      }
-      markersLayer.getSource().refresh();
+      }*/
       //this.updateLayerVisibility(surveyLayerName, event.checked);
       //this.mapUIObject.render();
       //this.mapUIObject.removeLayer(markersLayer);
@@ -248,6 +292,12 @@ export class ModalSelectLayersPage {
       if (layer){
         layer.setVisible(visible);
       }
+  }
+
+  getSurveyColor(index){
+    console.log("COLOR!");
+    var position = index % Object.keys(this.surveyColors).length;
+    return this.surveyColors[position]["code"];
   }
 
   async saveMapConfig(){
