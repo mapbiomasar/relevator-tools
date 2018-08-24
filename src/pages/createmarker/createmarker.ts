@@ -376,7 +376,7 @@ export class CreateMarkerPage {
 			        self.toast.showShortTop("Marcador eliminado con éxito").subscribe(
 			          entity => {
 			          	if (!toastFiredOnce){
-			            	 self.navCtrl.popToRoot();
+			            	 self.navCtrl.pop();
 			            	 toastFiredOnce = true;
 		             	}
 			          }   
@@ -423,8 +423,8 @@ export class CreateMarkerPage {
 	    	self.toast.showShortTop("Marcador creado con éxito").subscribe(
 	    		toast =>  {
 			            if (!toastFiredOnce){
-							      self.navCtrl.popToRoot();
-			              toastFiredOnce = true;
+							self.navCtrl.pop();
+			              	toastFiredOnce = true;
 			            }
 			  }
 	    	);

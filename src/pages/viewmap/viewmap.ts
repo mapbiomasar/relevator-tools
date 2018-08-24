@@ -92,6 +92,7 @@ export class ViewMapPage {
 
 
   ionViewDidLoad(){
+    console.log("LOAD MAPPPPPPPPPPPPP!");
     this.mapConfigObject = JSON.parse(this.mapEntity.config);
     console.log(this.mapEntity);
     this.initSurveyData();
@@ -121,6 +122,7 @@ export class ViewMapPage {
 
 	ionViewWillEnter() {
       // start map,
+      console.log(this.mapConfigObject);
       let mousePositionControl = new MousePosition({
         projection: 'EPSG:4326',
         // comment the following two lines to have the mouse position
@@ -144,8 +146,8 @@ export class ViewMapPage {
         ],
         view: new View({
         projection: 'EPSG:4326',
-          center: [-60.0953938, -34.8902802],
-          zoom: 4
+          center: this.mapConfigObject.center,
+          zoom: this.mapConfigObject.zoom
         })
       });
 
@@ -453,16 +455,22 @@ export class ViewMapPage {
   }
 
   ionViewWillLeave(){
-      /*let lastCenter = this.map.getView().getCenter();
+      if (this.watchGeolocationStatus == 'active'){
+        this.watch.unsubscribe();
+        this.watchGeolocationStatus = 'idle';
+      }
+      this.map.setTarget(null);
+      let lastCenter = this.map.getView().getCenter();
       let lastZoom = this.map.getView().getZoom();
       console.log(lastCenter);
+      console.log(lastZoom);
       this.mapConfigObject.center = lastCenter;
       this.mapConfigObject.zoom = lastZoom
       this.mapEntity.config = JSON.stringify(this.mapConfigObject);
       // save new config
       console.log("saving");
       console.log(this.mapConfigObject);
-      this.mapRepository.save(this.mapEntity);*/
+      this.mapRepository.save(this.mapEntity);
   }
 
 }
