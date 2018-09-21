@@ -184,22 +184,6 @@ export class CreateMarkerPage {
 		}
 	}
 
-	
-	/*onSuccess(heading) {
-		var element = document.getElementById('heading');
-		element.innerHTML = 'Heading: ' + heading.magneticHeading;
-	};
-
-	onError(compassError) {
-		alert('Compass error: ' + compassError.code);
-	};
-
-	processEvent(event){
-		console.log(Math.round(event.alpha));
-		console.log(Math.round(event.beta));
-		console.log(Math.round(event.gamma));
-		this.marker.orientation = (360 - event.alpha);
-	}*/
 
 	startOrientationSubscription(){
 		this.orientationSubscription = this.deviceOrientation.watchHeading({frequency: 300}).subscribe(
@@ -207,21 +191,7 @@ export class CreateMarkerPage {
 			  		this.marker.orientation = data.trueHeading; // trueHeading o magneticHeading (Canadá)? 
 				  },
 				  (error: any) => console.log(error)
-			);
-			
-
-			
-		/*	var options = {
-				frequency: 3000
-			}; // Update every 3 seconds
-
-			window.addEventListener("compassneedscalibration",function(event) {
-				// ask user to wave device in a figure-eight motion  
-				   event.preventDefault();
-			}, true);
-
-			window.addEventListener("deviceorientation",this.processEvent, true);*/
-		
+			);		
 	}
 
 

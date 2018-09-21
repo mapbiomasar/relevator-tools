@@ -4,18 +4,16 @@ import { getRepository, getManager, Repository } from 'typeorm';
 
 import { UtilsProvider } from '../../providers/utils/utils';
 
-import { SocialSharing } from '@ionic-native/social-sharing';
 import {MediaFileEntity} from "../../entities/mediafileentity";
 
 import { ExportFormatsProvider } from '../../providers/export-formats/export-formats';
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
+import { FormsProvider }  from '../../providers/forms/forms';
+
 
 import {Map} from "../../entities/map";
 
 import tokml from 'tokml';
-
-
-import { File } from '@ionic-native/file';
 
 
 declare var Zeep;
@@ -35,22 +33,16 @@ export class ModalExportMapDataPage {
   private exportFileName:string = null;
   private fileExported = null; 
   private fileExportedDataType:string;
-  private deleteFileAfterExport:boolean = false;
   private exportDataConfig:any = {};
 
-
-  private shareSubjectText:string = "MapbiomasApp - Datos";
-  private shareBodyText:string = "Este es un archivo generado desde MapbiomasAPP";
-
-
+  private formsList:any = {};
 
 
   constructor(public navCtrl: NavController, public navParams: NavParams,  public viewCtrl: ViewController, 
               public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, 
-              private socialSharing: SocialSharing,  public loadingCtrl: LoadingController,
+              public loadingCtrl: LoadingController,
               private alertCtrl: AlertController, public platform: Platform,
-              private file: File,
-              private utils: UtilsProvider) {
+              private utils: UtilsProvider, private formsProvider: FormsProvider) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
   		this.mapEntity = navParams.get("mapEntity");
       this.exportDataConfig = {"surveys":{}};
@@ -99,10 +91,17 @@ export class ModalExportMapDataPage {
     alert.present();
   }
 
+
+  getFormsListData(){
+    return JSON.stringify(this.formsList,  (k,v) => (k === 'id')? undefined : v);
+  }
+
   async initExportData(){
      let markersData = await this.constructMarkersData();
-     let schemeData = this.constructSchemeData();
-     return {"markers":markersData, "scheme": schemeData};
+     let schemeData = await this.constructSchemeData();
+     let formsData = this.getFormsListData();
+     console.log(formsData);
+     return {"markers":markersData, "scheme": schemeData, "forms": formsData};
   }
 
 
@@ -129,15 +128,27 @@ export class ModalExportMapDataPage {
   }
 
 
-  private constructSchemeData(){
+  private async constructSchemeData(){
       let mapObjectClone = JSON.parse(JSON.stringify(this.mapEntity)) // deep clone
+      this.formsList = {};
       for (let i = 0; i < mapObjectClone.surveys.length; i++) {
           let survey = mapObjectClone.surveys[i];
           if (!this.exportDataConfig.surveys[survey.id]){
             mapObjectClone.surveys.splice(i, 1);
             i--;
+          } else {
+            // Almacena el form en otro objeto, y en el survey dejo su id como referencia
+            console.log(survey.form);
+            if (survey.form.parent_form){
+              console.log("parent!");
+              await this.formsProvider.loadFormElements(survey.form.parent_form);
+            }
+            console.log(survey.form);
+            this.formsList[survey.form.id] = survey.form;
+            survey.form = survey.form.id;
           }
       }
+      console.log(this.formsList);
       return JSON.stringify(mapObjectClone,  (k,v) => (k === 'id')? undefined : v);
   }
 
@@ -219,32 +230,6 @@ export class ModalExportMapDataPage {
       }
   }
 
-
-  private shareViaEmail(){
-    let self = this;
-    this.socialSharing.shareViaEmail(this.shareBodyText, this.shareSubjectText, [''],[''],[''],this.fileExported ).then( () => {
-      if (self.deleteFileAfterExport){
-          self.appFilesProvider.removeFile(self.appFilesProvider.getExportedDataType(), self.fileExported).then( () => {
-          });
-      }
-    }).catch(() => {
-      self.utils.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");
-    })
-  }
-
-  private shareData(){
-        // Share via email
-        let self = this;
-        this.socialSharing.share(this.shareBodyText, this.shareSubjectText, this.fileExported).then(() => {
-          if (self.deleteFileAfterExport){
-            self.appFilesProvider.removeFile(self.appFilesProvider.getExportedDataType(), self.fileExported).then( () => {
-            });
-        }
-        }).catch(() => {
-          self.utils.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");          
-        });
-  }
-
   private async saveMapData(data){
         console.log(data);
         var self = this;
@@ -252,9 +237,12 @@ export class ModalExportMapDataPage {
         var markersFilename =  "markers" + this.exportFormats.getFileExtension(this.exportOutputFormat);
         var schemeContent = data.scheme;
         var schemeFilename = "scheme.json";
+        var formsContent = data.forms;
+        var formsFilename = "forms.json";
         await this.appFilesProvider.resetTmpFileDir();
         await this.appFilesProvider.writeFile(this.appFilesProvider.getTmpFileType(), markersFilename, markersContent);
         await this.appFilesProvider.writeFile(this.appFilesProvider.getTmpFileType(), schemeFilename, schemeContent);
+        await this.appFilesProvider.writeFile(this.appFilesProvider.getTmpFileType(), formsFilename, formsContent);
         var outputZipFilename = this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip';
         console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()));
         Zeep.zip({
@@ -271,20 +259,6 @@ export class ModalExportMapDataPage {
           console.log(e);
         }
         )
-  }
-
-  private hasOneSurveyActive(){
-    for (let i in this.exportDataConfig.surveys){
-      if (this.exportDataConfig.surveys[i]){
-        return true;
-      }
-    }
-    return false;
-  }
-
-
-  private canInitExport(){
-    return this.exportOutputFormat && this.hasOneSurveyActive();
   }
 
   dismiss() {

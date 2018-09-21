@@ -5,8 +5,9 @@ import { AppFilesProvider } from '../../providers/appfiles/appfiles';
 
 import { FileChooser } from '@ionic-native/file-chooser';
 
-import { getManager, getRepository, Repository } from 'typeorm';
+import { getManager} from 'typeorm';
 import {Map} from "../../entities/map";
+import {CustomForm} from "../../entities/customForm";
 import { HomePage } from '../home/home';
 
 declare var Zeep;
@@ -19,7 +20,6 @@ declare var Zeep;
 export class ModalImportDataPage {
 
 
-  private dataImported:boolean = false;
   private importFileName:string = "";
   private fileToImport:string = null;
 
@@ -54,17 +54,41 @@ export class ModalImportDataPage {
   }
 
 
-  private async bindMapData(data){
+  private async loadFormsData(){
+    let formsContent = await this.appFilesProvider.readFileAsText(this.appFilesProvider.getTmpFileDir() , "forms.json");
+    return JSON.parse(formsContent);
+  }
+
+  private async bindMapData(forms, scheme){
       console.log("bind!");
-      console.log(data);
+      console.log(forms);
+      console.log(scheme);
+
       let self = this;
       const manager = getManager();
-      let mapRepository = getRepository('map') as Repository<Map>;
-      let mapEntity = manager.create(Map, data);
+      let formIdsMap = {};
+      for (let f in forms){
+        console.log(forms[f]);
+        let formEntity = manager.create(CustomForm, forms[f]);
+        let newForm = await manager.save(CustomForm, formEntity);
+        //self.mapNewSurveyForm(forms[f].id, newForm, scheme);
+        formIdsMap[forms[f].id] = newForm;
+      }
+      this.bindSchemeForms(formIdsMap, scheme);
+      let mapEntity = manager.create(Map, scheme);
       manager.save(Map, mapEntity).then(() => {
         console.log("saved");
         self.showImportSuccessAlert("Importación de Mapa", "El Mapa ha sido importado con éxito!");
       })
+  }
+
+
+  private bindSchemeForms(formsIdMap, scheme){
+    console.log(scheme);
+    for (let i in scheme.surveys){
+      scheme.surveys[i].form = formsIdMap[scheme.surveys[i].id];
+    }
+    console.log(scheme);
   }
 
 
@@ -93,11 +117,11 @@ export class ModalImportDataPage {
       Zeep.unzip({
         from : this.fileToImport,
         to   : this.appFilesProvider.getTmpFileDir() 
-    }, function() {
+    }, async function() {
       console.log('unzip success!');
-      self.loadSchemeData().then( (schemeData) => {
-          self.bindMapData(schemeData);
-      })
+      let formsData = await self.loadFormsData();
+      let schemeData = await self.loadSchemeData();
+      self.bindMapData(formsData, schemeData);
       loading.dismiss();
   }, function(e) {
       console.log('unzip error: ', e);

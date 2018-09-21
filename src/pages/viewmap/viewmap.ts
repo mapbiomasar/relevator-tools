@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
-import { NavController, NavParams, Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { NavController, NavParams, Navbar, Platform, ActionSheetController, AlertController, ModalController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 import { Geolocation } from '@ionic-native/geolocation';
 
 import { AppFilesProvider } from '../../providers/appfiles/appfiles';
-import { FormsProvider }  from '../../providers/forms/forms';
 import { UtilsProvider }  from '../../providers/utils/utils';
 
 //import 'ol/ol.css';
@@ -24,10 +23,7 @@ import LayerVector from 'ol/layer/vector';
 import SourceVector  from 'ol/source/vector';
 import Cluster  from 'ol/source/cluster';
 import Point from 'ol/geom/point';
-import OSMSource from 'ol/source/osm';
 import KML from 'ol/format/kml';
-import MousePosition from 'ol/control/mouseposition';
-import {createStringXY} from 'ol/coordinate.js';
 
 import {CreateMarkerPage} from '../createmarker/createmarker';
 import {DetailMapPage} from '../detailmap/detailmap';
@@ -40,11 +36,17 @@ import {MediaFileEntity} from "../../entities/mediafileentity";
 
 import {ModalSelectLayersPage} from '../modal-select-layers/modal-select-layers';
 
+
+
+
 @Component({
   selector: 'page-viewmap',
   templateUrl: 'viewmap.html'
 })
 export class ViewMapPage {
+
+
+  @ViewChild('navbar') navBar: Navbar;
 
 	//@ViewChild('map') mapElement: ElementRef;
   map: any;
@@ -79,7 +81,7 @@ export class ViewMapPage {
   constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, 
               public actionsheetCtrl: ActionSheetController, public alertCtrl: AlertController, 
               private geolocation: Geolocation,  private modalController: ModalController, 
-              private appFilesProvider: AppFilesProvider, private formsProvider: FormsProvider, 
+              private appFilesProvider: AppFilesProvider,
               private utilsProvider: UtilsProvider) {
                 
     this.mapRepository = getRepository('map') as Repository<Map>;
@@ -88,7 +90,17 @@ export class ViewMapPage {
     this.mapEntity = navParams.get('map');
     this.surveySelected = this.mapEntity.surveys[0] || null;
     this.defaultGeolocZoom = 15;
-	}
+  }
+  
+  ionViewDidEnter() {
+    this.navBar.backButtonClick = () => {
+      console.log("enter!!!!!!!!!!!!");
+      this.updateMapConfig().then( () => {
+        this.navCtrl.pop();
+      })
+    };
+
+  }
 
 
   ionViewDidLoad(){
@@ -123,15 +135,6 @@ export class ViewMapPage {
 	ionViewWillEnter() {
       // start map,
       console.log(this.mapConfigObject);
-      let mousePositionControl = new MousePosition({
-        projection: 'EPSG:4326',
-        // comment the following two lines to have the mouse position
-        // be placed within the map.
-        //className: 'custom-mouse-position',
-        //target: document.getElementById('mouse-position'),
-        undefinedHTML: '&nbsp;'
-      });
-
 
       var osm_layer = new TileLayer({
             source: new XYZ({
@@ -385,6 +388,7 @@ export class ViewMapPage {
           text: 'Ver detalles del mapa',
           icon: !this.platform.is('ios') ? 'information-circle' : null,
           handler: () => {
+              this.updateMapConfig();
               this.navCtrl.push(DetailMapPage, {
                     map: this.mapEntity
                 });
@@ -397,6 +401,7 @@ export class ViewMapPage {
 
 
   addNewMarker(){
+    this.updateMapConfig();
     this.navCtrl.push(CreateMarkerPage,  {
         map: this.mapEntity,
         location: this.map.getView().getCenter(),
@@ -461,15 +466,19 @@ export class ViewMapPage {
           this.watch.unsubscribe();
           this.watchGeolocationStatus = 'idle';
       }
-      if (this.mapRepository.hasId(this.mapEntity)){
-          this.mapConfigObject.center = this.map.getView().getCenter();
-          this.mapConfigObject.zoom = this.map.getView().getZoom();
-          this.mapEntity.config = JSON.stringify(this.mapConfigObject);
-          // save new config
-          console.log("saving");
-          console.log(this.mapConfigObject);
-          this.mapRepository.save(this.mapEntity);
-      }
+  }
+
+
+  async updateMapConfig(){
+    if (this.mapRepository.hasId(this.mapEntity)){
+      this.mapConfigObject.center = this.map.getView().getCenter();
+      this.mapConfigObject.zoom = this.map.getView().getZoom();
+      this.mapEntity.config = JSON.stringify(this.mapConfigObject);
+      // save new config
+      console.log("saving");
+      console.log(this.mapConfigObject);
+      await this.mapRepository.save(this.mapEntity);
+    }
   }
 
   getMapLayerUIByName(name){

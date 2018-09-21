@@ -38,9 +38,10 @@ export class FormsProvider {
 
 
   public async loadFormElements(customForm){
+    console.log("loading elements!");
     if (!customForm.form_elements){
         customForm.form_elements = [];
-        let elements = await this.formElementsRepository.find({where:{formId:customForm.id}, relations:["form_elements", "parent_form", "parent_form.form_elements"]});
+        let elements = await this.formElementsRepository.find({where:{form:{id:customForm.id}}});
         if (elements){
           customForm.form_elements = elements;
         }

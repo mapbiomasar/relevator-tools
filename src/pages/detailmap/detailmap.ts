@@ -53,8 +53,6 @@ export class DetailMapPage {
       let markersRepository = getRepository('marker') as Repository<Marker>;
       var markers = [];
       const manager = getManager();
-      var surveysIds = this.getSurveysIds();
-      var idList = '('+surveysIds.join(',')+')';
       let surveyMarkers = await  manager.query(`SELECT * FROM marker WHERE surveyID = ` + survey.id);
       for (let i = 0; i < surveyMarkers.length; ++i){
         var tmpMarker = markersRepository.create(surveyMarkers[i]);

@@ -161,7 +161,7 @@ export class ModalSelectLayersPage {
         });
         var vectorKML = new LayerVector({
           source: vectorSource,
-          name: mapLayerEntity.path
+          name: mapLayerEntity.path,
         });
         self.mapUIObject.addLayer(vectorKML);
     });
@@ -227,8 +227,6 @@ export class ModalSelectLayersPage {
   layerSurveyVisibility(event, survey){
     let self = this;
       let markersLayer = this.getMapLayerUIByName("markers_cluster_vector_layer");
-      let mapFeatures = markersLayer.getSource().getFeatures();
-      let visible = event.checked;
       let style = null;
       //markersLayer.setVisible(visible);
       console.log(markersLayer.getStyle());
@@ -262,27 +260,6 @@ export class ModalSelectLayersPage {
           
         
       );
-      console.log(markersLayer.getStyle());
-      /*for (var i in mapFeatures){
-          let features = mapFeatures[i].get("features");
-          for (var k in features){
-              //let style = (visible) ?  this.surveyStyles[features[k].get("survey_id")]  : new Style({ image: '' }) ;
-              if (!visible){
-                
-                console.log(features[k].style);
-              } else {
-                features[k].style =  this.surveyStyles[features[k].get("survey_id")];
-              }
-
-              //console.log(style);
-              //features[k].setStyle(style);
-
-          }
-      }*/
-      //this.updateLayerVisibility(surveyLayerName, event.checked);
-      //this.mapUIObject.render();
-      //this.mapUIObject.removeLayer(markersLayer);
-      
   }
 
 
@@ -295,15 +272,41 @@ export class ModalSelectLayersPage {
   }
 
   getSurveyColor(index){
-    console.log("COLOR!");
     var position = index % Object.keys(this.surveyColors).length;
     return this.surveyColors[position]["code"];
   }
 
   async saveMapConfig(){
-    console.log("saving");
     this.mapEntity.config = JSON.stringify(this.mapConfig);
     await this.mapRepository.save(this.mapEntity);
+  }
+
+
+  importedLayerClicked(layerObject){
+    let alert = this.alertCtrl.create({
+      title: 'Eliminar Capa',
+      message: '¿Desea eliminar la capa "' + layerObject.name + '"?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          handler: () => {
+            
+          }
+        },
+        {
+          text: 'Eliminar',
+          handler: () => {
+            let layerIndex = this.mapEntity.layers.indexOf(layerObject)
+            this.mapEntity.layers.splice(layerIndex, 1);
+            this.layerRep.remove(layerObject);
+            let mapLayerUI = this.getMapLayerUIByName(layerObject.path);
+            this.mapUIObject.removeLayer(mapLayerUI);
+          }
+        }
+      ]
+    });
+    alert.present();
   }
 
 

@@ -209,7 +209,7 @@ export class CreateCustomFormPage {
           handler: () => {
               if (this.formHasChilds()){
                   this.utils.showBasicAlertMessage("Error", "No se puede eliminar el formulario ya que tiene otros formularios asociados (formularios hijos)");
-              } else if (this.formHasSurveys()){
+              } else if ( this.formHasSurveys()){
                 this.utils.showBasicAlertMessage("Error", "No se puede eliminar el formulario ya que tiene relevamientos asociados!");
               } else {
                   this.formElementsRepository.remove(this.formEntity.form_elements);
@@ -237,10 +237,11 @@ export class CreateCustomFormPage {
     return this.formEntity.child_forms.length;
   }
 
-  async formHasSurveys(){
-    let surveys = await this.surveyRepository.find({formId: this.formEntity.id});
-    console.log(surveys);
-    return surveys.length;
+  formHasSurveys(){
+    this.surveyRepository.find({formId: this.formEntity.id}).then( (surveys) => {
+      return surveys.length;
+    })
+
   }
 
 
