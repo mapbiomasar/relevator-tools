@@ -2,12 +2,10 @@ import { Component } from '@angular/core';
 import { NavController, NavParams, AlertController} from 'ionic-angular';
 import { Toast } from '@ionic-native/toast';
 
-import {HomePage} from '../home/home';
 import {CustomFormsPage} from '../custom-forms/custom-forms';
 
 import { UtilsProvider } from '../../providers/utils/utils';
 import { FormsProvider } from '../../providers/forms/forms';
-import { ToastProvider } from '../../providers/toast/toast';
 
 import { getRepository, Repository } from 'typeorm';
 
@@ -26,10 +24,17 @@ export class CreateMapPage {
   private mapRepository:any;
 	private map: Map;
 
+
+  private mapDefaultCenter = [-60.0953938, -34.8902802];
+  private mapDefaultZoom = 4;
+
   contextData = {};
 
 
-  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private toastProvider: ToastProvider, private utils: UtilsProvider, private formsProvider: FormsProvider, public alertCtrl: AlertController) {
+
+
+
+  	constructor(public navCtrl: NavController, public navParams: NavParams, private toast: Toast, private utils: UtilsProvider, private formsProvider: FormsProvider, public alertCtrl: AlertController) {
       this.mapRepository = getRepository('map') as Repository<Map>;
   		this.map = this.navParams.get("map");
       if (!this.isEditingContext()){
@@ -85,14 +90,14 @@ export class CreateMapPage {
     }
 
 
-    getDefaultSurvey(){
+    async getDefaultSurvey(){
     	var survey = new Survey();
     	survey.map = this.map;
     	survey.name = "Relevamiento 1";
     	survey.description = "Relevamiento creado por defecto";
     	survey.creation_date = this.map.creation_date;
       survey.author_name = "Usuario";
-      this.bindDefaultForm(survey);
+      await this.bindDefaultForm(survey);
     	return survey;
     }
 
@@ -105,19 +110,25 @@ export class CreateMapPage {
     }
     
 
-  	saveMap(){
+  	async saveMap(){
       if (!this.isEditingContext()){
-    		this.map.user = 1;
-    		this.map.creation_date = this.utils.getNowUnixTimestamp(); // UNIX timestamp, in seconds
-    		this.map.config = "";
-    		var defSurvey = this.getDefaultSurvey();
-    		this.map.surveys = [this.getDefaultSurvey()];
+        		this.map.user = 1;
+        		this.map.creation_date = this.utils.getNowUnixTimestamp(); // UNIX timestamp, in seconds
+        		this.map.config = JSON.stringify({"center": this.mapDefaultCenter, 
+                                              "zoom": this.mapDefaultZoom, 
+                                              "layers_config":{
+                                                      "surveys":{}, 
+                                                      "local":{}
+                                              }
+            });
+            let defaultSurvey = await this.getDefaultSurvey();
+        		this.map.surveys = [defaultSurvey];
       }
-	    const postRepository = getRepository('map') as Repository<Map>;
+	    const mapRepository = getRepository('map') as Repository<Map>;
 	    var self  = this;
       var message = "Mapa " + ((self.isEditingContext()) ? "editado" : "creado") + " con éxito";
       var toastFiredOnce = false;
-	    postRepository.save(this.map)
+	    mapRepository.save(this.map)
 	    .then(function(savedMap) {
 	    	// Creo un survey por defecto para el mapa
 	    	self.toast.showShortTop(message).subscribe(

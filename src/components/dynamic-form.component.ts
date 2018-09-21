@@ -1,7 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, DoCheck }  from '@angular/core';
 import { FormGroup }                 from '@angular/forms';
  
-import { QuestionBase }              from './question-base';
 import { QuestionControlService }    from '../providers/questions/question-control.service';
 
 import {CustomForm} from "../entities/customForm";

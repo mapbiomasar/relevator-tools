@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Importar mapa
+    </ion-title>
+    <ion-buttons start>
+      <button ion-button (click)="dismiss()">
+        <span ion-text color="primary" showWhen="ios">Salir</span>
+        <ion-icon name="md-close" showWhen="android, windows"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content padding>
+    <ion-grid>
+          <ion-row>
+            <ion-col>
+            <p>Seleccione archivo .zip a importar</p>
+            </ion-col>
+            <ion-col>
+            <button ion-button (click)="selectFileToImport()" block> Explorar</button>
+          </ion-col>
+          </ion-row>
+          <ion-row  *ngIf="fileToImport">
+            {{importFileName}}
+            <button ion-button (click)="unzipData()" block> Importar</button>
+          </ion-row>
+    </ion-grid>
+    <ion-card *ngIf="dataImported">
+        <ion-card-header>
+            Datos importados
+        </ion-card-header>
+        <ion-card-content>
+
+        </ion-card-content>
+    </ion-card>
+
+</ion-content>

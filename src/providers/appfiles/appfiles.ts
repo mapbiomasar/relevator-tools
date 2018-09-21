@@ -8,6 +8,9 @@ export class AppFilesProvider {
   imageMediaType:string = "image";
   audioMediaType:string = "audio";
   fileType:string = "files";
+  exportedDataType:string = "exported";
+  tileFileType:string = "tiles";
+  tmpFilesType: string = "tmpfiles";
 
   constructor(private file: File) {
   }
@@ -17,21 +20,24 @@ export class AppFilesProvider {
 		this.checkAppDirectory(this.imageMediaType);
 		this.checkAppDirectory(this.audioMediaType);
 		this.checkAppDirectory(this.fileType);
+		this.checkAppDirectory(this.exportedDataType);
+		this.checkAppDirectory(this.tileFileType);
+		this.checkAppDirectory(this.tmpFilesType);
 	}
 
 
 
-	public checkAppDirectory(dirName){
+	public async checkAppDirectory(dirName){
 		this.file.checkDir(this.file.externalDataDirectory, dirName).then(success => {
 			
-		}, error => {
-			this.createAppDir(dirName);
+		}, async error => {
+			await this.createAppDir(dirName);
 		});
 	}
 
 
 
-	public createAppDir(dirName){
+	public async createAppDir(dirName){
 		this.file.createDir(this.file.externalDataDirectory, dirName, false).then(success => {
 			console.log("Directorio creado: " + this.file.externalDataDirectory + dirName);
 		}, error => {
@@ -43,6 +49,12 @@ export class AppFilesProvider {
 	removeMediaFiles(mediaEntity){
 		console.log("removing file" + this.getAppDir(mediaEntity.tipo) + ", " + mediaEntity.path);
 		this.file.removeFile(this.getAppDir(mediaEntity.tipo), mediaEntity.path);
+	}
+
+
+
+	public getAppDir(mediaType){
+		return this.file.externalDataDirectory + mediaType;
 	}
 
 
@@ -58,9 +70,38 @@ export class AppFilesProvider {
 		return this.getAppDir(this.fileType);
 	}
 
+	public getExportDir(){
+		return this.getAppDir(this.exportedDataType);
+	}
 
-	public getAppDir(mediaType){
-		return this.file.externalDataDirectory + mediaType;
+
+	public getTileFileDir(){
+		return this.getAppDir(this.tileFileType);
+	}
+
+	public getTmpFileDir(){
+		return this.getAppDir(this.tmpFilesType);
+	}
+
+
+	public getImageMediaType(){
+		return this.imageMediaType;
+	}
+
+	public getAudioMediaType(){
+		return this.audioMediaType;
+	}
+
+	public getExportedDataType(){
+		return this.exportedDataType;
+	}
+
+	public getFileType(){
+		return this.fileType;
+	}
+
+	public getTmpFileType(){
+		return this.tmpFilesType;
 	}
 
 	public getPathForMedia(mediaType, filePath){
@@ -86,25 +127,52 @@ export class AppFilesProvider {
 	  return text + extension;
 	}
 
-	public getImageMediaType(){
-		return this.imageMediaType;
-	}
-
-	public getAudioMediaType(){
-		return this.audioMediaType;
-	}
-
-	public getFileType(){
-		return this.fileType;
-	}
-
 	public copyFileToLocalDir(namePath, currentName, newFileName, fileType) {
-	  return this.file.copyFile(namePath, currentName, this.getAppDir(fileType), newFileName)
+	  	return this.file.copyFile(namePath, currentName, this.getAppDir(fileType), newFileName)
 	}
 
 
 	public getFileContent(filePath, fileType){
+		console.log("READING");
 		return this.file.readAsText(this.getAppDir(fileType), filePath)
+	}
+
+
+	public async getTilesDirs(){
+		let localTilesDirs = await this.getTilesDirectoryContent();
+		let dirs = [];
+		for (var i in localTilesDirs){
+			if (localTilesDirs[i].isDirectory){
+				dirs.push({"name": localTilesDirs[i].name, "fullPath":localTilesDirs[i].nativeURL});
+			}
+		}
+		return dirs;
+	}
+
+
+	getTilesDirectoryContent(){
+		return this.file.listDir(this.file.externalDataDirectory, this.tileFileType);
+	}
+
+
+	public writeFile(fileType, fileName, content, replaceFile = true){
+		return this.file.writeFile(this.getAppDir(fileType), fileName, content, {replace:replaceFile});
+	}
+
+
+	public removeFile(fileType, fileName){
+		return this.file.removeFile(this.getAppDir(fileType), fileName);
+	}
+
+	public async readFileAsText(path, file){
+		return this.file.readAsText(path, file);
+	}
+
+
+	// Función que elimina 'resetea' el directorio /tmpfiles
+	public async resetTmpFileDir(){
+		await this.file.removeRecursively(this.file.externalDataDirectory, this.getTmpFileType());
+		return this.file.createDir(this.file.externalDataDirectory, this.getTmpFileType(), false);
 	}
 
 

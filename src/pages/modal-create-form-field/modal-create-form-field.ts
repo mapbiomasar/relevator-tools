@@ -3,9 +3,6 @@ import { IonicPage, NavController, NavParams, ViewController } from 'ionic-angul
 
 import {CustomFormElement} from "../../entities/customFormElement";
 
-import { QuestionBase }     from '../../components/question-base';
-import { TextboxQuestion }  from '../../components/question-textbox';
-import { DropdownQuestion }  from '../../components/question-dropdown';
 
 @IonicPage()
 @Component({
@@ -27,7 +24,6 @@ export class ModalCreateFormFieldPage {
 
 
   initFormElement(){
-      let self = this;
       this.formElementObject = new CustomFormElement();
       this.formElementObject.tipo = this.fieldType;
   }
@@ -47,7 +43,6 @@ export class ModalCreateFormFieldPage {
   }
 
   dismiss(newQuestion) {
-    let self = this;
     if (newQuestion){
       newQuestion.options = JSON.stringify(this.elementOptions);
     }

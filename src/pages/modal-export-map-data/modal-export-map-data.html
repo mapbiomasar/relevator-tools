@@ -1,0 +1,85 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>
+      Exportar mapa
+    </ion-title>
+    <ion-buttons start>
+      <button ion-button (click)="dismiss()">
+        <span ion-text color="primary" showWhen="ios">Salir</span>
+        <ion-icon name="md-close" showWhen="android, windows"></ion-icon>
+      </button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content padding>
+
+
+<ion-card>
+    <ion-card-header>
+        Exportar marcadores
+    </ion-card-header>
+    <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-label>Formato</ion-label>
+            <ion-select [(ngModel)]="exportOutputFormat">
+              <ion-option value="geojson">GeoJSON</ion-option>
+              <ion-option value="kml">KML</ion-option>
+            </ion-select>
+          </ion-item>
+          <ion-item *ngFor="let survey of mapEntity.surveys; let i = index">
+              <ion-label>{{survey.name}}</ion-label>
+              <ion-toggle [(ngModel)]="exportDataConfig.surveys[survey.id]" checked="true"></ion-toggle>
+         </ion-item>
+        </ion-list>
+  </ion-card-content>
+</ion-card>
+
+
+ <button ion-button  color="primary" [disabled]="!canInitExport()" (click)="presentPromptExportData()" block>Exportar</button>
+
+  <ion-card *ngIf="fileExported">
+      <ion-card-header>
+        Datos exportados
+      </ion-card-header>
+     <ion-card-content>
+        <ion-grid>
+            <ion-list>
+                <ion-item >
+                       Nombre del archivo
+                       <ion-note item-end>
+                         {{exportFileName}}
+                       </ion-note>
+               </ion-item>
+              </ion-list>
+          <ion-row>
+            <ion-list>
+                <ion-item>
+                    <ion-col>
+                    <ion-label>Eliminar archivo luego de compartir</ion-label>
+                    </ion-col>
+                    <ion-col>
+                    <ion-toggle [(ngModel)]="deleteFileAfterExport"></ion-toggle>
+                    </ion-col>
+               </ion-item>
+            </ion-list>
+          </ion-row>
+          <ion-row>
+          <ion-col>
+          <button block ion-button icon-start  color="danger" (click)="shareViaEmail()">
+              <ion-icon name="mail"></ion-icon>
+          </button>
+          </ion-col>
+          <ion-col>
+          <button block ion-button icon-start  color="secondary" (click)="shareData()">
+              <ion-icon name="share"></ion-icon>
+          </button>
+          </ion-col>
+          </ion-row>
+        </ion-grid>
+     </ion-card-content>
+  </ion-card>
+
+</ion-content>

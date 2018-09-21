@@ -2,10 +2,15 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 
+import { FilePath } from '@ionic-native/file-path';
+import { Diagnostic } from '@ionic-native/diagnostic';
+
 import { RemoveSpacesPipe } from '../components/remove-spaces-pipe.component';
+
 
 // Plugins
 import { IonicStorageModule } from '@ionic/storage';
+import { SocialSharing } from '@ionic-native/social-sharing';
 
 import { Camera } from '@ionic-native/camera';
 import { Geolocation } from '@ionic-native/geolocation';
@@ -31,6 +36,8 @@ import { DetailsurveyPage } from '../pages/detailsurvey/detailsurvey';
 import { ModalselectsurveyPage } from '../pages/modalselectsurvey/modalselectsurvey';
 import { ModalSelectLayersPage } from '../pages/modal-select-layers/modal-select-layers';
 import { ModalCreateFormFieldPage } from '../pages/modal-create-form-field/modal-create-form-field';
+import { ModalExportMapDataPage } from '../pages/modal-export-map-data/modal-export-map-data';
+import {ModalImportDataPage} from '../pages/modal-import-data/modal-import-data';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -38,14 +45,12 @@ import { UtilsProvider } from '../providers/utils/utils';
 import { AppFilesProvider } from '../providers/appfiles/appfiles';
 import { ToastProvider } from '../providers/toast/toast';
 
-
-
-
 import { ReactiveFormsModule } from '@angular/forms';
 import { DynamicFormComponent }         from '../components/dynamic-form.component';
 import { DynamicFormQuestionComponent } from '../components/dynamic-form-question.component';
 import { FormsProvider } from '../providers/forms/forms';
 import { ConfigProvider } from '../providers/config/config';
+import { ExportFormatsProvider } from '../providers/export-formats/export-formats';
 
 @NgModule({
   declarations: [
@@ -64,6 +69,8 @@ import { ConfigProvider } from '../providers/config/config';
     ModalselectsurveyPage,
     ModalSelectLayersPage,
     ModalCreateFormFieldPage,
+    ModalExportMapDataPage,
+    ModalImportDataPage,
     DynamicFormComponent,
     DynamicFormQuestionComponent,
     RemoveSpacesPipe
@@ -90,6 +97,8 @@ import { ConfigProvider } from '../providers/config/config';
     CreatesurveyPage,
     ModalselectsurveyPage,
     ModalSelectLayersPage,
+    ModalExportMapDataPage,
+    ModalImportDataPage,
     ModalCreateFormFieldPage,
     DynamicFormComponent,
     DynamicFormQuestionComponent
@@ -111,6 +120,10 @@ import { ConfigProvider } from '../providers/config/config';
     FileChooser,
     FormsProvider,
     ConfigProvider,
+    Diagnostic,
+    FilePath,
+    ExportFormatsProvider,
+    SocialSharing
   ]
 })
 export class AppModule {}

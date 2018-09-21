@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, Platform, ActionSheetController} from 'ionic-angular';
+import { NavController, NavParams, Platform, ActionSheetController, ModalController} from 'ionic-angular';
 import { getRepository, Repository } from 'typeorm';
 
 import {CreateMapPage} from '../createmap/createmap';
@@ -11,6 +11,8 @@ import {Survey} from "../../entities/survey";
 import {MediaFileEntity} from "../../entities/mediafileentity";
 import {MapLayer} from "../../entities/maplayer";
 
+import {ModalImportDataPage} from '../modal-import-data/modal-import-data';
+
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
@@ -20,7 +22,10 @@ export class HomePage {
     mapRepository: any;
 
 
-	  constructor(public navCtrl: NavController, public navParams: NavParams, public platform: Platform, public actionsheetCtrl: ActionSheetController) {
+    constructor(public navCtrl: NavController, public navParams: NavParams, 
+                public platform: Platform, 
+                public actionsheetCtrl: ActionSheetController,
+                private modalController: ModalController) {
       this.mapRepository = getRepository('map') as Repository<Map>;
       this.maps = [];
 	  }
@@ -35,7 +40,7 @@ export class HomePage {
 
     async loadHome(){
       this.maps = await this.mapRepository.find({relations:["surveys", "layers", "surveys.form"]});
-      this.clearDatabase();
+      //this.clearDatabase();
     }
 
     async clearDatabase(){
@@ -57,8 +62,6 @@ export class HomePage {
       let surveys = await surveyRep.find();
       console.log(surveys);
       //surveyRep.clear();
-      let lsurveys = await surveyRep.find();
-      console.log(lsurveys);
 
       let layRep = getRepository('maplayer') as Repository<MapLayer>;
       let layers = await layRep.find();
@@ -101,7 +104,9 @@ export class HomePage {
           role: 'destructive',
           icon: !this.platform.is('ios') ? 'code-download' : null,
           handler: () => {
-            console.log('Import clicked');
+            const modalImport = this.modalController.create(ModalImportDataPage, {
+            })
+            modalImport.present();
           }
         },
       ]

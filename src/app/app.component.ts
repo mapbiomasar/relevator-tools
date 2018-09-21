@@ -3,9 +3,9 @@ import { Nav, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { AppFilesProvider } from '../providers/appfiles/appfiles';
-import { getRepository, Repository } from 'typeorm';
 
-import { createConnection } from 'typeorm'
+import { getRepository, Repository } from 'typeorm';
+import { createConnection } from 'typeorm';
 
 import {AppConfig} from "../entities/appConfig";
 
@@ -21,7 +21,7 @@ import { HomePage } from '../pages/home/home';
 import { ConfigPage } from '../pages/config/config';
 import { CustomFormsPage } from '../pages/custom-forms/custom-forms';
 
-import { Storage } from '@ionic/storage';
+import { timer } from 'rxjs/observable/timer';
 
 @Component({
   templateUrl: 'app.html'
@@ -37,7 +37,10 @@ export class MyApp {
 
   pages: Array<{title: string, component: any}>;
 
+  showSplash = true; // <-- show animation
+
   constructor(public platform: Platform, public statusBar: StatusBar, public splashScreen: SplashScreen, private appFilesProvider: AppFilesProvider) {
+
     this.initializeApp();
 
     // used for an example of ngFor and navigation
@@ -50,15 +53,13 @@ export class MyApp {
   }
 
   initializeApp() {
-
     this.platform.ready().then(async () => {
 
       this.statusBar.styleDefault();
-      //this.splashScreen.hide();
 
       let connOptions = {
         type: 'cordova',
-        database: 'mapbiomasv1_0',
+        database: 'mapbiomasv2',
         location: 'default',
         logging: ['error', 'query', 'schema'],
         synchronize: true,
@@ -79,7 +80,9 @@ export class MyApp {
       this.appFilesProvider.checkMediaDirs();
       this.rootPage = HomePage;
 
-      this.showDatabase(false);
+      //this.showDatabase(false);
+      this.splashScreen.hide();
+      timer(5000).subscribe(() => this.showSplash = false);
 
     });
   }

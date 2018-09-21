@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
-
+import {AlertController} from 'ionic-angular';
 @Injectable()
 export class UtilsProvider {
 
-  constructor() {
+
+  surveyColors = [
+    {"name":"primary", "code":"#488aff"},
+    {"name":"energized", "code":"#ffc527"},
+    {"name":"danger", "code":"#f53d3d"},
+  ]
+
+  constructor( private alertCtrl: AlertController) {
   }
 
 
@@ -30,6 +37,21 @@ export class UtilsProvider {
   // retorna timestamp unix ("now") en segundos
   getNowUnixTimestamp(){
   	return Date.now() / 1000;
+  }
+
+
+  getSurveyColors(){
+    return this.surveyColors;
+  }
+
+
+  showBasicAlertMessage(title, subtitle){
+    const alert = this.alertCtrl.create({
+      title: title,
+      subTitle: subtitle,
+      buttons: ['OK']
+    });
+    alert.present();
   }
 
 }

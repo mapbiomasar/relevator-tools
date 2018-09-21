@@ -41,18 +41,21 @@ export class CreatesurveyPage {
 	        this.survey.map = this.map;
 	        //this.bindDefaultForm(this.survey);
       	}
-      	this.getFormsList();
       	this.setContextData();
 	}
 
-  	ionViewDidLoad() {	
-  		//this.surveyFormSelected = this.survey.form.id;
-  		this.surveyFormSelected = this.survey.form.id || null;
+  	async ionViewDidLoad() {	
+  		await this.getFormsList();
+  		if (this.survey.form) {
+  			this.surveyFormSelected = this.survey.form.id;
+		} else {
+			this.bindDefaultForm(this.survey);
+		}
   	}
 
 
 	async getFormsList(){
-		let forms = await this.formRepository.find({relations:["form_elements", "parent_form", "parent_form.form_elements"]});
+		let forms = await this.formsProvider.getFormsList();
 		if (forms){
 		    this.formsList = forms;
 		}
@@ -111,11 +114,10 @@ export class CreatesurveyPage {
 		this.survey.creation_date = this.utils.getNowUnixTimestamp();
 		this.surveyRepository.save(this.survey)
 	    .then(function(savedSurvey) {
-	    	// Creo un survey por defecto para el mapa
 	    	self.toast.showShortTop(message).subscribe(
 	    		toast => {
 				     if (!toastFiredOnce){
-				      	self.navCtrl.pop();
+				      	 self.navCtrl.popToRoot();
 		              	toastFiredOnce = true;
 		            }
 				  }
