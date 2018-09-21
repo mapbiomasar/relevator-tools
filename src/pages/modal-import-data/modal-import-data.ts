@@ -32,15 +32,12 @@ export class ModalImportDataPage {
   }
 
   ionViewDidLoad() {
-    console.log('ionViewDidLoad ModalImportDataPage');
   }
 
   selectFileToImport(){
-    console.log("import");
     this.appFilesProvider.resetTmpFileDir().then( r =>
       this.fileChooser.open()
       .then(   uri =>  {
-              console.log(uri);
               this.fileToImport = uri;
               this.importFileName = this.fileToImport.substr(this.fileToImport.lastIndexOf('/') + 1);
       })
@@ -60,15 +57,10 @@ export class ModalImportDataPage {
   }
 
   private async bindMapData(forms, scheme){
-      console.log("bind!");
-      console.log(forms);
-      console.log(scheme);
-
       let self = this;
       const manager = getManager();
       let formIdsMap = {};
       for (let f in forms){
-        console.log(forms[f]);
         let formEntity = manager.create(CustomForm, forms[f]);
         let newForm = await manager.save(CustomForm, formEntity);
         //self.mapNewSurveyForm(forms[f].id, newForm, scheme);
@@ -77,18 +69,16 @@ export class ModalImportDataPage {
       this.bindSchemeForms(formIdsMap, scheme);
       let mapEntity = manager.create(Map, scheme);
       manager.save(Map, mapEntity).then(() => {
-        console.log("saved");
+
         self.showImportSuccessAlert("Importación de Mapa", "El Mapa ha sido importado con éxito!");
       })
   }
 
 
   private bindSchemeForms(formsIdMap, scheme){
-    console.log(scheme);
     for (let i in scheme.surveys){
       scheme.surveys[i].form = formsIdMap[scheme.surveys[i].id];
     }
-    console.log(scheme);
   }
 
 
@@ -118,7 +108,6 @@ export class ModalImportDataPage {
         from : this.fileToImport,
         to   : this.appFilesProvider.getTmpFileDir() 
     }, async function() {
-      console.log('unzip success!');
       let formsData = await self.loadFormsData();
       let schemeData = await self.loadSchemeData();
       self.bindMapData(formsData, schemeData);

@@ -94,7 +94,6 @@ export class ViewMapPage {
   
   ionViewDidEnter() {
     this.navBar.backButtonClick = () => {
-      console.log("enter!!!!!!!!!!!!");
       this.updateMapConfig().then( () => {
         this.navCtrl.pop();
       })
@@ -104,9 +103,7 @@ export class ViewMapPage {
 
 
   ionViewDidLoad(){
-    console.log("LOAD MAPPPPPPPPPPPPP!");
     this.mapConfigObject = JSON.parse(this.mapEntity.config);
-    console.log(this.mapEntity);
     this.initSurveyData();
   }
 
@@ -119,7 +116,6 @@ export class ViewMapPage {
       //tmpSurvey.form = tmpSurveyForm;
       this.setDefaultSurveyConfig(tmpSurvey);
     }
-    console.log(this.mapConfigObject);
     /*let formElementsRepository = getRepository('customFormElement') as Repository<CustomFormElement>;
     let elements = await formElementsRepository.find({where:{'formId':this.surveySelected.form.id}});
     this.surveySelected.form.form_elements = elements;*/
@@ -133,15 +129,12 @@ export class ViewMapPage {
   }
 
 	ionViewWillEnter() {
-      // start map,
-      console.log(this.mapConfigObject);
 
       var osm_layer = new TileLayer({
             source: new XYZ({
               url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
             })
           })
-        console.log("creating map object");
       this.map = new OLMap({
         target: 'map',
         layers: [
@@ -203,12 +196,10 @@ export class ViewMapPage {
       //this.loadMarkersFeatures();
       this.loadLocalTiles();
       this.loadImportedLayers();
-      console.log("finish map");
   	}
 
 
   async loadLocalTiles(){
-    console.log("load tiles, markers");
       this.localTilesDirectories = await this.appFilesProvider.getTilesDirs();
 
       for (var k in this.localTilesDirectories){
@@ -234,7 +225,6 @@ export class ViewMapPage {
       markers.push(tmpMarker);
     }
     survey.markers = markers;
-    console.log(survey);
     return markers;
   }
 
@@ -265,7 +255,6 @@ export class ViewMapPage {
                 }
             }
         }
-        console.log(features);
         var source = new SourceVector({
           features: features,
         });
@@ -275,8 +264,6 @@ export class ViewMapPage {
           name: "markers_cluster_source_layer"
         });
         var styleCluster = null;
-        //var surveyStyles = {};
-        console.log("CREATING AGAINNNNNNNNNNNNNNNNN!");
         var clusters = new LayerVector({
           source: clusterSource,
           name:"markers_cluster_vector_layer",
@@ -330,7 +317,6 @@ export class ViewMapPage {
 
   loadImportedLayers(){
     var self = this;
-    console.log("load kml");
     for (var k in this.mapEntity.layers){
     var layer = this.mapEntity.layers[k];
     this.appFilesProvider.getFileContent(layer.path, this.appFilesProvider.getFileType()).then( result => {
@@ -457,7 +443,6 @@ export class ViewMapPage {
 
 
   showSurveysSwitcher(){
-      console.log(this.mapEntity.surveys);
   }
 
   ionViewWillLeave(){
@@ -475,8 +460,6 @@ export class ViewMapPage {
       this.mapConfigObject.zoom = this.map.getView().getZoom();
       this.mapEntity.config = JSON.stringify(this.mapConfigObject);
       // save new config
-      console.log("saving");
-      console.log(this.mapConfigObject);
       await this.mapRepository.save(this.mapEntity);
     }
   }
@@ -484,7 +467,6 @@ export class ViewMapPage {
   getMapLayerUIByName(name){
     var layer = null;
     this.map.getLayers().forEach(function(el) {
-        console.log(el.get('name'));
         if (el.get('name') === name) {
             layer = el;
         }

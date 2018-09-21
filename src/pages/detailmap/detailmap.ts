@@ -45,7 +45,6 @@ export class DetailMapPage {
               this.loadRawSurveyMarkersAndPopulate(this.mapEntity.surveys[s]);
           }
       }
-      console.log(this.mapEntity);
   }
 
 

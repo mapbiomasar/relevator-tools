@@ -100,7 +100,6 @@ export class ModalExportMapDataPage {
      let markersData = await this.constructMarkersData();
      let schemeData = await this.constructSchemeData();
      let formsData = this.getFormsListData();
-     console.log(formsData);
      return {"markers":markersData, "scheme": schemeData, "forms": formsData};
   }
 
@@ -110,7 +109,7 @@ export class ModalExportMapDataPage {
     if (this.exportOutputFormat){
       	let geoJSONObject = this.exportFormats.getGeoJSONObjectBase();
       	let jsonObject = await this.populateWithMapMarkers(geoJSONObject);
-      	console.log(jsonObject);
+
         let outFileContent = "";
         switch(this.exportOutputFormat){
           case "geojson":
@@ -118,8 +117,7 @@ export class ModalExportMapDataPage {
                 break;
           case "kml":
                 jsonObject = this.explodeFeaturesProperties(jsonObject);
-                console.log("modified!");
-                console.log(jsonObject);
+
                 outFileContent = tokml(jsonObject); // tokml retorna string
         }
         return outFileContent;
@@ -138,17 +136,13 @@ export class ModalExportMapDataPage {
             i--;
           } else {
             // Almacena el form en otro objeto, y en el survey dejo su id como referencia
-            console.log(survey.form);
             if (survey.form.parent_form){
-              console.log("parent!");
               await this.formsProvider.loadFormElements(survey.form.parent_form);
             }
-            console.log(survey.form);
             this.formsList[survey.form.id] = survey.form;
             survey.form = survey.form.id;
           }
       }
-      console.log(this.formsList);
       return JSON.stringify(mapObjectClone,  (k,v) => (k === 'id')? undefined : v);
   }
 
@@ -231,7 +225,6 @@ export class ModalExportMapDataPage {
   }
 
   private async saveMapData(data){
-        console.log(data);
         var self = this;
         var markersContent = data.markers;
         var markersFilename =  "markers" + this.exportFormats.getFileExtension(this.exportOutputFormat);
@@ -244,21 +237,30 @@ export class ModalExportMapDataPage {
         await this.appFilesProvider.writeFile(this.appFilesProvider.getTmpFileType(), schemeFilename, schemeContent);
         await this.appFilesProvider.writeFile(this.appFilesProvider.getTmpFileType(), formsFilename, formsContent);
         var outputZipFilename = this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()) + '/' + this.exportFileName + '.zip';
-        console.log(this.appFilesProvider.getAppDir(this.appFilesProvider.getExportedDataType()));
         Zeep.zip({
           from:this.appFilesProvider.getTmpFileDir(),
           to: outputZipFilename,
         }, async function(e) {
-            console.log('zip success!');
-            console.log(outputZipFilename);
-            console.log(e);
+
             self.fileExported = outputZipFilename;
             self.fileExportedDataType = self.appFilesProvider.getTmpFileType();
             await self.appFilesProvider.resetTmpFileDir();
         }, function(e){
-          console.log(e);
         }
         )
+  }
+
+  private hasOneSurveyActive(){
+    for (let i in this.exportDataConfig.surveys){
+      if (this.exportDataConfig.surveys[i]){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private canInitExport(){
+    return this.exportOutputFormat && this.hasOneSurveyActive();
   }
 
   dismiss() {

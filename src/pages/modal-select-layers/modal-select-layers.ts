@@ -74,20 +74,14 @@ export class ModalSelectLayersPage {
   initImportLayer(){
       let self = this;
       this.diagnostic.getPermissionAuthorizationStatus(this.diagnostic.permission.READ_EXTERNAL_STORAGE).then((status) => {
-            console.log(`AuthorizationStatus`);
-            console.log(status);
             if (status != this.diagnostic.permissionStatus.GRANTED) {
               this.diagnostic.requestRuntimePermission(this.diagnostic.permission.READ_EXTERNAL_STORAGE).then((data) => {
-                console.log(`getREADAuthorizationStatus`);
-                console.log(data);
                 self.importLayer();
               })
             } else {
                 self.importLayer();
             }
           }, (statusError) => {
-            console.log(`statusError`);
-            console.log(statusError);
           });
   }
 
@@ -103,12 +97,9 @@ export class ModalSelectLayersPage {
 
     this.filePath.resolveNativePath(uri)
     .then(filePath => {
-          console.log("NUEVO FILEPATH " + filePath);
           var currentName = filePath.substr(filePath.lastIndexOf('/') + 1);
           var correctPath = filePath.substr(0, filePath.lastIndexOf('/') + 1);
           var randomName = this.appFilesProvider.createFileRandomName(".kml");
-          console.log(currentName);
-          console.log(correctPath);
           this.appFilesProvider.copyFileToLocalDir(correctPath, currentName, randomName, this.appFilesProvider.getFileType())
           .then(result => {
             var newMapLayer = new MapLayer();
@@ -131,7 +122,6 @@ export class ModalSelectLayersPage {
   getMapLayerUIByName(name){
       var layer = null;
       this.mapUIObject.getLayers().forEach(function(el) {
-          console.log(el.get('name'));
           if (el.get('name') === name) {
               layer = el;
           }
@@ -183,7 +173,6 @@ export class ModalSelectLayersPage {
         {
           text: 'Cancel',
           handler: data => {
-            console.log('Cancel clicked');
           }
         },
         {
@@ -195,7 +184,6 @@ export class ModalSelectLayersPage {
                     self.appendMapUILayer(savedLayer);
                     self.mapEntity.layers.push(savedLayer);
                 }, function(reason) {
-                  console.log(reason);
                 })
           }
         }
@@ -207,7 +195,6 @@ export class ModalSelectLayersPage {
 
   getSurveyColorName(i){
     let name = this.surveyColors[i]['name'];
-    console.log(name);
     return name;
   }
 
@@ -229,7 +216,6 @@ export class ModalSelectLayersPage {
       let markersLayer = this.getMapLayerUIByName("markers_cluster_vector_layer");
       let style = null;
       //markersLayer.setVisible(visible);
-      console.log(markersLayer.getStyle());
       markersLayer.setStyle(
         function(feature) {
               if (!self.mapConfig.layers_config.surveys[feature.values_.features[0].get("survey_id")]){
@@ -264,7 +250,6 @@ export class ModalSelectLayersPage {
 
 
   updateLayerVisibility(layerName, visible){
-      console.log(this.mapConfig);
       let layer = this.getMapLayerUIByName(layerName);
       if (layer){
         layer.setVisible(visible);

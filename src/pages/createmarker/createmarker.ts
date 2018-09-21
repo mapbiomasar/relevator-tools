@@ -116,7 +116,6 @@ export class CreateMarkerPage {
     // Recibe customForm y llama a cargar sus formElements (db). De forma recursiva tmb carga
     // los elementos de su padre
     loadSurveyFormElements(form){
-    	console.log("loading form in marker");
     	this.formsProvider.loadFormElements(form);
     	if (form.parent_form){
     		this.loadSurveyFormElements(form.parent_form);
@@ -212,7 +211,7 @@ export class CreateMarkerPage {
 
 	takePicture(){
 		const options: CameraOptions = {
-		  quality: 60,
+		  quality: 80,
 		  destinationType: this.camera.DestinationType.FILE_URI,
 		  encodingType: this.camera.EncodingType.JPEG,
 		  mediaType: this.camera.MediaType.PICTURE,

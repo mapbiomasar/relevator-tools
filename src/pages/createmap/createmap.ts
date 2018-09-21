@@ -122,7 +122,6 @@ export class CreateMapPage {
                                               }
             });
             let defaultSurvey = await this.getDefaultSurvey();
-            console.log(defaultSurvey);
         		this.map.surveys = [defaultSurvey];
       }
 	    const mapRepository = getRepository('map') as Repository<Map>;

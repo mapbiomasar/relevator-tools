@@ -191,7 +191,6 @@ export class CreateCustomFormPage {
     presentAlertDelete() {
       if (this.isEditingContext()){ // Solo permitir eliminar si se está editando
       var self = this;
-      console.log(this.formEntity);
       var toastFiredOnce = false;
       let alert = this.alertCtrl.create({
       title: 'Eliminar formulario',
