@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Platform, IonicPage, NavController, NavParams, ViewController, LoadingController, AlertController} from 'ionic-angular';
 import { getRepository, getManager, Repository } from 'typeorm';
 
+import { SocialSharing } from '@ionic-native/social-sharing';
 import { UtilsProvider } from '../../providers/utils/utils';
 
 import {MediaFileEntity} from "../../entities/mediafileentity";
@@ -33,14 +34,19 @@ export class ModalExportMapDataPage {
   private exportFileName:string = null;
   private fileExported = null; 
   private fileExportedDataType:string;
+  private deleteFileAfterExport:boolean = false;
   private exportDataConfig:any = {};
 
   private formsList:any = {};
 
 
+  private shareSubjectText:string = "MapbiomasApp - Datos";
+private shareBodyText:string = "Este es un archivo generado desde MapbiomasAPP";
+
+
   constructor(public navCtrl: NavController, public navParams: NavParams,  public viewCtrl: ViewController, 
               public exportFormats: ExportFormatsProvider,  private appFilesProvider: AppFilesProvider, 
-              public loadingCtrl: LoadingController,
+              public loadingCtrl: LoadingController,  private socialSharing: SocialSharing,
               private alertCtrl: AlertController, public platform: Platform,
               private utils: UtilsProvider, private formsProvider: FormsProvider) {
       this.mediafilesRepository = getRepository('mediafile') as Repository<MediaFileEntity>;
@@ -249,6 +255,32 @@ export class ModalExportMapDataPage {
         }
         )
   }
+
+
+  private shareViaEmail(){
+    let self = this;
+    this.socialSharing.shareViaEmail(this.shareBodyText, this.shareSubjectText, [''],[''],[''],this.fileExported ).then( () => {
+      if (self.deleteFileAfterExport){
+          self.appFilesProvider.removeFile(self.appFilesProvider.getExportedDataType(), self.fileExported).then( () => {
+          });
+      }
+    }).catch(() => {
+      self.utils.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");
+    })
+  }
+
+  private shareData(){
+        // Share via email
+        let self = this;
+        this.socialSharing.share(this.shareBodyText, this.shareSubjectText, this.fileExported).then(() => {
+          if (self.deleteFileAfterExport){
+            self.appFilesProvider.removeFile(self.appFilesProvider.getExportedDataType(), self.fileExported).then( () => {
+            });
+        }
+        }).catch(() => {
+          self.utils.showBasicAlertMessage("Error!", "Ha ocurrido un error mientras se intentaba compartir el archivo");          
+        });
+}
 
   private hasOneSurveyActive(){
     for (let i in this.exportDataConfig.surveys){
